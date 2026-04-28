@@ -1,0 +1,2085 @@
+ABSTRACT  
+Agriculture is a major contributor to Pakistan’s economy and a primary source of livelihood for 
+rural communities. However, farmers face significant challenges due to limited access to timely 
+agricultural information, low literacy levels, poor internet con nectivity, and reliance on 
+traditional farming practices. The absence of localized crop guidance, real -time weather updates, 
+and scientific soil monitoring leads to inefficient resource usage, low crop yields, and economic 
+losses. To address these issues, this project proposes PakFasal, a Flutter -based mobile application 
+designed to provide multilingual agricultural learning content, voice -to-text and text -to-speech 
+interaction, offline accessibility, and real -time weather forecasting. The system integrates  
+affordable IoT -based soil moisture and pH sensors to collect field data and employs a Decision 
+Support System (DSS) to generate recommendations for irrigation and fertilizer usage. 
+Additionally, the application includes a farmer –company marketplace and a query portal for 
+expert or AI -based assistance. The expected outcomes include improved crop productivity, 
+optimized water and fertilizer utilization, reduced dependency on intermediaries, and enhanced 
+farmer engagement through accessible digital technology . By combining mobile technology, 
+voice interfaces, cloud services, and IoT integration, PakFasal aims to empower farmers with 
+intelligent tools that promote sustainable agriculture and economic growth.  
+ 
+Acknowledgement  
+We would like to express our sincere gratitude to our respected supervisor for her continuous 
+guidance, valuable suggestions, and constructive feedback throughout the development of this 
+project. Her support played a crucial role in shaping the direction a nd successful completion of 
+PakFasal. We are also thankful to the Department of Computer Science, COMSATS University 
+Islamabad, Lahore Campus, for providing the academic environment and necessary resources to 
+carry out this project effectively.  
+We would especially like to acknowledge the farmers who participated in interviews and 
+discussions during the requirement gathering phase. Their practical insights regarding irrigation 
+challenges, soil conditions, fertilizer usage, crop scheduling, weather  uncertainties, and 
+difficulties in accessing agricultural information greatly contributed to understanding real -world 
+farming problems. The field -level experiences and data they shared helped us refine the system 
+requirements and ensured that PakFasal is designed according to the actual needs of rural 
+farming communities.  
+ 
+ 
+ 
+---PAGE---
+Introduction  
+Agriculture is the backbone of Pakistan’s economy and contributes significantly to the national 
+GDP while employing nearly half of the country’s labor force. Rural communities largely depend 
+on farming as their primary source of income. However, despite it s importance, the agricultural 
+sector still faces numerous challenges such as outdated farming practices, lack of scientific 
+knowledge, poor access to timely information, and weak digital infrastructure in remote areas. 
+Farmers often rely on traditional me thods passed down through generations, which may not be 
+aligned with modern agricultural research and climate realities. This results in low crop yields, 
+inefficient water usage, excessive fertilizer application, and economic losses.  
+With the advancement of Information and Communication Technology (ICT), particularly 
+smartphones and mobile applications, new opportunities have emerged to transform agricultural 
+practices. Even in rural areas of Pakistan, smartphone penetration is increas ing. Mobile -based 
+solutions can provide farmers with instant access to crop management techniques, weather 
+updates, disease detection guidance, and government scheme information. However, many 
+existing systems are either text -based, require continuous inte rnet connectivity, or are not 
+localized according to regional languages and farming conditions. Illiteracy and low digital 
+literacy further limit the usability of such applications.  
+The proposed project, PakFasal , aims to bridge this gap by developing a farmer -centric mobile 
+application using Flutter. The system will provide multilingual educational content (Urdu and 
+English), voice -to-text and text -to-speech support for illiterate farmers, offline accessibility f or 
+low-connectivity regions, real -time weather forecasting, and IoT -based soil monitoring (moisture 
+and pH sensors). Additionally, the platform will include a farmer –company marketplace to 
+eliminate middlemen and a query porta l for expert or AI -driven assistance.  
+The main purpose of this project is to empower farmers with accessible knowledge, data -driven 
+decision support, and direct market connectivity. By integrating mobile technology, IoT, and 
+intelligent recommendation systems, PakFasal aims to enhance agricult ural productivity, reduce 
+costs, and promote sustainable farming practices in Pakistan.  
+ 
+Problem Statement  
+Farmers in Pakistan face significant challenges due to limited access to timely and localized 
+agricultural information such as crop calendars, government schemes, weather updates, and 
+scientific irrigation guidelines. Many farmers are illiterate or semi -literate and reside in rural 
+areas with weak internet connectivity, which restricts their ability to use existing digital 
+agricultural platforms effectively. As a result, they rely heavily on traditional and unscientific 
+farming practices, leading to low cro p yields, inefficient use of water and fertilizers, and reduced 
+profitability. Current agricultural applications lack offline functionality, voice -based interaction, 
+---PAGE---
+and integration with affordable IoT sensors for real -time soil monitoring. Therefore, there is a 
+critical need for a comprehensive, multilingual, partially offline, and IoT -integrated mobile -based 
+decision support system tailored specifically to the needs of Pakistani farmers.  
+Proposed Solution  
+To address the challenges faced by farmers in Pakistan, this project proposes the development of 
+PakFasal , a Flutter -based mobile application designed to provide localized agricultural 
+education and intelligent decision support. The application will offer multilingual tutorials, crop 
+calendars, and videos to ensure accessibility across different regions. It w ill integrate voice -to-
+text and text -to-speech functionality to support illiterate and semi -literate farmers. Real -time 
+weather forecasting APIs will provide timely alerts and recommendations for irrigation and 
+planting decisions. Additionally, low -cost Io T-based soil moisture and pH sensors will collect 
+real-time field data and transmit it to a cloud -based backend system. A Decision Support System 
+(DSS) will analyze this data to generate practical recommendations for irrigation and fertilizer 
+usage. Offlin e data storage will ensure accessibility in low -connectivity areas. The platform will 
+also include a farmer –company marketplace and a query portal for expert or AI -driven 
+assistance, creating a unified, farmer -centered digital solution.  
+ 
+Main Objectives  
+• To develop a cross -platform mobile application using Flutter that provides localized 
+agricultural learning content including crop calendars, articles, and video tutorials in 
+multiple languages for farmers across Pakistan.  
+• To integrate voice -to-text and text -to-speech modules that enable illiterate and semi -
+literate farmers to interact with the system through voice commands and receive spoken 
+guidance.  
+• To integrate real -time weather forecasting APIs that provide accurate weather updates and 
+alerts to support better decisions regarding irrigation, planting, and harvesting.  
+• To connect affordable IoT -based soil moisture and pH sensors with the application to 
+collect real -time field data and support scientific farming practices.  
+• To design and implement a cloud -based backend system for secure storage, 
+synchronization, and management of data, sensor readings, and educational resources.  
+• Developing  a Decision Support System (DSS) that analyzes weather and soil data to 
+generate practical recommendations for irrigation scheduling, fertilizer application, and 
+crop management.  
+---PAGE---
+• To build a farmer –company marketplace module that enables direct communication 
+between farmers and agricultural suppliers, reducing dependence on intermediaries.  
+• To implement a query -handling portal where farmers can submit questions through text, 
+voice, or images and receive expert or AI -driven responses.  
+• To ensure offline accessibility of essential features such as crop calendars and learning 
+materials in areas with limited or unstable internet connectivity.  
+• To evaluate the usability, performance, and effectiveness of the system through pilot 
+testing and user feedback to ensure it meets farmers’ real -world needs.  
+ 
+Assumptions & Constraints  
+Assumptions:  
+• It is assumed that target farmers possess Android smartphones capable of running the 
+PakFasal mobile application smoothly.  
+• It is assumed that farmers will have at least occasional internet connectivity to 
+synchronize data such as weather updates and sensor readings.  
+• It is assumed that affordable IoT hardware components such as soil moisture and pH 
+sensors, along with ESP32/Arduino boards, will be available in the local market.  
+• It is assumed that farmers will be willing to adopt digital tools and participate in pilot 
+testing and usability evaluations.  
+• It is assumed that third -party APIs (weather services and speech recognition services) will 
+provide reliable and accurate data during the project lifecycle.  
+ 
+Constraints:  
+• The project is limited by a one -year academic timeline, which restricts large -scale 
+deployment and advanced AI model development.  
+• Budget limitations may restrict the use of high -end IoT sensors or commercial cloud 
+services, requiring reliance on low -cost hardware and free -tier services.  
+• Dependence on third -party APIs such as weather and speech services may introduce 
+downtime or usage limitations beyond the team’s control.  
+• Sensor accuracy may vary due to environmental conditions, which can affect the 
+precision of soil moisture and pH readings.  
+• The system is initially focused on Android devices, limiting compatibility with other 
+platforms such as iOS during the first phase of development.  
+ 
+---PAGE---
+Project Scope  
+The scope of the PakFasal project clearly defines the boundaries of the system by specifying 
+what will be included in the development and what will not be covered within this academic 
+project. The primary goal of this project is to design and develop a fun ctional prototype of a 
+mobile -based agricultural support system targeted specifically at small and medium -scale 
+farmers in rural Pakistan. The system will focus on improving access to agricultural knowledge, 
+enabling data -driven farming decisions, and redu cing dependence on intermediaries through 
+digital connectivity.  
+The project will include the development of a cross -platform mobile application using Flutter, 
+primarily optimized for Android devices. The application will provide multilingual agricultural 
+content, including crop calendars, tutorials, and videos tailored  to local farming practices. It will 
+integrate voice -to-text and text -to-speech functionality to ensure accessibility for illiterate and 
+semi -literate farmers. Real -time weather forecasting APIs will be incorporated to provide 
+location -based weather update s and alerts. The scope also includes integration of affordable IoT -
+based soil moisture and pH sensors using ESP32 or Arduino  microcontrollers to collect real -
+time field data. A cloud -based backend using Firebase services will handle user authentication, 
+data storage, synchronization, and sensor data management. A basic Decision Support System 
+(DSS) will analyze soil and weather  data to provide simple, rule -based recommendations for 
+irrigation and fertilizer usage. Additionally, the project will include a farmer –company 
+marketplace module for direct communication and a query portal where farmers can submit 
+agricultural issues via  text, voice, or images.  
+The project will ensure offline accessibility for essential features such as educational content and 
+crop calendars to support farmers in low -connectivity areas. However, the scope is limited to 
+prototype -level implementation and controlled pilot testing. Large -scale commercial deployment, 
+nationwide hardware distribution, advanced machine learning -based disease detection models, 
+financial transaction systems, and direct integration with government databases are excluded 
+from the scope of this academic proj ect. The focus remains on delivering a working, scalable 
+prototype that demonstrates feasibility, usability, and alignment with the identified problem.  
+ 
+Software Development Lifecycle (SDLC) Model:  
+To ensure systematic, organized, and professional development of the PakFasal system, the Agile 
+Software Development Lifecycle (SDLC) model will be adopted. Agile is selected because the 
+project consists of multiple independent yet interconnected modules s uch as the mobile 
+application, IoT sensor integration, weather API services, voice interaction module, cloud 
+backend, decision support system (DSS), marketplace, and query portal. These modules can be 
+developed in small increments (sprints) and integrated gradually to form the complete system. 
+Agile provides flexibility to refine requirements, test features early, gather feedback, and make 
+---PAGE---
+improvements without major redesign costs, which is suitable for an academic project with 
+evolving requirements.  
+Agile Methodology  
+The PakFasal system will be developed in short iterative cycles known as sprints. Each sprint 
+will focus on a specific module such as user authentication, multilingual content delivery, voice 
+processing, weather integration, IoT connectivity, DSS implement ation, or marketplace 
+functionality. Every sprint will include all SDLC stages including requirement refinement, 
+design, implementation, testing, and integration. After completing each sprint, performance 
+metrics such as system response time, sensor accura cy, usability feedback, and functionality 
+validation will be evaluated. This iterative feedback mechanism ensures continuous improvement 
+and better alignment with user needs.  
+Requirement Analysis  
+In this phase, all functional and non -functional requirements of PakFasal will be gathered and 
+documented. Functional requirements include multilingual content delivery, voice -based 
+interaction, IoT sensor data integration, weather updates, marketplace com munication, and query 
+handling. Non -functional requirements include performance efficiency, system reliability, 
+usability, scalability, and offline accessibility. Specific targets such as acceptable response time, 
+minimum sensor accuracy, and usability ben chmarks will also be defined to measure project 
+success.  
+System and Architecture Design  
+During this phase, the overall system architecture will be designed using a layered client -server 
+architecture integrated with IoT components. The Flutter mobile application will serve as the 
+presentation layer, Firebase services will act as the backend an d data layer, and IoT devices will 
+collect environmental data. Data flow between modules, database schemas, API communication, 
+and integration points will be clearly defined. UI/UX mockups will also be created to ensure the 
+application remains simple and farmer friendly . 
+Implementation  
+The implementation phase will follow incremental development based on defined sprints. The 
+mobile application will be developed using Flutter, while Firebase will handle authentication, 
+data storage, and synchronization. IoT sensors (soil moisture and pH) will be connected through 
+ESP32 or Arduino and integrated with the cloud using MQTT or HTTP protocols. Weather APIs 
+and voice services will be integrated progressively. Each module will be developed, tested, and 
+then integrated with the overall system.  
+ 
+ 
+---PAGE---
+Testing  
+Testing will be performed continuously throughout development. Unit testing will verify 
+individual components such as sensor data collection or API responses. Integration testing will 
+ensure smooth communication between mobile  applications , backend services, and IoT devices. 
+Usability testing will be conducted with sample users to evaluate system simplicity and 
+effectiveness. Performance testing will measure response time, reliability, and system stability 
+under multiple users.  
+Deployment  
+After successful testing, the system will be deployed in the form of an Android APK for pilot 
+testing. Firebase cloud infrastructure will host the backend services. IoT devices will be 
+configured to transmit real -time data to the cloud. The deployed system  will be monitored to 
+ensure stable communication between all modules.  
+Maintenance and Improvements  
+Post-deployment, system logs, user feedback, and performance metrics will be analyzed to 
+improve accuracy, usability, and reliability. Updates will be implemented iteratively to refine 
+DSS recommendations, enhance user experience, and fix technical issues.  This continuous 
+improvement cycle ensures that PakFasal remains effective, scalable, and aligned with the needs 
+of Pakistani farmers.  
+ 
+  
+---PAGE---
+Litera ture Review  
+2.1 Literature Review  
+The emergence of Information and Communications Technology (ICT), Artificial Intelligence 
+(AI), Internet of Things (IoT), and mobile computing in the recent past have had a major impact 
+on the way agriculture was practiced in the past. Traditional agricult ure in developing nations 
+such as Pakistan is based on the traditional knowledge, manual observations, and guesses in 
+irrigation and the use of fertilizers. Such activities result in very low crop production, poor usage 
+of resources, and lack of stability in the economy. As the AI has evolved at a very high pace, 
+Decision Support Systems (DSS), mobile applications, and IoT -based monitoring systems, 
+agriculture is slowly becoming data -driven and smart farming methods.  
+This part entails a critical literature overview of available studies and technology solutions on the 
+agricultural advisory systems, IoT -focused precision farming, crop intelligence -based on 
+weather, voice -enhanced interface systems and farmer marketplace systems. It also identifies 
+their methodologies, accomplishments, and setbacks to support the necessity of PakFasal.  
+2.1.1.1 Mobile -Based Agricultural Advisory Systems.  
+TATA Trusts launched mKRISHI [1], an agricultural advisory service based on mobile phones to 
+enable farmers access experts. The system offers crop advice, market price and advisory services 
+via SMS and mobile applications. The paper showed increased interaction between the experts in 
+the field of agriculture and farmers.  
+This system is, however, primarily text -based and needs a stable internet connection. It lacks 
+offline services and voice services to illiterate farmers. Besides, it does not have real -time sensor 
+interfaces and smart DSS suggestions.  
+PakFasal builds upon this effort by combining the support of two voices, having an offline 
+presence, soil monitoring via IoT integration, and suggestions provided by AI and implemented 
+into a single mobile platform.  
+2.1.2 Smart Irrigation Systems based on IoT.  
+Smart irrigation systems based on IoT aim to optimize irrigation time based on the soil moisture 
+sensors and environmental monitoring systems [2]. Such systems gather real -time data and 
+process the water use plans to enhance the conservation and productivity of water.  
+The systems though effective in precision farming are costly and they demand technical expertise 
+in installation and service. Most of the implementations are made to large -scale commercial 
+farms and not to the small -holder farmers.  
+PakFasal overcomes this bottleneck by incorporating low -cost soil moisture and pH sensors with 
+ESP32/Arduino modules, which allows the small -scale farmers in Pakistan to adopt IoT.  
+---PAGE---
+2.1.3 Decision Support Systems (DSS) in Agriculture.  
+Another famous agricultural DSS model is DSSAT (Decision Support System Agrotechnology 
+Transfer) that can be applied to crop simulation, yield prediction, and management planning  [3]. 
+It uses environmental, soil and crop data sets to come up with recommendations that are 
+scientifically sound.  
+However, DSSAT is complicated, and it is not very user -friendly with researchers and 
+agricultural specialists in mind. It needs technical skills and extensive data, which low -literate 
+farmers could not access.  
+PakFasal is a simplified form of DSS, which incorporates the logic of making recommendations 
+directly into the interface of a mobile application that uses weather API and IoT sensors to input 
+data, and thereby allows farmers to make scientific decisions.  
+2.1.4 Agricultural Information Systems based on weather.  
+The advisory systems based on weather are used in helping farmers to make irrigation, 
+harvesting decisions, and managing pests  [4]. Climate information Services Mobile climate 
+information services offer forecast - oriented advice.  
+Nevertheless, the majority of the current weather apps provide general forecasting and not crop 
+and location -specific actionable advice. They fail to integrate data about soil, stage of crops, and 
+farmers.  
+PakFasal takes weather APIs and mixes them with the soil sensor data, crop calendars to produce 
+actionable and region -focused recommendations, as opposed to a mere weather update.  
+2.1.5 Voice -Based Interfaces to Low Literacy Users.  
+Studies on Interactive voice Response (IVR) systems have demonstrated that voice interfaces 
+enhance accessibility among low -literate groups to a great extent [5].  
+The majority of IVR systems are controlled by menus, though, and are inflexible. They are not 
+embedded with AI -driven recommendation systems, IoT networks, and intelligent crop 
+counselling systems.  
+PakFasal combines voice -to-text and text -to-speech to directly be part of the agricultural 
+decision -making pipeline, allowing illiterate farmers to talk to their computer.  
+2.1.6 Mobile Applications Empowering Smallholder Farmers  
+According to recent research, there is a recognition of the role of mobile applications in 
+empowerment of the smallholder farmers by providing advisory services and accessing market 
+[6]. These applications enhance communication to the farmers, and less reliance on 
+intermediaries.  
+---PAGE---
+However, most platforms lack:  
+• Offline functionality  
+• Integrated IoT support  
+• AI-based DSS  
+• Multilingual support  
+Single market between farmers and companies.  
+PakFasal combines all these functions into a single ecology that is farmer friendly . 
+2.1.7 Retrieval -Augmented Generation (RAG) in Agricultural Advisory Systems  
+Retrieval -Augmented Generation (RAG) is a new AI framework that integrates information 
+retrieval processes with large language models (LLMs) to enhance natural language processing 
+tasks with a knowledge -intensive nature  [7]. RAG does not only use pre -trained information, but 
+accesses the relevant information stored in the external knowledge base and utilizes it as 
+grounding before the generation of responses. Old -fashioned AI chat systems only create a 
+response based on mode l training data, and this can result in hallucinations or out -of-date 
+information. RAG -based systems enhance accuracy in fact by retrieving domain -specific content, 
+and generate responses then, eliminating the risk of hallucinations [8]. 
+Recent studies show that RAG can greatly enhance domain specific question answering and 
+particularly in domains with much knowledge e.g. healthcare, finance and agriculture [9]. 
+Similarity -based document matching is further improved with dense semantic retrieval methods 
+like Dense Passage Retrieval (DPR) to extract accurate information [10]. Nevertheless, most 
+agricultural advisory systems are based on either a fixed FAQ matching or separate AI model 
+without any dynamic retrieval.  
+PakFasal incorporates a query handling framework based on RAGs in its Query Portal, where 
+queries by farmers are transformed into embeddings and compared to an organized agricultural 
+knowledge base with semantic similarity queries [11], [12]. The documents that have been 
+retrieved are then fed into a language model to produce grounded and context -related responses. 
+This method allows to minimize misinformation, allows increasing reliability, and makes sure 
+that responses are backed by verifia ble agricultural knowledge.  
+2.1.8 Summary of Related Works  
+Ref Paper Title  Research 
+Problem  Methodology  Key 
+Limitations  Identified Gaps  
+[1] mKRISHI  Farmer advisory 
+access  Mobile + 
+SMS  No voice, 
+internet 
+required  Offline + voice -
+enabled systems  
+---PAGE---
+[2] IoT Smart 
+Irrigation  Water 
+optimization  Sensors + IoT  Expensive, 
+complex setup  Low-cost IoT 
+integration  
+[3] DSSAT  Crop simulation 
+& planning  Data -driven 
+DSS Complex, 
+expert -
+oriented  Mobile -friendly 
+DSS 
+[4] Climate Info 
+Services  Weather -based 
+farming  Mobile 
+forecasts  Generalized 
+advice  Crop -specific 
+recommendations  
+[5] IVR 
+Interfaces  Accessibility for 
+illiterate users  V oice systems  Not integrated 
+with AI/DSS  Intelligent voice -
+enabled DSS  
+[6] Mobile 
+Apps for 
+Farmers  Farmer 
+empowerment  Smartphone 
+apps No IoT + 
+offline 
+integration  Unified smart 
+farming platform  
+The literature review will conclude that although there has been considerable advancement in the 
+agricultural advisory system, IoT monitoring, and AI -based decision support, none of the current 
+systems have a unified system, low -cost, multilingual, and off line-capable system to integrate all 
+three into a single system that targets specific smallholder farmers in Pakistan. These are some of 
+the gaps that warrant PakFasal development.  
+2.2 Gap Identification in Research.  
+Although the innovations in smart agriculture technologies are made, there are still several  
+significant gaps in the process of creating intelligent, farmer -centered agricultural support 
+systems. These gaps are pointed out in the following section and how PakFasal handles them.  
+2.2.1 Non -presence of Smart Farming Platform.  
+Existing Limitations:  
+Most agricultural systems concentrate on one functionality (advisory services, IoT monitoring, 
+weather forecasting, or accessing the marketplace). No single platform exists in which all these 
+services are incorporated into an ecosystem.  
+The way PakFasal will fill this Gap:  
+• Integrates IoT soil sensor, weather prediction, DSS suggestions and marketplace . 
+• Offers a mobile one stop shop service to farmers.  
+2.2.2 Restricted Access by the illiterate farmers.  
+Existing Limitations:  
+---PAGE---
+Many  farming applications are text -based. There are voice systems which are independent of 
+intelligent advisory modules.  
+The way PakFasal fills this Gap:  
+• Combines voice to text and text to speech applications.  
+• Bilingual (Urdu/English) services.  
+• Allows free intercourse without reading writing addiction.  
+2.2.3 Lack of Not Online  Features.  
+Existing Limitations:  
+Even most of the systems need constant connection to the internet that is not reliable in rural 
+Pakistan.  
+The way of handling this Gap by PakFasal:  
+• Adopts offline storing of crop schedules, articles and tutorials.  
+• Recapitulates information when it gets access to the internet.  
+2.2.4 Precision Systems based on IoT are very expensive.  
+Existing Limitations:  
+None of the current smart farming systems are affordable and are targeted at large farms.  
+The way PakFasal can fill this Gap:  
+• Implicates cheap soil moisture and pH sensors.  
+• It uses ESP32/Arduino microcontrollers.  
+• Reduces both cost and complexity.  
+2.2.5 Absence of Context -Aware Decision Support.  
+Existing Limitations:  
+Weather applications and advisory services do not offer action -oriented specifically crop -oriented 
+advice, but generic information.  
+The Way PakFasal Will Fill This Gap:  
+• Combines the information of IoT sensors with weather API and crop calendar.  
+• Makes smart suggestions using DSS.  
+• Creates region -specific  action  recommendations.  
+ 
+2.2.6 Lack of Intelligent Retrieval -Based Query Systems  
+---PAGE---
+Existing Limitations:  
+Majority of the agricultural advisory applications are based on:  
+• Static FAQ matching  
+• Rule-based responses  
+• Simple chatbot models  
+Such systems do not have dynamic knowledge retrieval,  and they tend to produce 
+inaccurate or generic responses. Agricultural advice that is not retrieved by large language 
+models can be hallucinated and is dangerous in the context of actual farming.  
+The way PakFasal fills this Gap:  
+• Adopts a Retrieval - Augmented Generation (RAG) architecture.  
+• Resorts to semantic vector search (FAISS or others).  
+• Recalls any pertinent knowledge of agriculture prior to response generation.  
+• Brings correct, contextual, and domain answers.  
+ 
+2.3 Requirement Elicitation  
+Requirement elicitation refers to the systematic process of identifying, analyzing, and 
+documenting the needs of stakeholders and system constraints for the PakFasal platform. Since 
+PakFasal is a multi -component intelligent agricultural system integrating IoT sensors, cloud 
+services, mobile application development, Decision Support System (DSS), Retrieval -
+Augmented Generation (RAG), and multilingual voice interaction, a structured  approach was 
+necessary to ensure completeness and feasibility.  
+The requirement gathering process combined analysis of existing agricultural advisory platforms, 
+stakeholder consultations, domain research in rural agricultural environments of Pakistan, and 
+technical feasibility analysis of AI and IoT integration.  
+The following subsections describe the elicitation approach in detail.  
+ 
+2.3.1 Requirement Gathering Methods  
+2.3.1.1 Document Analysis  
+Various research papers, technical reports, and agricultural advisory platforms were analyzed to 
+understand existing solutions and their limitations. Studies on IoT -based smart irrigation systems, 
+mobile agricultural advisory applications, and AI -based kno wledge retrieval systems were 
+reviewed.  
+---PAGE---
+The analysis revealed several limitations in existing systems:  
+• Most agricultural mobile applications require continuous internet connectivity.  
+• IoT-based irrigation systems are often expensive and technically complex for small -scale 
+farmers.  
+• Very few systems integrate multilingual voice interfaces for illiterate farmers.  
+• Existing advisory platforms provide static FAQ -based responses instead of dynamic AI -
+assisted answers.  
+• There is minimal integration of Retrieval -Augmented Generation (RAG) for domain -
+specific agricultural knowledge retrieval.  
+The document analysis helped identify gaps in accessibility, scalability, affordability, and 
+contextual intelligence, which directly influenced the system requirements of PakFasal.  
+ 
+2.3.1.2 Stakeholder Need Analysis  
+The primary stakeholders of PakFasal include:  
+• Small and medium -scale farmers  
+• Agricultural extension officers  
+• Input suppliers (fertilizer, pesticide, seed companies)  
+• Government agricultural bodies  
+Through informal discussions, observation of rural farming practices, and analysis of agricultural 
+challenges in Pakistan, the following stakeholder needs were identified:  
+• Farmers require localized agricultural content in Urdu and regional languages.  
+• Illiterate or semi -literate farmers require voice -based interaction instead of text -heavy 
+interfaces.  
+• Farmers need real -time weather forecasting and soil condition analysis for informed 
+decision -making.  
+• Farmers require direct communication with verified suppliers to avoid exploitation by 
+middlemen.  
+• Farmers need instant and reliable answers to crop disease and pest -related queries.  
+• Offline accessibility is essential due to weak internet connectivity in rural areas.  
+These needs were translated into concrete functional and non -functional requirements.  
+---PAGE---
+ 
+2.3.1.3 Technical Constraint Analysis  
+Technical constraints were analyzed to ensure the feasibility of implementation within available 
+resources and infrastructure.  
+Key constraints include:  
+• Limited processing capabilities of low -cost IoT hardware (ESP32/Arduino).  
+• Internet instability in rural areas.  
+• Hosting limitations for large -scale AI models.  
+• Data synchronization challenges  offline storage and cloud backend.  
+• Requirement for lightweight yet efficient RAG -based retrieval mechanism.  
+The system architecture was therefore designed to use:  
+• Firebase Firestore for cloud storage  
+• Offline persistence for local caching  
+• Lightweight vector database for RAG retrieval  
+• API-based LLM integration instead of full model hosting  
+These constraints shaped the modular and scalable design of PakFasal.  
+ 
+2.3.1.4 RAG -Based Knowledge Integration Analysis  
+Since PakFasal now integrates Retrieval -Augmented Generation (RAG), specific requirement 
+analysis was conducted for AI -based query handling.  
+The RAG module is designed to:  
+• Retrieve relevant agricultural knowledge from a structured knowledge base.  
+• Use vector embeddings to match farmer queries with relevant documents.  
+• Generate grounded responses using a Large Language Model (LLM).  
+• Reduce hallucination by anchoring responses to retrieved content.  
+• Continuously update the FAQ database with validated responses.  
+This ensures domain -specific, accurate, and context -aware AI assistance instead of generic 
+responses.  
+---PAGE---
+ 
+2.3.2 Functional Requirements : 
+The functional requirements define what the PakFasal system must perform to meet stakeholder 
+needs.  
+2.3.2.1 Mobile Application Core Requirements  
+FR 1.1 – The system shall provide farmer registration and authentication using phone number or 
+email.  
+FR 1.2 – The system shall provide multilingual support (Urdu and English initially).  
+FR 1.3 – The system shall provide voice -to-text input functionality.  
+FR 1.4 – The system shall provide text -to-speech output functionality.  
+FR 1.5 – The system shall allow offline access to crop calendars, tutorials, and articles.  
+2.3.2.2 IoT Sensor Integration Requirements  
+FR 2.1 – The system shall collect soil moisture data from IoT sensors.  
+FR 2.2 – The system shall collect soil pH readings from IoT devices.  
+FR 2.3 – The system shall transmit sensor readings to the cloud via MQTT/HTTP protocols.  
+FR 2.4 – The system shall display sensor readings in graphical format within the mobile 
+application.  
+2.3.2.3 Weather and DSS Requirements  
+FR 3.1 – The system shall retrieve real -time weather data using a reliable Weather API.  
+FR 3.2 – The DSS shall generate irrigation recommendations based on soil moisture and forecast 
+data.  
+FR 3.3 – The DSS shall generate fertilizer recommendations based on soil pH levels.  
+FR 3.4 – The DSS shall provide region -specific crop advisory recommendations.  
+2.3.2.4 RAG -Based Query Handling Requirements  
+FR 4.1 – The system shall accept farmer queries in text, voice, or image format.  
+FR 4.2 – The RAG module shall retrieve relevant agricultural documents from a vector database.  
+FR 4.3 – The system shall generate context -aware responses using LLM combined with retrieved 
+knowledge.  
+FR 4.4 – The system shall reduce hallucinated responses using retrieval -based grounding.  
+FR 4.5 – The system shall store validated responses into a growing FAQ database for future 
+reuse.  
+2.3.2.5 Marketplace Requirements  
+FR 5.1 – The system shall allow suppliers to upload agricultural products.  
+FR 5.2 – The system shall allow farmers to browse verified products.  
+---PAGE---
+FR 5.3 – The system shall allow direct communication between farmers and suppliers.  
+FR 5.4 – The system shall allow farmers to place inquiries regarding products.  
+2.3.3 Non -Functional Requirements : 
+2.3.3.1 Performance Requirements  
+NFR 1.1 – The system shall generate AI responses within 5 seconds under normal conditions.  
+NFR 1.2 – The system shall support a minimum of 500 concurrent users without failure.  
+2.3.3.2 Security and Privacy Requirements  
+NFR 2.1 – The system shall encrypt user data during transmission.  
+NFR 2.2 – The system shall mask sensitive user information.  
+NFR 2.3 – The system shall comply with data privacy policies and ethical AI guidelines.  
+2.3.3.3 Reliability Requirements  
+NFR 3.1 – The system shall allow offline access to essential content.  
+NFR 3.2 – The system shall ensure synchronization of offline data once connectivity is restored.  
+NFR 3.3 – Weather API uptime shall remain above 95%.  
+2.3.3.4 Maintainability and Scalability Requirements  
+NFR 4.1 – The system shall follow modular architecture design.  
+NFR 4.2 – The system shall allow future integration of additional languages.  
+NFR 4.3 – The system shall allow expansion of the agricultural knowledge base without 
+affecting existing services.  
+ 
+Req 
+ID Requirement 
+Description  Type  Source  Related 
+Module  Design 
+Reference  Implementation  Test Case 
+ID 
+REQ -
+01 The system 
+allows farmer 
+registration and 
+authentication 
+using 
+phone/email.  Functional  FYP 
+Proposal  Authentication 
+Module  System 
+Architecture 
+Diagram  Firebase 
+Authentication  TC-01 
+REQ -
+02 The system shall 
+provide 
+multilingual 
+support 
+(Urdu/English).  Functional  Stakeholder 
+Analysis  Localization 
+Module  UI Design  Flutter 
+Localization  TC-02 
+---PAGE---
+REQ -
+03 The system 
+should provide 
+voice -to-text 
+functionality.  Functional  Stakeholder 
+Need  V oice Module  Interaction 
+Flow Diagram  Google Speech -
+to-Text API  TC-03 
+REQ -
+04 The system 
+should provide 
+text-to-speech 
+functionality.  Functional  Stakeholder 
+Need  V oice Module  Interaction 
+Flow Diagram  TTS API 
+Integration  TC-04 
+REQ -
+05 The system shall 
+allow offline 
+access to crop 
+calendars and 
+articles.  Functional  Technical 
+Constraint  Offline 
+Storage 
+Module  Data Layer 
+Design  Hive/SQLite + 
+Firestore Sync  TC-05 
+REQ -
+06 The system shall 
+collect soil 
+moisture data 
+from IoT sensors.  Functional  IoT 
+Integration 
+Plan IoT Module  IoT 
+Architecture 
+Diagram  ESP32 + 
+Moisture Sensor  TC-06 
+REQ -
+07 The system shall 
+collect soil pH 
+data from IoT 
+sensors.  Functional  IoT 
+Integration 
+Plan IoT Module  IoT 
+Architecture 
+Diagram  pH Sensor + 
+ESP32  TC-07 
+REQ -
+08 The system shall 
+transmit sensor 
+data to cloud via 
+MQTT/HTTP.  Functional  Technical 
+Design  IoT 
+Integration 
+Layer  System 
+Architecture 
+Diagram  MQTT/HTTP 
+Protocol  TC-08 
+REQ -
+09 The system shall 
+retrieve real -time 
+weather data 
+using Weather 
+API. Functional  Proposal 
+Objective  Weather 
+Module  API Integration 
+Flow  OpenWeatherMap 
+API TC-09 
+REQ -
+10 The DSS shall 
+generate 
+irrigation 
+recommendations 
+based on soil Functional  Project 
+Objective  DSS Module  Decision Flow 
+Diagram  Rule -based DSS 
+Logic  TC-10 
+---PAGE---
+moisture and 
+forecast.  
+REQ -
+11 The DSS shall 
+generate fertilizer 
+recommendations 
+based on soil pH 
+data.  Functional  Project 
+Objective  DSS Module  Decision Flow 
+Diagram  DSS Algorithm  TC-11 
+REQ -
+12 The system shall 
+accept farmer 
+queries in text, 
+voice, or image 
+format.  Functional  Stakeholder 
+Need  Query Module  Interaction 
+Flow Diagram  Flutter + API 
+Integration  TC-12 
+REQ -
+13 The RAG 
+module shall 
+retrieve relevant 
+agricultural 
+documents from 
+vector database.  Functional  AI Design  RAG 
+Retrieval 
+Module  RAG 
+Architecture 
+Diagram  Vector DB 
+(FAISS/Chroma)  TC-13 
+REQ -
+14 The system shall 
+generate context -
+aware responses 
+using LLM with 
+retrieved 
+knowledge.  Functional  AI 
+Integration  LLM 
+Processing 
+Module  RAG Flow 
+Design  LLM API 
+Integration  TC-14 
+REQ -
+15 The system shall 
+reduce 
+hallucination by 
+grounding 
+responses with 
+retrieved data.  Functional  AI 
+Constraint 
+Analysis  RAG Module  RAG Pipeline 
+Design  Retrieval -
+Grounded 
+Generation  TC-15 
+REQ -
+16 The system shall 
+store validated 
+queries into FAQ 
+database for 
+reuse.  Functional  Knowledge 
+Expansion  FAQ Module  Data Layer 
+Design  Firestore 
+Database  TC-16 
+---PAGE---
+REQ -
+17 The system shall 
+allow suppliers to 
+upload 
+agricultural 
+products.  Functional  Marketplace 
+Requirement  Marketplace 
+Module  Marketplace 
+Flow Diagram  Firebase Storage 
++ UI TC-17 
+REQ -
+18 The system shall 
+allow farmers to 
+browse verified 
+products.  Functional  Marketplace 
+Requirement  Marketplace 
+Module  Marketplace 
+Flow Diagram  Flutter UI + 
+Firestore  TC-18 
+REQ -
+19 The system shall 
+allow direct 
+communication 
+between farmers 
+and suppliers.  Functional  Stakeholder 
+Need  Messaging 
+Module  Communication 
+Flow  Chat Integration  TC-19 
+REQ -
+20 The system shall 
+support 
+minimum 500 
+concurrent users.  Non-
+Functional  Performance 
+Criteria  Backend 
+Services  System 
+Architecture  Firebase Cloud 
+Scalability  TC-20 
+REQ -
+21 The system shall 
+generate AI 
+responses within 
+5 seconds.  Non-
+Functional  Success 
+Criteria  RAG + LLM 
+Module  Performance 
+Design  Optimized 
+Retrieval + API  TC-21 
+REQ -
+22 The system shall 
+encrypt user data 
+during 
+transmission.  Non-
+Functional  Security 
+Requirement  Security 
+Module  Security 
+Architecture  HTTPS + 
+Firebase Rules  TC-22 
+REQ -
+23 The system shall 
+synchronize 
+offline data once 
+connectivity is 
+restored.  Non-
+Functional  Technical 
+Constraint  Sync Module  Data Flow 
+Diagram  Firestore Sync 
+Mechanism  TC-23 
+REQ -
+24 The system shall 
+follow modular 
+architecture for 
+scalability.  Non-
+Functional  System 
+Design  Entire System  Layered 
+Architecture  Modular Code 
+Structure  TC-24 
+---PAGE---
+REQ -
+25 The system shall 
+allow future 
+expansion of 
+agricultural 
+knowledge base.  Non-
+Functional  Project 
+Scope  RAG 
+Knowledge 
+Base  Data 
+Architecture  Expandable 
+Vector Index  TC-25 
+ 
+ 
+  
+---PAGE---
+System Design  
+This chapter describes the system design of the proposed PakFasal intelligent agricultural 
+support system . The design explains how different components of the system interact with each 
+other to provide agricultural knowledge, weather insights, IoT -based soil monitoring, and 
+farmer –company marketplace services.  
+3.1 Use Case Design  
+Use case design explains the way various users use the PakFasal system and the way the system 
+delivers services to its users. It assists in comprehending the system functionality in the eyes of 
+the user and finds out the key interactions between the users and the application.  
+The PakFasal  system is developed as an agricultural support system that is implemented on 
+mobile phones  and helps farmers to find information on agriculture, control the field conditions 
+with the help of the IoT sensors and get the chances to receive weather predictions and to 
+communicate directly with the agricultural suppliers. The system also enables far mers to ask any 
+queries related to crops and get answers from agricultural specialists or intelligent systems.  
+Using case diagram  helps in identifying the key actors in the system and functionalities that can 
+be availed to them. These actors engage the mobile application and the backend services to 
+execute various tasks.  
+The key participants of the system of PakFasal are  Farmers, Agricultural Experts, 
+Suppliers/Companies, and System Administrators . All the actors had roles and functions in 
+the system.  
+3.1.1 Actors  
+Farmer:  
+The PakFasal application is mostly used by the farmer. The system allows farmers to get access 
+to agricultural information, keep track of the soil condition, and get advice on how to enhance 
+the productivity of their crops.  
+The following are the measures that can be undertaken by the farmers:  
+• Open and create an account with the mobile application.  
+• Get access to agricultural tutorials and articles and videos.  
+• See crop schedules and schedules of approved farming.  
+• Use the sensor of soil moisture and pH.  
+• Check weather predictions of their region.  
+• Place orders concerning farming or disease of crops.  
+• Post crop pictures to be diagnosed.  
+• Shop farm products on the market.  
+---PAGE---
+• Interaction with suppliers.  
+The PakFasal application is expected to be easy and user -friendly and should have the voice 
+input and multilingual features to make sure that even semi -literate farmers can use the system 
+without any difficulties.  
+Agricultural Expert:  
+Agricultural professionals help farmers through professional advice associated with crop 
+management, pests, irrigation methods, and fertilizer applications.  
+They are responsible for:  
+• Reviewing farmer queries  
+• Giving professional answers and solutions.  
+• Revising agricultural knowledge base.  
+• Assistance to the farmers in diagnosing diseases.  
+The professionals assist in provision of fair and valid information to farmers to enhance 
+agricultural productivity.  
+Supplier / Agricultural Company:  
+The farming inputs supplied through the PakFasal marketplace module are suppliers or 
+agricultural companies, who supply farming inputs in terms of seeds, fertilizers, pesticides, and 
+farming equipment.  
+The suppliers can do the following:  
+• Create and maintain product listing.  
+• Offer the product information and costs.  
+• Interact with farmers directly.  
+• Getting orders or product inquiries.  
+Marketplace option assists in the removal of intermediaries and farmers can buy farm products 
+directly out of the farms.  
+System Administrator:  
+System administrator takes care of the general operations of PakFasal platform. The 
+administrator will make sure that the system is functioning properly, and that data and resources 
+are in place as well.  
+Responsibilities include:  
+• User account management/ System access.  
+• Enhancing performance and activity logs of the monitoring systems.  
+---PAGE---
+• Knowledge resource and content in agriculture.  
+• Managing system changes and maintenance.  
+• Managing database records  
+The administrator will make the platform secure, reliable, and up to date.  
+3.1.2 Use Case Description  
+PakFasal system does offer several essential features which were intended to assist farmers in 
+their day -to-day operations on the farm.  
+User Authentication:  
+The application requires users to create an account and log in to the application after which they 
+can access system features. Firebase Authentication is used to authenticate the user and provide 
+them with secure access to the system.  
+Access of Agriculture Education Material:  
+Farmers will have access to numerous educational contents such as articles, tutorials and videos 
+on how to manage crops, the methods of irrigation and disease prevention. It provides content in 
+different languages to enhance accessibility.  
+Crop Calendar Access:  
+The crop calendar module gives information on the planting, irrigation, fertilization, and 
+harvesting time of crops specific to a region. This assists the farmers to organize their 
+agricultural practices better.  
+Weather Forecast Module:  
+The system incorporates weather APIs in offering real -time weather predictions. Growers can see 
+the temperature, humidity, precipitation, and wind speed to take sound decisions regarding the 
+farming process.  
+IoT Sensor Monitoring:  
+PakFasal system is an integration of the soil moisture sensors and soil pH sensors which are 
+linked with ESP32 or Arduino microcontrollers. The sensor data is sent to the cloud and is shown 
+in the smart phone application.  
+This enables farmers to check the level of fields and control the process of irrigation.  
+Query Handling System:  
+Agriculture will be able to send the requests connected with the diseases of crops, the 
+infestations of pests or agricultural methods. One is able to send queries through text, voice input 
+or even pictures.  
+---PAGE---
+These queries are sent to the system by the agriculture experts or intelligent decision support 
+modules. When the response has been generated, it is sent back to the farmer via the mobile 
+application.  
+Farmer -Company Marketplace:  
+The marketplace module enables the farmers to view agricultural products, including seeds, 
+fertilizer and pesticides. The farmers can interact directly with the suppliers in order to gain 
+information on the products and make purchases.  
+This allows minimization of the need to utilize mediators and allows agricultural markets to be 
+more transparent.  
+Recommendations of the decision support system:  
+The system uses sensory, weather and crop knowledge to give guidance to farmers. Some of 
+these recommendations can incorporate the irrigation time, the application of fertilizer, and 
+disease control methods.  
+ 
+3.2 Activity Diagram : 
+The activity diagram will display the general process of PakFasal system and how a farmer is 
+involved with the various modules of the system.  
+Initialization The initial stage of the application is called the initialization stage.  
+The first step is the activation of the PakFasal mobile application by the farmer. The system 
+verifies the user registration or not. Unless the user is registered, the user is forced to complete 
+the registration process before he or she can have access to the system.  
+Once Firebase Authentication is completed successfully, the farmer will have access to the main 
+dashboard of the application.  
+3.2.2 Farmer Interaction of System Modules.  
+Upon logging in, the farmer can browse through various applications modules of the application 
+such as:  
+• Educational resources  
+• Crop calendar  
+• Weather forecasting  
+• Sensor monitoring  
+• Marketplace  
+• Query handling portal  
+---PAGE---
+The modules offer certain functionalities that help farmers make informed decisions related to 
+agriculture.  
+3.2.3 IoT Sensor Data Collection:  
+This subsystem is the IoT which is the soil moisture sensor and the soil pH sensor that is linked 
+to microcontrollers like ESP32 or Arduino.  
+These sensors check the soil condition in field on a continuous basis. The microcontroller takes 
+sensor measurements and sends them to the cloud via some communication protocols like 
+MQTT or HTTP.  
+The sensor data is also stored in Firebase Firestore whereby mobile application can retrieve it.  
+3.2.4 Weather Data Processing:  
+External weather APIs are used to get the level of weather information, and these include open 
+weather map. The application forwards the request to the weather API that provides real -time 
+weather conditions such as the temperature, humidity, and rainfall p robability, and wind speed.  
+This fact assists farmers with an irrigation schedule, planting and harvesting time.  
+3.2.5 Query Handling Process:  
+The farmers can make inquiries concerning crops disease, irrigation, manure or pest control. The 
+queries may be placed with the help of:  
+• Text input  
+• V oice input  
+The query is fed into the system and passed on to the agricultural experts, or AI -based models.  
+Then, the generated response is returned to the farmer on the mobile application.  
+3.2.6 Decision Support System:  
+The decision support system (DSS) is used to analyze sensor data, weather data and crop data to 
+give recommendations to the farmers.  
+The DSS can offer the following recommendations:  
+• Irrigation scheduling  
+• Fertilizer application  
+• Prevention methods of diseases.  
+• Crop selection guidance  
+These suggestions enable farmers to come up with data -driven farming decisions.  
+---PAGE---
+ 
+3.3 Sequence Diagram  
+The sequence diagram shows the interplay of various elements of the PakFasal system when a 
+given task is being carried out.  
+3.3.1 Farmer Request Processing:  
+As soon as a farmer takes some action via the mobile application, the request is forwarded to the 
+back -end server.  
+
+---PAGE---
+The backend receives the request and makes communication with the various system 
+components including:  
+• Firebase database  
+• IoT sensors  
+• Weather APIs  
+Once the request has been processed, the system will then respond to the mobile application.  
+3.3.2 Sensor Data Retrieval:  
+The mobile application periodically asks the cloud database to provide sensor information. The 
+backend gets the most recent readings of soil moisture and pH sensors that are stored in Firebase.  
+The information is then forwarded to the mobile app where it is presented in the graphic form to 
+farmers.  
+3.3.3 Retrieving the weather information:  
+On opening the weather module, the mobile application makes a request for the weather API. 
+The API has real -time weather data that is shown to the farmer in the application.  
+3.4 Software Architecture Diagram:  
+PakFasal system has an architecture which is layered to guarantee modularity and scalability. 
+The architecture is separated into several layers with each layer being charged with certain 
+system functions.  
+3.4.1 Presentation Layer:  
+The mobile application that will be developed in Flutter is the presentation layer.  
+The application offers an easy -to-use interface which covers:  
+• Multilingual content  
+• V oice interaction  
+• Visual data representation  
+• Offline learning resources  
+The mobile application is the main interface between the farmer and the system.  
+3.4.2 Application Layer:  
+Handles system logic and data processing are in the application layer.  
+This layer includes:  
+• User management through firebase authentication.  
+• Node.js backend APIs  
+---PAGE---
+• Decision Support System  
+• Query processing system  
+Application layer is used to process user requests and interacts with data layer.  
+3.4.3 Data Layer:  
+Storing and maintenance of system data is the task of the data layer.  
+Key data components include:  
+• Farmer profiles  
+• Sensor readings  
+• The content of agricultural knowledge.  
+• Products listing within the marketplace.  
+• Query records  
+Firebase Firestore is taken as the major cloud database to store the data of the system.  
+3.4.4 IoT Integration Layer:  
+List of hardware sensors and microcontrollers used to collect real -time environmental data make 
+up the IoT integration layer.  
+The sensors sense the moisture content in the soil and pH levels and transmit the data to the 
+cloud data base.  
+This integration enables the system to give precise field information to the farmers.  
+---PAGE---
+ 
+3.5 Class Diagram : 
+The class diagram is the structural design of PakFasal system.  
+User Class  
+Attributes:  
+• UserID  
+• Name  
+• PhoneNumber  
+
+---PAGE---
+• Role  
+Farmer Class  
+Attributes:  
+• FarmerID  
+• FarmLocation  
+• CropType  
+SensorData Class  
+Attributes:  
+• SensorID  
+• SoilMoisture  
+• pHLevel  
+• Timestamp  
+Query Class:  
+Attributes:  
+• QueryID  
+• FarmerID  
+• QueryText  
+• Response  
+• Status  
+Marketplace Product Class:  
+Attributes:  
+• ProductID  
+• ProductName  
+• Price  
+• SupplierID  
+Weather Data Class:  
+Attributes:  
+• Temperature  
+• Humidity  
+• Rainfall  
+• WindSpeed  
+---PAGE---
+These classes communicate to one another to control the system functionality and data exchange.  
+ 
+ 
+3.6 Database Diagram  
+The PakFasal database is designed to store all system information efficiently and support real -
+time synchronization between system components.  
+3.6.1 Users Table  
+Field  Type  
+UserID  Integer  
+
+---PAGE---
+Name  Varchar  
+Phone  Varchar  
+Role  Varchar  
+CreatedAt  Timestamp  
+ 
+3.6.2 Sensor Data Table  
+Field  Type  
+SensorID  Integer  
+SoilMoisture  Float  
+pHLevel  Float  
+Timestamp  Timestamp  
+ 
+3.6.3 Queries Table  
+Field  Type  
+QueryID  Integer  
+FarmerID  Integer  
+QueryText  Text 
+Response  Text 
+Status  Varchar  
+ 
+3.6.4 Marketplace Table  
+Field  Type  
+ProductID  Integer  
+ProductName  Varchar  
+Price  Float  
+SupplierID  Integer  
+---PAGE---
+ 
+3.6.5 Weather Data Table  
+Field  Type  
+Temperature  Float  
+Humidity  Float  
+Rainfall  Float  
+Timestamp  Timestamp  
+The database structure ensures that all data related to farmers, sensors, and agricultural 
+knowledge is stored efficiently and can be accessed quickly by the system.  
+ 
+
+---PAGE---
+ 
+3.7 Collaboration Diagram  
+The collaboration diagram depicts the communication between various components of the 
+PakFasal system that allows the system to carry out the operations. It concentrates on the 
+communication between system modules at running time and emphasizes the passing  of 
+information between mobile applications, the backend services, the IoT devices, the databases 
+and the artificial intelligence components.  
+The PakFasal system incorporates among various technologies a Flutter mobile application, a 
+cloud database, IoT sensors, weather APIs, and query processing modules that are based on AI. 
+These elements work together to give farmers real -time agricultural da ta, smart suggestions and 
+availability of educational materials.  
+The collaboration diagram depicts the interaction of this system components to a request sent by 
+the farmer and provides the right response.  
+3.7.1 The elements of Collaboration Diagram:  
+PakFasal collaboration diagram comprises of the following major components.  
+Farmer (User)  
+The system involves the farmer who is the main player of the system and the one who 
+communicates with the PakFasal application via a smartphone. Among the things that farmers 
+can do, are viewing crop calendars, accessing tutorials, checking weather predict ions, monitoring 
+soil condition, making queries in relation to crops and browsing products available in the 
+marketplace.  
+The farmer is the one who initiates all interactions with the system using the mobile application.  
+Mobile Interface (Flutter Interface):  
+The PakFasal system is operated through the mobile application that primarily acts as a point of 
+contact between the farmers and the system. It was created with Flutter to offer a cross -platform 
+mobile application.  
+The functions of the application are as follows:  
+• Forwards user requests to the back -end services.  
+• Shows product facts and informational materials.  
+• Displays sensor data and weather prediction.  
+• It enables farmers to make queries either in text, voice, or picture.  
+• Shows recommendations that are created by the system.  
+The mobile app is connected to the back -end services via safe API requests.  
+---PAGE---
+Node.js / Cloud Services (Backend Server):  
+The back server handles interactions among mobile applications, databases, Internet of sensors 
+and artificial intelligence services. It manages business logic, request processing and 
+synchronization of data.  
+The major roles of the backend server are:  
+• Authentication/authorization of users.  
+• Processing farmer requests  
+• Controllability of sensor data retrieval.  
+• Getting weather information via APIs.  
+• Dealing with AI -generated query responses.  
+• Running of activities in the marketplace.  
+The backend server is the hub of control of the system.  
+IoT Sensor System:  
+The subsystem of the IoT gathers environmental data on the agricultural field. It is made up of 
+hardware equipment such as:  
+• Soil moisture sensors  
+• Soil pH sensors  
+• ESP32 or Arduino microcontrollers.  
+These sensors keep on checking the conditions of soils and relay sensor data to the cloud by 
+connecting through communication protocols like MQTT or HTTP . 
+The sensor data obtained is stored in the database and the system uses this data to come up with 
+irrigation and soil management related recommendations.  
+Weather API Service:  
+The weather information is significant in agricultural decision making. The PakFasal application 
+combines external weather API to get real -time weather forecasts like OpenWeatherMap.  
+The weather information that is accessed by the backend server includes:  
+• Temperature  
+• Humidity  
+• Rainfall probability  
+• Wind speed  
+Such information is sent to the mobile application, and farmers can see weather updates and get 
+farming recommendations depending on the weather conditions.  
+---PAGE---
+Firebase Cloud Database:  
+The PakFasal system relies on firebase services to synchronize real -time data and manage users.  
+The components of Firebase utilized in the system are:  
+• Firebase Authentication that handles user registration and login.  
+• Firebase Firestore can be used to store real -time data like sensor readings, user queries, 
+and notifications.  
+• Firebase storage of multimedia data in form of tutorial videos, images and documents.  
+Firebase is known to offer rapid access to data in real time and guarantees seamless 
+communication between the mobile app and cloud -based services.  
+ 
+MongoDB Database:  
+MongoDB is employed as the main database of structured and large -scale application 
+information. MongoDB is used to keep data on system content and AI modules.  
+The information stored in MongoDB comprises:  
+• Knowledge base in Agriculture.  
+• Crop disease information  
+• Historical farmer queries  
+• AI training datasets  
+MongoDB is a document -based  storage which is flexible and it enables easy storage of large data 
+sets needed to operate the PakFasal system.  
+RAG -Based AI System:  
+PakFasal system uses Retrieval Augmented Generation (RAG) framework to give smart 
+responses to queries of farmers. RAG system is performed by integrating a knowledge database 
+and a language model to generate an accurate response.  
+The workflow includes:  
+• The farmer makes a query by using the mobile application.  
+• The query is sent to the RAG system by the backend server.  
+• The RAG module gets access to appropriate agricultural knowledge stored in the 
+MongoDB.  
+• The retrieved information is pushed to a refined language model.  
+• The model results in a contextualized response.  
+• This is relayed to the server and forwarded to the mobile application.  
+---PAGE---
+• The method will make sure that the answers are made based on confirmed agricultural 
+knowledge and not generic text generation.  
+• Fine-Tuned Language Model  
+• The system incorporates a fine -tuned language model that enhances accuracy and 
+relevance of the responses that are given to farmers.  
+The agricultural data used to train the model is:  
+• Crop disease descriptions  
+• Fertilizer recommendations  
+• Soil management practices  
+• Irrigation techniques  
+• Weather dependent agricultural advice.  
+Fine-tuning enables the model to be specialized in agricultural knowledge and it generates more 
+accurate and relevant responses to farmers.  
+3.7.2 Collaboration Workflow  
+This activity of collaboration between system components is the following one:  
+1. The PakFasal mobile application is used by the farmer and the request is entered.  
+2. The request is forwarded by the mobile application to the backend server.  
+3. The server in the background takes the request and decides which system module to use 
+in addressing the request.  
+4. In the case of sensor monitoring request, the backend will go to Firebase to retrieve 
+sensor data.  
+5. In case the request deals with weather information, the backend gets real -time weather 
+information in the Weather API.  
+6. In case the farmer makes an agricultural inquiry, the request is sent to the RAG system by 
+the backend.  
+7. RAG system receives pertinent agricultural data based on MongoDB.  
+8. The language model fine -tuning system takes the information retrieved and produces a 
+response.  
+9. The mobile application sends responses through the backend server.  
+10. The results are presented to the farmer on the mobile application.  
+The PakFasal system through this collaborative process offers real time information to the 
+farmers, intelligent recommendations and interactive agricultural advice.  
+---PAGE---
+ 
+ 
+System Testing  
+4.1 Test Case Design  
+The following test case assures the major functionality of the PakFasal mobile application , 
+which are authentication, learning resources, voice interaction, weather services, IoT sensors, 
+marketplace communication, and submission of farmer queries.  
+Requirement 1 – User Registration  
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+01 User 
+Registration 
+(Valid Data)  User has 
+installed the 
+PakFasal 
+mobile app  Name: Ali, 
+Phone: 
+03001234567, 
+Password: 
+farmer123  1. Open 
+app 2. 
+Click 
+Register 
+3. Enter 
+valid 
+details 4. 
+Submit  User 
+account 
+successfully 
+created  Account 
+created 
+and 
+dashboard 
+opened  Pass 
+TC-
+02 User 
+Registration 
+(Invalid 
+Phone 
+Number)  User has 
+installed the 
+PakFasal 
+mobile app  Name: Ali, 
+Phone: 123, 
+Password: 
+farmer123  1. Open 
+app 2. 
+Click 
+Register 
+3. Enter 
+invalid 
+phone 
+number 
+4. Submit  System 
+should 
+display error 
+message  Error 
+message 
+shown for 
+invalid 
+phone 
+number  Pass 
+ 
+ 
+Requirement 2 – User Login  
+
+---PAGE---
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+03 User Login 
+(Correct 
+Credentials)  User must 
+already be 
+registered  Phone: 
+03001234567, 
+Password: 
+farmer123  1. Open 
+app 2. 
+Enter 
+credentials 
+3. Click 
+Login  User 
+successfully 
+logged into 
+dashboard  Dashboard 
+displayed  Pass 
+TC-
+04 User Login 
+(Incorrect 
+Password)  User must 
+already be 
+registered  Phone: 
+03001234567, 
+Password: 
+wrong123  1. Open 
+app 2. 
+Enter 
+incorrect 
+password 
+3. Click 
+Login  Login 
+should fail 
+and error 
+message 
+displayed  Error 
+message 
+shown  Pass 
+ 
+Requirement 3 – Access Educational Content  
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+05 Access 
+Tutorial 
+(Valid)  User must be 
+logged in  Wheat 
+cultivation 
+tutorial  1. Open 
+learning 
+section 2. 
+Select 
+tutorial  Educational 
+content 
+loads 
+correctly  Tutorial 
+video 
+displayed  Pass 
+TC-
+06 Access 
+Tutorial (No 
+Internet)  User logged in 
+but internet 
+disabled  Video 
+tutorial  1. Disable 
+internet 2. 
+Open 
+tutorial  Content 
+should not 
+load if not 
+cached  Video 
+fails to 
+load Fail 
+ 
+ 
+ 
+ 
+---PAGE---
+Requirement 4 – Voice -to-Text Input  
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+07 V oice Input 
+(Clear 
+Speech)  Microphone 
+permission 
+enabled  V oice: 
+“How to 
+grow 
+wheat?”  1. Tap 
+microphone 
+icon 2. Speak 
+query  V oice 
+converted 
+to text 
+correctly  Text 
+displayed 
+accurately  Pass 
+TC-
+08 V oice Input 
+(Noise 
+Environment)  Microphone 
+permission 
+enabled  V oice with 
+background 
+noise  1. Tap 
+microphone 
+icon 2. Speak 
+query in 
+noisy 
+environment  System 
+may fail 
+to 
+recognize 
+speech 
+correctly  Text 
+incorrectly 
+recognized  Fail 
+ 
+ 
+ 
+Requirement 5 – Weather Forecast Retrieval  
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test 
+Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+09 Weather Data 
+Retrieval 
+(Valid API)  Internet 
+connection 
+required  Location: 
+Lahore  1. Open 
+weather 
+module 2. 
+Fetch 
+weather 
+data Real-time 
+weather 
+displayed 
+correctly  Temperature 
+and forecast 
+shown  Pass 
+---PAGE---
+TC-
+10 Weather Data 
+Retrieval (No 
+Internet)  Internet 
+disabled  Location: 
+Lahore  1. Open 
+weather 
+module 2. 
+Attempt to 
+fetch data  System 
+should 
+display 
+connection 
+error  Weather data 
+not retrieved  Fail 
+ 
+ 
+Requirement 6 – IoT Sensor Data Display  
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+11 Sensor Data 
+Display 
+(Connected 
+Device)  Sensor device 
+connected to 
+system  Moisture: 
+45%, pH: 
+6.8 1. Open 
+sensor 
+dashboard 
+2. Retrieve 
+sensor data  Sensor 
+readings 
+displayed 
+accurately  Sensor 
+values 
+displayed  Pass 
+TC-
+12 Sensor Data 
+Display 
+(Device 
+Disconnected)  Sensor device 
+disconnected  Sensor data 
+unavailable  1. Open 
+sensor 
+dashboard 
+2. Retrieve 
+sensor data  System 
+should 
+display 
+connection 
+error  No 
+sensor 
+data 
+retrieved  Fail 
+ 
+ 
+ 
+ 
+ 
+Requirement 7 – Offline Content Access  
+---PAGE---
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test 
+Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+13 Offline 
+Content 
+Access 
+(Cached Data)  Content 
+previously 
+downloaded  Crop 
+calendar  1. Disable 
+internet 2. 
+Open 
+offline 
+section  Tutorials and 
+crop 
+calendars 
+load 
+successfully  Content 
+displayed 
+offline  Pass 
+TC-
+14 Offline 
+Content 
+Access (Not 
+Downloaded)  Content not 
+cached  Video 
+tutorial  1. Disable 
+internet 2. 
+Open 
+tutorial  Content 
+should not 
+load Content 
+fails to 
+load Fail 
+ 
+Requirement 8 – Marketplace Browsing  
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test 
+Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+15 Browse 
+Marketplace 
+Products  User logged in  Product 
+catalog  1. Open 
+marketplace 
+2. Browse 
+products  List of 
+seeds, 
+fertilizers, 
+pesticides 
+displayed  Products 
+displayed  Pass 
+TC-
+16 Marketplace 
+Load Failure  Internet 
+disabled  Product 
+catalog  1. Disable 
+internet 2. 
+Open 
+marketplace  Products 
+should not 
+load Marketplace 
+empty  Fail 
+ 
+Requirement 9 – Query Submission  
+---PAGE---
+Test 
+Case 
+ID Test 
+Description  Preconditions  Test Data  Steps to 
+Execute  Expected 
+Result  Actual 
+Result  Status  
+TC-
+17 Query 
+Submission 
+(Valid)  User logged 
+in Text 
+query: 
+“Crop 
+disease 
+problem”  1. Open 
+query 
+portal 2. 
+Submit 
+query  Query 
+successfully 
+stored and 
+sent to 
+expert  Query 
+stored 
+successfully  Pass 
+TC-
+18 Query 
+Submission 
+(Empty 
+Input)  User logged 
+in Empty 
+query  1. Open 
+query 
+portal 2. 
+Submit 
+empty 
+query  System 
+should 
+display 
+validation 
+error  Error 
+message 
+displayed  Pass 
+ 
+ 
+4.2 Unit, Integration and Acceptance Testing  
+To achieve the reliability and performance of the PakFasal system , various testing levels were 
+carried out such as Unit Testing, Integration Testing and User Acceptance Testing. These phases 
+of testing ensure that individual modules’ functioning is properly checked and when they are 
+attached to the system.  
+4.2.1 Unit Testing  
+Unit testing is done to ensure that individual modules of the system are functional. All modules 
+of PakFasal applications like authentication, voice interaction, weather services, IoT sensor 
+module and query portal are tested separately to confirm that the y behave correctly.  
+Unit testing is aimed at identifying mistakes during the initial development phases and 
+guaranteeing that every element carries out its assigned duty properly.  
+Modules Tested:  
+• User Authentication Module  
+• Educational Content Module  
+• V oice Recognition Module  
+• Weather API Module  
+• IoT Sensor Data Module  
+• Marketplace Module  
+• Query Handling Module  
+Unit Testing Table:  
+---PAGE---
+Module  Test Objective  Expected Result  Status  
+User 
+Authentication  Verify login and registration 
+functionality  User successfully logs in and 
+registers  Pass 
+Educational 
+Content  Verify tutorials and videos load 
+correctly  Content displayed without 
+errors  Pass 
+Voice Recognition  Verify voice input converts to text  V oice query converted to text  Pass 
+Weather API  Verify weather data retrieved 
+correctly  Weather forecast displayed  Pass 
+IoT Sensor Module  Verify sensor data retrieval  Soil moisture and pH displayed  Pass 
+Marketplace 
+Module  Verify product browsing 
+functionality  Product list displayed correctly  Pass 
+Query Module  Verify farmer query submission  Query stored and forwarded  Pass 
+ 
+4.2.2 Integration Testing:  
+The unit testing is followed by integration testing, which is carried out to make sure that the 
+various modules of the system are working properly. At PakFasal, several components are 
+interrelated and include the mobile application, backend database, and A PIs, plus IoT sensors.  
+This test is to maintain the fact that the flow of data between these modules is right, and the full 
+system would work without problems when all the parts are integrated.  
+Integrated Components:  
+• Flutter Mobile Application  
+• Firebase Backend Services  
+• Weather API Services  
+• V oice Recognition APIs  
+• IoT Sensor Devices  
+• Marketplace Database  
+Integration Testing Table  
+Integration Components  Test Objective  Expected Result  Status  
+Mobile App + Firebase  Verify user data storage  User data saved correctly  Pass 
+Mobile App + Weather 
+API Verify weather data retrieval  Weather forecast displayed  Pass 
+---PAGE---
+Mobile App + Voice API  Verify voice input 
+processing  V oice query converted 
+successfully  Pass 
+Mobile App + IoT 
+Sensors  Verify sensor data 
+transmission  Soil sensor readings displayed  Pass 
+Mobile App + 
+Marketplace  Verify product browsing  Marketplace products displayed  Pass 
+ 
+4.2.3 User Acceptance Testing (UAT)  
+User Acceptance Testing is undertaken to ascertain the system meets the needs of the end users. 
+The PakFasal system target users are the farmers that will communicate with the mobile 
+application to get agricultural information, sensor information, and marketpla ce services.  
+In this testing stage, the chosen users will work with the system in the actual world environment 
+so that the application could be user -friendly, stable, and helpful to farmers.  
+Acceptance Testing Table:  
+Scenario  Test Objective  Expected Result  Status  
+Farmer registration and 
+login  Verify farmers can access the 
+system  Farmer successfully logs 
+in Pass 
+Access agricultural 
+tutorials  Verify farmers can view learning 
+resources  Tutorials load successfully  Pass 
+Voice query submission  Verify illiterate farmers can use 
+voice input  V oice converted to text 
+correctly  Pass 
+Weather information 
+retrieval  Verify farmers receive weather 
+forecasts  Weather displayed 
+correctly  Pass 
+IoT sensor monitoring  Verify soil sensor readings 
+displayed  Sensor data shown 
+accurately  Pass 
+Marketplace browsing  Verify farmers can view products  Product catalog displayed  Pass 
+ 
+Conclusion of Testing:  
+The testing procedure proved that the PakFasal system  works properly according to all modules. 
+Unit testing was done to ensure that each individual component works properly, integration 
+testing was done to check that the modules communicated well, and user acceptance testing was 
+done to ascertain that the application is mee ting the needs of farmers. The system was shown to 
+be reliable in its work, has correct data retrieval and easy interaction with the user hence it can be 
+deployed in any actual farming setup.  
+ 
+---PAGE---
+Implementation  
+5.1 Work Breakdown Structure (WBS)  
+A Work Breakdown Structure (WBS) is a project broken down into small and manageable tasks 
+in a hierarchical manner. It facilitates the planning of the development, delegation of duties 
+among the team members and monitoring the progress of each aspect of th e project. The 
+PakFasal project has several stages of the development process which consists of engineering, 
+system design, mobile application development, backend integration, artificial intelligence 
+integration, IoT integration, testing, and deployment.  
+The initial stage of the project is on Requirement Engineering , which involves development of 
+the system requirements based on literature review, and analysis of the available agricultural 
+systems and knowledge of the farmers in Pakistan. Multilingual support, voice interactive, 
+weather information, IoT integration, and offl ine availability are considered as functional 
+requirements and non -functional requirements and recorded.  
+The second stage is System design  which designs the architecture of PakFasal system. In this 
+step, UML notations like case diagrams, activity diagrams, sequence diagrams, class diagrams, 
+database diagrams, and collaboration diagrams are developed to capture the system structure and 
+system component interactions among system compone nts. Mockups of user interfaces are also 
+done to make sure that the application is easy and simple to use by farmers.  
+The third stage will consist of Frontend Development , in which the mobile application interface 
+will be created with the Flutter framework. The interface is crafted in such a way that it has easy 
+navigation, big icons and supports multiple languages to enable farmers who have no or little 
+technical knowledg e to use it.  
+The fourth stage is Backend Development  which involves the use of Firebase to implement 
+cloud services. Firebase Firestore is employed to store user data and sensor data, whereas 
+Firebase Authentication is utilized to perform a secure login and registration.  
+The fifth step is Database Development  in which the database schema is developed to store 
+farmer profiles, crop data, sensor data, learning content, and farmer queries.  
+The 6th stage is NLP and V oice Interaction, where voice to text and text to voice capabilities are 
+installed to assist the illiterate / semi -literate farmers.  
+The seventh stage involves Artificial Intelligence Integration; a Retrieval Augmented 
+Generation (RAG) system and a fine -tuned language model  are adopted to deliver an 
+intelligent response to a query of a farmer.  
+The eighth step is IoT Sensor Integration , whereby the soil moisture and pH sensors are 
+attached to ESP32 microcontrollers, which measure the environment of agricultural fields.  
+The ninth stage involves System Integration,  which involves the integration of all modules of 
+the system such as mobile application, AI services, backend services, APIs, and IoT devices into 
+a system.  
+At last, the project passes to the Testing and Deployment stages, during which the system is 
+tested with the help of different testing methods and deployed to be used by farmers.  
+5.2 Team Roles and Responsibilities  
+The PakFasal project is developed by a team of three members. Each member contributes to 
+different tasks according to their assigned responsibilities defined in the project proposal.  
+Table 5.1 Individual Tasks  
+---PAGE---
+Team Member  Activities  
+Eman Fatima  
+Abdul Sami  
+Arslan Latif  Requirement Engineering  
+Arslan Latif  
+Eman Fatima  Design Phase  
+Abdul Sami  
+Eman Fatima  Frontend Development  
+Abdul Sami  
+Arslan Latif  Backend Development  
+Eman Fatima  
+Abdul Sami  
+Arslan Latif  Database Development  
+Abdul Sami  
+Eman Fatima  NLP Module Development  
+Abdul Sami  
+Arslan Latif  Machine Learning + IoT Sensor Integration  
+Abdul Sami  
+Arslan Latif  
+Eman Fatima  System Integration  
+Arslan Latif  
+Eman Fatima  Testing  
+Abdul Sami  
+Arslan Latif  Deployment  
+ 
+This distribution of responsibilities ensures that all team members actively contribute to different 
+aspects of the system development.  
+5.3 Tools and Technologies  
+The PakFasal system is implemented using modern software development tools, cloud services, 
+artificial intelligence frameworks, and IoT hardware components.  
+Table 5.2 Tools and Technologies  
+Category  Tools / Technologies  
+Mobile Development  Flutter (Dart), Android Studio, Visual Studio Code  
+Version Control  Git, GitHub  
+Backend & Cloud  Firebase Firestore, Firebase Authentication, Firebase Storage  
+APIs  Google Speech -to-Text API, Text-to-Speech API, 
+OpenWeatherMap API  
+Artificial Intelligence  Python, HuggingFace Transformers  
+---PAGE---
+RAG Framework  LangChain  
+Vector Database  FAISS / ChromaDB  
+Database  Firebase Firestore, MongoDB atlas  
+Language Models  TinyLlama or other open -source LLM  
+Machine Learning  PyTorch / TensorFlow  
+IoT Hardware  Soil Moisture Sensor, pH Sensor  
+Microcontroller  ESP32 / Arduino  
+Communication 
+Protocols  MQTT / HTTP  
+Offline Storage  SQLite / Hive  
+Testing Tools  Postman, Firebase Test Lab  
+Deployment Tools  APK Packaging, Firebase Console  
+These technologies enable the development of a smart agricultural platform that combines 
+mobile computing, cloud infrastructure, artificial intelligence, and IoT sensing.  
+ 
+5.4 Implementation Details  
+The PakFasal system is applied in the form of an interconnected smart agriculture platform, 
+consisting of mobile applications, cloud computing, artificial intelligence, and IoT devices 
+together and enables farmers to make improved agricultural choices.  
+ 
+Mobile Application Implementation:  
+The mobile application is built on the Flutter framework, the codes of which allow mobile 
+development across all platforms with a shared codebase. Flutter contains high performance and 
+reactive user interface and can be used in Android devices that are fre quently used by the 
+farmers.  
+The mobile app will have several modules that include:  
+• Registration and authentication of the user.  
+• Educational resources, educational articles.  
+• Crop calendar guidance  
+• Weather forecast display  
+• Visualization of IoT sensors data.  
+• Marketplace access  
+• Portal of query submission at Farmer.  
+The interface will be user -friendly and straightforward so that farmers can find it easy to navigate 
+the system without having to be highly digital.  
+Voice Interaction Module:  
+V oice interaction is facilitated by providing features of voice interaction with the help of Google 
+Speech -to-Text and Text -to-Speech APIs. The speech recognition system issues voice commands 
+that farmers can use to make a query that is converted into text . A text -to-speech feature can also 
+read out responses in the system.  
+This is especially beneficial to the farmers who might not be good readers and writers.  
+Cloud Implementation and Backend:  
+---PAGE---
+Firebase cloud services are used to implement the backend services of PakFasal. Firebase 
+Firestore is utilized as the main database to store the information about farmers, data about crops, 
+sensor readings, and records of queries.  
+Firebase Authentication is employed to offer secure log -in support by the use of either the phone 
+number or email authentication. Firebase storage is employed to save multi media files like 
+tutorial videos and images.  
+Such cloud services offer scalability, reliability and real time data synchronization between the 
+mobile application and the database.  
+IoT Sensor Integration:  
+The system has IoT gadgets that will monitor the soil condition in real time. ESP32 
+microcontrollers in agricultural fields have soil moisture sensors and pH sensors attached to 
+them.  The sensors constantly record the environmental parameters including the levels of soil 
+moisture and PH. These readings are sent to the cloud database using the MQTT or the HTTP 
+communication protocols by the ESP32 microcontroller.  
+The mobile app pulls the sensor data in the Firebase and presents it as graphs or dashboards so 
+that farmers can see the state of soil and make reasonable decisions regarding irrigation and the 
+use of fertilizers.  Weather Forecast Integration is the second category of economic services.  
+The OpenWeatherMap provides weather data via the API. The mobile application shows such 
+weather parameters as temperature, humidity, chances of rain, and speed of the wind.  
+The attribute enables the farmers to plan farming operations (planting, irrigation and harvesting) 
+depending on the weather.  
+AI Advisory Module:  
+The Retrieval Augmented Generation (RAG) with a fine -tuned language model is used to 
+employ an intelligent agricultural advisory module.  
+Agricultural documents like crop guide, agricultural manuals, government agricultural resource 
+and research articles are used to form a knowledge base. These documents are transformed into 
+vector embedding and stored as a vector database that can be either  FAISS or ChromaDB.  
+In case a farmer makes a query, the system carries out the following steps:  
+1. The query is transformed into a vector representation.  
+2. The most relevant agricultural documents are retrieved in the vector database.  
+3. The information retrieved is then forwarded to a language model, which is narrowly 
+focused.  
+4. The language model is trained with agricultural data to enhance its capability of 
+comprehending the language of the farm, and the model produces correct answers.  
+5. The reasoning capability of the language model together with the knowledge that it 
+retrieved is used as the final response. With this, the system will give sound and context -
+sensitive agricultural advice.  
+Response created is fed back to the mobile application and shown to the farmer. The text to 
+speech system can also be used to convert the response into speech.  
+Marketplace Module:  
+The marketplace module enables farmers to have direct access to the agricultural suppliers. The 
+application allows farmers to browse products including seeds, fertilizers, and pesticides and has 
+---PAGE---
+an opportunity to communicate with suppliers. This aspect minimizes the use of middlemen and 
+assists farmers to acquire farming products at reasonable prices.  
+Query Handling Portal:  
+The query portal enables the farmers to pose queries concerning crop diseases, irrigation issues 
+and methods of farming. Farmers can make queries either through text, voice or images.  
+The AI advisory module receives these queries or passes them to agricultural experts. Answers 
+are logged in a knowledge base in such a way that answers to similar questions should be made 
+more effective in future.  
+5.5 Pictures of Prototype / System.  
+This section contains the screenshots of the PakFasal mobile application prototype that illustrates 
+the key system functionality.  
+The following screens will also be depicted by the screenshots presented in the report:  
+1. Registration screen and login screen.  
+2. Farmer Dashboard  
+3. Educational Content Screen  
+4. Crop Calendar Interface  
+5. Weather Information Screen  
+6. Query Handling portal  
+7. IoT Sensor Data Dashboard  
+8. Marketplace Interface  
+Every screenshot will be supported with a short description of the purpose and functionality of 
+the interface.  
+5.6 Challenges During Implementation : 
+The implementation of the PakFasal system had several challenges that were faced. A primary 
+issue was to create a user interface that would be appropriate to the farmers who had low literacy 
+levels. This problem was resolved through making the interface si mple with the help of icons and 
+multilingualism as well as voice interaction.  
+The second issue  is the integration of the IoT sensors and the cloud infrastructure. To have stable 
+communication between ESP32 microcontrollers and Firebase, it was necessary to make network 
+protocols and data synchronization systems properly configured.  
+The offline functionality was also hard to deal with, since in most of the rural places in Pakistan, 
+there is erratic internet connectivity. In order to address this issue, the local storage systems were 
+introduced to allow access to important agricultural  content even in the absence of internet 
+connection.  
+The use of the RAG -based AI advisory module also was not without problems. Agricultural 
+datasets must be prepared by cleaning, preprocess, and formatting the data to be used in training. 
+Language models needed computation and attention to the parameters to  fine-tune.  
+The other challenge was how to incorporate the database of vectors with the language model to 
+provide a quick search of the relevant documents as well as the appropriate generation of 
+responses.  
+Nonetheless, these issues have been overcome as the PakFasal system has been fully deployed as 
+a complete platform, which combines mobile technology, artificial intelligence, and IoT sensing 
+to become a proponent of smart and sustainable agriculture.  
+---PAGE---
+References  
+ 
+[1
+]  "mKRISHI," [Online].  
+[2
+]  "Sensors," IoT-Based Smart Irrigation Systems: An Overview on the Recent Trends on 
+Sensors and IoT Systems for Irrigation in Precision Agriculture, vol. 20, no. 4, p. 48, 2020.  
+[3
+]  "European Journal of Agronomy," The DSSAT cropping system model, vol. 18, no. 3 -4, 
+pp. 235-265, 2003.  
+[4
+]  "Climate Services," Linking weather and climate information services (WCIS) to 
+Climate-Smart Agriculture (CSA) practices, vol. 36, 2025.  
+[5
+]  S. Agarwal, J. Grover, A. Kumar and M. Puri, "Visual Conversational Interfaces to 
+Empower Low -Literacy Users," in IFIP Conference in Human -Computer Interaction , 
+2013.  
+[6
+]  M. Kamal and T. A. Bablu, "Mobile Applications Empowering Smallholder Farmers: An 
+Analysis of the Impact on Agricultural Development," June 2023. [Online]. Available: 
+https://www.researchgate.net/publication/374164307_Mobile_Applications_Empoweri
+ng_Smallho lder_Farmers_An_Analysis_of_the_Impact_on_Agricultural_Development. 
+[Accessed 01 March 2026].  
+[7
+]  E. P. A. P. F. P. V. K. N. G. H. K. M. L. W. -t. Y. T. R. S. R. D. K. Patrick Lewis, "Retrieval -
+Augmented Generation for Knowledge -Intensive NLP Tasks".  
+[8
+]  F. W. T. Y. X. Q. R. W. Jinghao Deng, "Clustering -Aware Negative Sampling for 
+Unsupervised Sentence Representation," in Association for Computational Linguistics , 
+2023.  
+[9
+]  Y. X. X. G. K. J. J. P. Y. B. Y. D. J. S. M. W. H. W. Yunfan Gao, "Retrieval -Augmented 
+Generation for Large Language Models: A Survey," 18 Dec 2023. [Online]. Available: 
+https://arxiv.org/abs/2312.10997. [Accessed 01 March 2026].  
+[1
+0]  B. O. S. M. P. L. L. W. S. E. D. C. W. -t. Y. Vladimir Karpukhin, "Dense Passage Retrieval for 
+Open-Domain Question Answering," in Association for Computational Linguistics , 
+EMLNP, 2020.  
+---PAGE---
+[1
+1]  D. D. F. J. H. N. S. A. K. H. -T. C. A. J. T. B. L. B. Y. D. Y. L. H. L. H. S. Z. A. G. M. M. Y. H. M. K. 
+D. Romal Thoppilan, "LaMDA: Language Models for Dialog Applications," Cornell 
+University, 20 Jan 2022. [Online]. Available: https://arxiv.org/abs/2201. 08239. [Accessed 
+01 March 2026].  
+[1
+2]  J. Johnson, M. Douze and H. Jégou, "IEEE Xplore," Billion-Scale Similarity Search with 
+GPUs, vol. 7, no. 3.  
+ 
+ 
+ 
