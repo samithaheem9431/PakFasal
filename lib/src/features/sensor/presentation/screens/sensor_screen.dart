@@ -474,8 +474,8 @@ class _SensorScreenState extends State<SensorScreen>
       );
       fertilizerActions.add(
         isUrdu
-            ? 'مائیکرو نیوٹرینٹس (خصوصاً Zn/Fe) ضرورت کے مطابق دیں۔'
-            : 'Consider micronutrient correction (especially Zn/Fe) as needed.',
+            ? 'یوریا/ڈی اے پی ایک ساتھ زیادہ مقدار میں نہ دیں، چھوٹی قسطوں میں کھاد دیں۔'
+            : 'Avoid heavy one-time urea/DAP dose; apply fertilizers in split doses.',
       );
       riskNotes.add(
         isUrdu
@@ -503,8 +503,8 @@ class _SensorScreenState extends State<SensorScreen>
     );
     monitoringPlan.add(
       isUrdu
-          ? 'ہفتہ وار بنیاد پر کھیت کا visual inspection (leaf color/wilting) شامل کریں۔'
-          : 'Add a weekly visual field inspection (leaf color/wilting) to support sensor data.',
+          ? 'اگر اگلی دو ریڈنگز میں بہتری نہ آئے تو کھاد/آبپاشی پلان دوبارہ ایڈجسٹ کریں۔'
+          : 'If the next two readings do not improve, adjust irrigation/fertilizer plan again.',
     );
 
     final priority = _calculatePriority(
