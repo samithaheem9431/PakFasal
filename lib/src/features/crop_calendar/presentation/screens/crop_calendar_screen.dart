@@ -12,7 +12,7 @@ class CropCalendarScreen extends StatefulWidget {
 
 class _CropCalendarScreenState extends State<CropCalendarScreen> {
   static const Map<String, List<_CropActivity>> _cropDataEn = {
-    'Wheat': const [
+    'Wheat': [
       _CropActivity(
         stage: 'Sowing',
         month: 'Oct-Nov',
@@ -34,7 +34,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
         description: 'Harvest crop when grains are mature.',
       ),
     ],
-    'Rice': const [
+    'Rice': [
       _CropActivity(
         stage: 'Sowing',
         month: 'May-Jun',
@@ -51,7 +51,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
         description: 'Harvest when panicles turn golden.',
       ),
     ],
-    'Cotton': const [
+    'Cotton': [
       _CropActivity(
         stage: 'Sowing',
         month: 'Apr-May',

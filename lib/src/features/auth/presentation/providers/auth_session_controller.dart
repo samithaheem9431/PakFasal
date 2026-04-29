@@ -28,11 +28,13 @@ class AuthSessionController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   StreamSubscription<User?>? _authStateSubscription;
   User? _user;
+  bool _isGuestUser = false;
   AuthSessionStatus _status = AuthSessionStatus.unknown;
   String? _lastError;
 
   User? get currentUser => _user ?? _auth.currentUser;
-  bool get isSignedIn => currentUser != null;
+  bool get isSignedIn => currentUser != null || _isGuestUser;
+  bool get isGuestUser => _isGuestUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   AuthSessionStatus get status => _status;
   String? get lastError => _lastError;
@@ -51,6 +53,9 @@ class AuthSessionController extends ChangeNotifier {
       email: email.trim(),
       password: password,
     ),
+    onSuccess: () {
+      _isGuestUser = false;
+    },
   );
 
   Future<String?> registerWithEmail({
@@ -67,7 +72,18 @@ class AuthSessionController extends ChangeNotifier {
       await credentials.user?.reload();
       _user = _auth.currentUser;
     },
+    onSuccess: () {
+      _isGuestUser = false;
+    },
   );
+
+  void continueAsGuest() {
+    _user = null;
+    _isGuestUser = true;
+    _lastError = null;
+    _status = AuthSessionStatus.authenticated;
+    notifyListeners();
+  }
 
   Future<String?> sendPasswordResetEmail(String email) => _performAuthAction(
     action: () => _auth.sendPasswordResetEmail(email: email.trim()),
@@ -93,6 +109,7 @@ class AuthSessionController extends ChangeNotifier {
       await _auth.signOut();
 
       _user = null;
+      _isGuestUser = false;
       _status = AuthSessionStatus.unauthenticated;
       notifyListeners();
     } on FirebaseAuthException catch (e) {
@@ -111,6 +128,7 @@ class AuthSessionController extends ChangeNotifier {
   Future<String?> _performAuthAction({
     required Future<void> Function() action,
     bool useLoadingState = true,
+    VoidCallback? onSuccess,
   }) async {
     try {
       if (useLoadingState) {
@@ -120,6 +138,7 @@ class AuthSessionController extends ChangeNotifier {
       }
 
       await action();
+      onSuccess?.call();
       _lastError = null;
       return null;
     } on FirebaseAuthException catch (e) {

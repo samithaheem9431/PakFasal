@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -226,7 +224,7 @@ class _SplashScreenState extends State<SplashScreen>
                     gradient: LinearGradient(
                       colors: [
                         Colors.transparent,
-                        _primaryNeon.withOpacity(0.15),
+                        _primaryNeon.withValues(alpha: 0.15),
                         Colors.transparent
                       ],
                     ),
@@ -250,8 +248,8 @@ class _SplashScreenState extends State<SplashScreen>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        _primaryNeon.withOpacity(0.18),
-                        _primaryNeon.withOpacity(0.07),
+                        _primaryNeon.withValues(alpha: 0.18),
+                        _primaryNeon.withValues(alpha: 0.07),
                         Colors.transparent,
                       ],
                       stops: const [0.0, 0.4, 0.7],
@@ -287,8 +285,8 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 42,
                 decoration: BoxDecoration(
                   border: Border(
-                    top: BorderSide(color: _primaryNeon.withOpacity(0.15)),
-                    right: BorderSide(color: _primaryNeon.withOpacity(0.15)),
+                    top: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
+                    right: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
                   ),
                   borderRadius: const BorderRadius.only(topRight: Radius.circular(6)),
                 ),
@@ -305,8 +303,8 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 42,
                 decoration: BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(color: _primaryNeon.withOpacity(0.15)),
-                    left: BorderSide(color: _primaryNeon.withOpacity(0.15)),
+                    bottom: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
+                    left: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
                   ),
                   borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(6)),
                 ),
@@ -325,7 +323,7 @@ class _SplashScreenState extends State<SplashScreen>
                 size: Size(size.width, 110),
                 painter: _WheatPainter(
                   sway: _wheatSway.value,
-                  color: _primaryNeon.withOpacity(0.13),
+                  color: _primaryNeon.withValues(alpha: 0.13),
                 ),
               ),
             ),
@@ -359,7 +357,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 100 * (1.0 + _ring1.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _primaryNeon.withOpacity(0.25)),
+                                    border: Border.all(color: _primaryNeon.withValues(alpha: 0.25)),
                                   ),
                                 ),
                               ),
@@ -374,7 +372,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 100 * (1.0 + _ring2.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _primaryNeon.withOpacity(0.15)),
+                                    border: Border.all(color: _primaryNeon.withValues(alpha: 0.15)),
                                   ),
                                 ),
                               ),
@@ -389,7 +387,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 100 * (1.0 + _ring3.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _primaryNeon.withOpacity(0.08)),
+                                    border: Border.all(color: _primaryNeon.withValues(alpha: 0.08)),
                                   ),
                                 ),
                               ),
@@ -405,10 +403,10 @@ class _SplashScreenState extends State<SplashScreen>
                                   end: Alignment.bottomRight,
                                   colors: [Color(0xFF1A3D1D), Color(0xFF0F2612)],
                                 ),
-                                border: Border.all(color: _primaryNeon.withOpacity(0.3)),
+                                border: Border.all(color: _primaryNeon.withValues(alpha: 0.3)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.6),
+                                    color: Colors.black.withValues(alpha: 0.6),
                                     blurRadius: 40,
                                     offset: const Offset(0, 8),
                                   ),
@@ -425,7 +423,7 @@ class _SplashScreenState extends State<SplashScreen>
                                           gradient: RadialGradient(
                                             center: const Alignment(-0.3, -0.4),
                                             colors: [
-                                              _primaryNeon.withOpacity(0.15),
+                                              _primaryNeon.withValues(alpha: 0.15),
                                               Colors.transparent
                                             ],
                                             stops: const [0.0, 0.6],
@@ -466,7 +464,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     color: const Color(0xFFF9D61C),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFFF9D61C).withOpacity(0.6 * _dotsController.value),
+                                        color: const Color(0xFFF9D61C).withValues(alpha: 0.6 * _dotsController.value),
                                         blurRadius: 10,
                                       ),
                                     ],
@@ -499,7 +497,7 @@ class _SplashScreenState extends State<SplashScreen>
                             letterSpacing: 2,
                             color: const Color(0xFFE8F5E9),
                             shadows: [
-                              Shadow(color: _primaryNeon.withOpacity(0.35), blurRadius: 30)
+                              Shadow(color: _primaryNeon.withValues(alpha: 0.35), blurRadius: 30)
                             ],
                           ),
                           children: [
@@ -531,7 +529,7 @@ class _SplashScreenState extends State<SplashScreen>
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w300,
-                          color: const Color(0xFFA0D2A0).withOpacity(0.75),
+                          color: const Color(0xFFA0D2A0).withValues(alpha: 0.75),
                           letterSpacing: 3,
                         ),
                       ),
@@ -556,7 +554,7 @@ class _SplashScreenState extends State<SplashScreen>
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              _primaryNeon.withOpacity(0.5),
+                              _primaryNeon.withValues(alpha: 0.5),
                               Colors.transparent
                             ],
                           ),
@@ -587,7 +585,7 @@ class _SplashScreenState extends State<SplashScreen>
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 10,
-                color: _primaryNeon.withOpacity(0.35),
+                color: _primaryNeon.withValues(alpha: 0.35),
                 letterSpacing: 1.5,
                 fontWeight: FontWeight.w500,
               ),
@@ -625,7 +623,7 @@ class _ParticlePainter extends CustomPainter {
       final currentOpacity = currentY < 0.1 ? (currentY / 0.1) * p.opacity : p.opacity;
 
       final paint = Paint()
-        ..color = color.withOpacity(currentOpacity < 0 ? 0 : currentOpacity)
+        ..color = color.withValues(alpha: currentOpacity < 0 ? 0 : currentOpacity)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(
@@ -671,7 +669,7 @@ class _AnimatedDots extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 3.5),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color.withOpacity(
+                color: color.withValues(alpha: 
                   0.4 + 0.5 * ((anim.value.abs()) / 7),
                 ),
               ),
@@ -695,11 +693,11 @@ class _ShimmerPainter extends CustomPainter {
     final paint = Paint()
       ..shader = LinearGradient(
         colors: [
-          Colors.white.withOpacity(0.0),
-          Colors.white.withOpacity(0.06),
-          Colors.white.withOpacity(0.12),
-          Colors.white.withOpacity(0.06),
-          Colors.white.withOpacity(0.0),
+          Colors.white.withValues(alpha: 0.0),
+          Colors.white.withValues(alpha: 0.06),
+          Colors.white.withValues(alpha: 0.12),
+          Colors.white.withValues(alpha: 0.06),
+          Colors.white.withValues(alpha: 0.0),
         ],
         stops: const [0.0, 0.48, 0.5, 0.52, 1.0],
       ).createShader(

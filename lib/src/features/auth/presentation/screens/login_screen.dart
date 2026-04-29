@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive/hive.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
@@ -29,9 +32,20 @@ class _LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<_LoginView>
     with SingleTickerProviderStateMixin {
+  static const String _rememberMeKey = 'auth_remember_me';
+  static const String _biometricAutofillKey = 'auth_biometric_autofill';
+  static const String _legacyRememberedEmailKey = 'auth_remembered_email';
+  static const String _legacyRememberedPasswordKey = 'auth_remembered_password';
+  static const String _secureEmailKey = 'secure_auth_remembered_email';
+  static const String _securePasswordKey = 'secure_auth_remembered_password';
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final LocalAuthentication _localAuth = LocalAuthentication();
+  bool _rememberMe = false;
+  bool _requireBiometricForAutofill = true;
 
   late final AnimationController _entryController;
   late final Animation<double> _fadeHeader;
@@ -63,6 +77,124 @@ class _LoginViewState extends State<_LoginView>
     ));
 
     _entryController.forward();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final preferences = Hive.box('app_preferences');
+    final rememberMe =
+        preferences.get(_rememberMeKey, defaultValue: false) as bool;
+    final requireBiometric = preferences.get(
+      _biometricAutofillKey,
+      defaultValue: true,
+    ) as bool;
+    final legacyEmail =
+        preferences.get(_legacyRememberedEmailKey, defaultValue: '') as String;
+    // Safety cleanup for older versions that stored plain-text credentials in Hive.
+    await preferences.delete(_legacyRememberedEmailKey);
+    await preferences.delete(_legacyRememberedPasswordKey);
+
+    if (legacyEmail.isNotEmpty) {
+      await _secureStorage.write(key: _secureEmailKey, value: legacyEmail);
+    }
+
+    final email = await _secureStorage.read(key: _secureEmailKey) ?? '';
+    final savedPassword = await _secureStorage.read(key: _securePasswordKey) ?? '';
+
+    var shouldAutofillPassword = !requireBiometric;
+    if (rememberMe && requireBiometric && savedPassword.isNotEmpty) {
+      shouldAutofillPassword = await _authenticateBeforeAutofill();
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _rememberMe = rememberMe;
+      _requireBiometricForAutofill = rememberMe ? requireBiometric : false;
+      if (_rememberMe) {
+        _emailController.text = email;
+        if (shouldAutofillPassword) {
+          _passwordController.text = savedPassword;
+        }
+      }
+    });
+
+    if (rememberMe &&
+        requireBiometric &&
+        shouldAutofillPassword &&
+        email.isNotEmpty &&
+        savedPassword.isNotEmpty &&
+        mounted) {
+      _autoLoginWithRememberedCredentials();
+    }
+  }
+
+  Future<void> _persistRememberedCredentials() async {
+    final preferences = Hive.box('app_preferences');
+    await preferences.put(_rememberMeKey, _rememberMe);
+    if (_rememberMe) {
+      await preferences.put(
+        _biometricAutofillKey,
+        _requireBiometricForAutofill,
+      );
+      await _secureStorage.write(
+        key: _secureEmailKey,
+        value: _emailController.text.trim(),
+      );
+      await _secureStorage.write(
+        key: _securePasswordKey,
+        value: _passwordController.text,
+      );
+      return;
+    }
+    await preferences.put(_biometricAutofillKey, false);
+    await _secureStorage.delete(key: _secureEmailKey);
+    await _secureStorage.delete(key: _securePasswordKey);
+  }
+
+  Future<bool> _authenticateBeforeAutofill() async {
+    try {
+      final supported = await _localAuth.isDeviceSupported();
+      if (!supported) {
+        return true;
+      }
+      return _localAuth.authenticate(
+        localizedReason: 'Authenticate to fill your saved login details',
+        options: const AuthenticationOptions(
+          // Allow PIN/pattern fallback if biometrics are not enrolled.
+          biometricOnly: false,
+          stickyAuth: true,
+        ),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _autoLoginWithRememberedCredentials() async {
+    if (!_formKey.currentState!.validate()) return;
+    final form = context.read<AuthFormProvider>();
+    final session = context.read<AuthSessionController>();
+    final l10n = AppLocalizations.of(context);
+
+    form.setLoading(true);
+    final err = await session.signInWithEmail(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+    form.setLoading(false);
+    if (!mounted) return;
+    if (err != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.t(err)),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
   }
 
   @override
@@ -99,6 +231,13 @@ class _LoginViewState extends State<_LoginView>
       );
       return;
     }
+    await _persistRememberedCredentials();
+    if (!context.mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
+  }
+
+  void _continueAsGuest(BuildContext context, AuthSessionController session) {
+    session.continueAsGuest();
     Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
   }
 
@@ -290,6 +429,8 @@ class _LoginViewState extends State<_LoginView>
                                           TextInputType.emailAddress,
                                           textInputAction:
                                           TextInputAction.next,
+                                          autocorrect: false,
+                                          enableSuggestions: false,
                                           decoration: InputDecoration(
                                             hintText: l10n.t('emailHint'),
                                             prefixIcon: const Icon(
@@ -316,6 +457,8 @@ class _LoginViewState extends State<_LoginView>
                                           obscureText: form.obscurePassword,
                                           textInputAction:
                                           TextInputAction.done,
+                                          autocorrect: false,
+                                          enableSuggestions: false,
                                           onFieldSubmitted: (_) => _submit(
                                             context,
                                             form,
@@ -345,6 +488,72 @@ class _LoginViewState extends State<_LoginView>
                                             }
                                             return null;
                                           },
+                                        ),
+
+                                        const SizedBox(height: 8),
+                                        CheckboxListTile(
+                                          value: _rememberMe,
+                                          onChanged: form.isLoading
+                                              ? null
+                                              : (value) {
+                                                  setState(() {
+                                                    _rememberMe = value ?? false;
+                                                    if (!_rememberMe) {
+                                                      _requireBiometricForAutofill =
+                                                          false;
+                                                    }
+                                                  });
+                                                  if (!(value ?? false)) {
+                                                    _persistRememberedCredentials();
+                                                  }
+                                                },
+                                          dense: true,
+                                          controlAffinity:
+                                              ListTileControlAffinity.leading,
+                                          contentPadding: EdgeInsets.zero,
+                                          activeColor: AppTheme.primaryGreen,
+                                          title: Text(
+                                            l10n.t('rememberMe'),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        SwitchListTile(
+                                          value: _requireBiometricForAutofill,
+                                          onChanged: form.isLoading || !_rememberMe
+                                              ? null
+                                              : (value) {
+                                                  setState(() {
+                                                    _requireBiometricForAutofill =
+                                                        value;
+                                                  });
+                                                },
+                                          dense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          activeColor: AppTheme.primaryGreen,
+                                          title: Text(
+                                            l10n.t('requireBiometricAutofill'),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 12,
+                                            right: 12,
+                                            bottom: 4,
+                                          ),
+                                          child: Text(
+                                            l10n.t('rememberMeHint'),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                          ),
                                         ),
 
                                         // Forgot password
@@ -439,6 +648,25 @@ class _LoginViewState extends State<_LoginView>
                                             l10n.t('signup'),
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        TextButton(
+                                          onPressed: form.isLoading
+                                              ? null
+                                              : () => _continueAsGuest(
+                                                    context,
+                                                    session,
+                                                  ),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                AppTheme.primaryGreen,
+                                          ),
+                                          child: Text(
+                                            l10n.t('continueAsGuest'),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
                                       ],

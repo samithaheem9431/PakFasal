@@ -19,15 +19,11 @@ class DashboardTile extends StatefulWidget {
 class _DashboardTileState extends State<DashboardTile> {
   bool _pressed = false;
 
-  // ── Green palette ────────────────────────────────────────────────────────
-  static const _forestGreen   = Color(0xFF2E7D32);
-  static const _lightGreen    = Color(0xFFE8F5E9);
-  static const _midGreen      = Color(0xFFC8E6C9);
-  static const _pressedGreen  = Color(0xFFD0EDD1);
-  // ────────────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final baseSurface = scheme.surfaceContainerHighest;
+    final pressedSurface = scheme.surfaceContainerHigh;
     return AnimatedScale(
       scale: _pressed ? 0.96 : 1.0,
       duration: const Duration(milliseconds: 120),
@@ -36,16 +32,17 @@ class _DashboardTileState extends State<DashboardTile> {
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          // Pressed: slightly deeper green tint; default: white with green border
-          color: _pressed ? _pressedGreen : Colors.white,
+          color: _pressed ? pressedSurface : baseSurface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: _pressed ? _forestGreen.withValues(alpha: 0.35) : _midGreen,
+            color: _pressed
+                ? scheme.primary.withValues(alpha: 0.35)
+                : scheme.outlineVariant,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: _forestGreen.withValues(alpha: _pressed ? 0.04 : 0.08),
+              color: scheme.shadow.withValues(alpha: _pressed ? 0.06 : 0.12),
               blurRadius: _pressed ? 4 : 10,
               offset: Offset(0, _pressed ? 1 : 4),
             ),
@@ -55,8 +52,8 @@ class _DashboardTileState extends State<DashboardTile> {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(18),
-            splashColor: _lightGreen,
-            highlightColor: _lightGreen.withValues(alpha: 0.6),
+            splashColor: scheme.primary.withValues(alpha: 0.12),
+            highlightColor: scheme.primary.withValues(alpha: 0.16),
             onTap: widget.onTap,
             onTapDown: (_) => setState(() => _pressed = true),
             onTapCancel: () => setState(() => _pressed = false),
@@ -74,15 +71,21 @@ class _DashboardTileState extends State<DashboardTile> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: _pressed
-                            ? [_midGreen, _lightGreen]
-                            : [_lightGreen, _lightGreen],
+                            ? [
+                                scheme.primaryContainer,
+                                scheme.secondaryContainer,
+                              ]
+                            : [
+                                scheme.secondaryContainer,
+                                scheme.secondaryContainer,
+                              ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: _forestGreen.withValues(alpha: 0.15),
+                          color: scheme.shadow.withValues(alpha: 0.15),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -91,7 +94,7 @@ class _DashboardTileState extends State<DashboardTile> {
                     child: Icon(
                       widget.icon,
                       size: 22,
-                      color: _forestGreen,
+                      color: scheme.primary,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -107,8 +110,8 @@ class _DashboardTileState extends State<DashboardTile> {
                         fontSize: 13,
                         letterSpacing: 0.2,
                         color: _pressed
-                            ? _forestGreen
-                            : const Color(0xFF1B5E20),
+                            ? scheme.primary
+                            : scheme.onSurface,
                       ),
                     ),
                   ),

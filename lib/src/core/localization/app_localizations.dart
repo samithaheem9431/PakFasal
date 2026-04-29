@@ -34,6 +34,10 @@ class AppLocalizations {
       'phone': 'Phone (Optional)',
       'phoneHint': '+92 300 0000000',
       'forgotPassword': 'Forgot Password?',
+      'rememberMe': 'Remember Me',
+      'requireBiometricAutofill': 'Require biometric unlock for autofill',
+      'rememberMeHint':
+          'Credentials are encrypted on this device. Biometric unlock may be required.',
       'resetPassword': 'Reset Password',
       'resetPasswordHint':
           'Enter your email address and we will send you a password reset link.',
@@ -91,6 +95,18 @@ class AppLocalizations {
       'send': 'Send',
       'typeMessage': 'Type your question...',
       'listening': 'Listening...',
+      'voiceInputUnavailable':
+          'Voice input is unavailable. Please allow microphone permission.',
+      'voicePermissionDenied':
+          'Microphone permission is denied. Enable it from app settings.',
+      'voiceServiceUnavailable':
+          'Speech service is unavailable on this device. Please install/update Google Speech services.',
+      'voiceInputStartFailed':
+          'Could not start voice input. Please try again.',
+      'voiceTapToSpeak': 'Tap mic to speak',
+      'voiceListeningNow': 'Listening... speak now',
+      'voiceProcessing': 'Processing voice input...',
+      'openSettings': 'Open Settings',
       'good': 'Good',
       'moderate': 'Moderate',
       'bad': 'Bad',
@@ -143,6 +159,7 @@ class AppLocalizations {
       'sensorRecPhSuitable': 'pH is suitable for',
       'splashTagline': 'Smart farming for Pakistan',
       'authSubtitle': 'Sign in to continue',
+      'continueAsGuest': 'Continue as Guest',
       'authSignOut': 'Sign out',
       'authLoggingIn': 'Signing in...',
       'authCreatingAccount': 'Creating account...',
@@ -179,6 +196,15 @@ class AppLocalizations {
           'Use approved pesticide early morning and monitor weekly.',
       'aiPendingResponse':
           'Thanks! AI response will be connected in backend integration.',
+      'aiHistory': 'History',
+      'aiNewChat': 'New chat',
+      'aiNoMessagesTitle': 'Start your first AI chat',
+      'aiNoMessagesSubtitle':
+          'Ask about crops, pests, weather, or fertilizer recommendations.',
+      'aiAssistantLabel': 'PakFasal AI',
+      'aiYouLabel': 'You',
+      'aiHistoryLoaded': 'Chat history loaded',
+      'aiTyping': 'AI is typing...',
       'skip': 'Skip',
       'next': 'Next',
       'getStarted': 'Get Started',
@@ -207,6 +233,10 @@ class AppLocalizations {
       'phone': 'فون (اختیاری)',
       'phoneHint': '+92 300 0000000',
       'forgotPassword': 'پاس ورڈ بھول گئے؟',
+      'rememberMe': 'مجھے یاد رکھیں',
+      'requireBiometricAutofill': 'آٹو فل کے لیے بایومیٹرک تصدیق لازمی کریں',
+      'rememberMeHint':
+          'لاگ اِن معلومات اس ڈیوائس پر خفیہ انداز میں محفوظ ہوتی ہیں اور بایومیٹرک تصدیق درکار ہو سکتی ہے۔',
       'resetPassword': 'پاس ورڈ ری سیٹ کریں',
       'resetPasswordHint':
           'اپنا ای میل درج کریں، ہم آپ کو پاس ورڈ ری سیٹ لنک بھیجیں گے۔',
@@ -264,6 +294,18 @@ class AppLocalizations {
       'send': 'بھیجیں',
       'typeMessage': 'اپنا سوال لکھیں...',
       'listening': 'سن رہا ہے...',
+      'voiceInputUnavailable':
+          'آواز سے لکھنے کی سہولت دستیاب نہیں۔ براہ کرم مائیکروفون کی اجازت دیں۔',
+      'voicePermissionDenied':
+          'مائیکروفون کی اجازت نہیں دی گئی۔ براہ کرم ایپ سیٹنگز سے اجازت دیں۔',
+      'voiceServiceUnavailable':
+          'اس ڈیوائس پر اسپیچ سروس دستیاب نہیں۔ براہ کرم گوگل اسپیچ سروس اپڈیٹ/انسٹال کریں۔',
+      'voiceInputStartFailed':
+          'وائس ان پٹ شروع نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
+      'voiceTapToSpeak': 'بولنے کے لیے مائیک دبائیں',
+      'voiceListeningNow': 'سن رہا ہے... اب بولیں',
+      'voiceProcessing': 'آواز کو متن میں بدلا جا رہا ہے...',
+      'openSettings': 'سیٹنگز کھولیں',
       'good': 'اچھا',
       'moderate': 'درمیانہ',
       'bad': 'خراب',
@@ -318,6 +360,7 @@ class AppLocalizations {
       'sensorRecPhSuitable': 'پی ایچ موزوں ہے برائے',
       'splashTagline': 'پاکستان کے لیے ذہین کھیت باڑی',
       'authSubtitle': 'جاری رکھنے کے لیے لاگ اِن کریں',
+      'continueAsGuest': 'مہمان کے طور پر جاری رکھیں',
       'authSignOut': 'لاگ آؤٹ',
       'authLoggingIn': 'لاگ اِن ہو رہا ہے...',
       'authCreatingAccount': 'اکاؤنٹ بنایا جا رہا ہے...',
@@ -354,6 +397,15 @@ class AppLocalizations {
           'منظور شدہ اسپرے صبح سویرے کریں اور ہفتہ وار نگرانی کریں۔',
       'aiPendingResponse':
           'شکریہ! اے آئی جواب بیک اینڈ انٹیگریشن کے بعد دستیاب ہوگا۔',
+      'aiHistory': 'ہسٹری',
+      'aiNewChat': 'نئی چیٹ',
+      'aiNoMessagesTitle': 'اپنی پہلی اے آئی چیٹ شروع کریں',
+      'aiNoMessagesSubtitle':
+          'فصل، کیڑے، موسم یا کھاد کے بارے میں سوال پوچھیں۔',
+      'aiAssistantLabel': 'پاک فصل اے آئی',
+      'aiYouLabel': 'آپ',
+      'aiHistoryLoaded': 'چیٹ ہسٹری لوڈ ہوگئی',
+      'aiTyping': 'اے آئی ٹائپ کر رہا ہے...',
       'skip': 'اسکپ',
       'next': 'اگلا',
       'getStarted': 'شروع کریں',

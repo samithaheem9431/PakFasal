@@ -118,10 +118,11 @@ class _TopLocationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF2E7D32),
+        color: scheme.primary,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -280,10 +281,11 @@ class _HourlyForecastStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -314,9 +316,9 @@ class _HourlyForecastStrip extends StatelessWidget {
                     children: [
                       Text(
                         label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Colors.black54,
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -352,9 +354,10 @@ class _DailyForecastStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -395,9 +398,9 @@ class _DailyForecastStrip extends StatelessWidget {
                     children: [
                       Text(
                         dayLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Colors.black54,
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 4),

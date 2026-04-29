@@ -30,8 +30,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   // ── Green palette constants ──────────────────────────────────────────────
   static const _forestGreen = Color(0xFF2E7D32);
   static const _lightGreen = Color(0xFFE8F5E9);
-  static const _midGreen = Color(0xFFC8E6C9);
-  static const _surfaceGreen = Color(0xFFF1FBF2); // page background
   // ────────────────────────────────────────────────────────────────────────
 
   @override
@@ -74,10 +72,28 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   void _openNotificationsPanel(AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final sheetColor = isDark
+        ? Color.alphaBlend(Colors.white.withValues(alpha: 0.04), scheme.surface)
+        : Colors.white;
+    final tileColor = isDark
+        ? Color.alphaBlend(
+            _forestGreen.withValues(alpha: 0.28),
+            scheme.surfaceContainerHighest,
+          )
+        : scheme.surfaceContainerLow;
+    final iconBgColor = isDark
+        ? _forestGreen.withValues(alpha: 0.40)
+        : _lightGreen;
+    final titleColor = isDark ? scheme.onSurface : _forestGreen;
+    final textColor = isDark ? scheme.onSurface : scheme.onSurfaceVariant;
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: sheetColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -96,28 +112,47 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               children: [
                 Text(
                   l10n.t('notifications'),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: _forestGreen,
+                    color: titleColor,
                   ),
                 ),
                 const SizedBox(height: 8),
                 ...items.map(
-                  (item) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: _lightGreen,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.notifications_active_outlined,
-                        color: _forestGreen,
-                        size: 18,
+                  (item) => Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: tileColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: _forestGreen.withValues(alpha: isDark ? 0.50 : 0.18),
                       ),
                     ),
-                    title: Text(item),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 2,
+                      ),
+                      leading: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: iconBgColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.notifications_active_outlined,
+                          color: isDark ? Colors.white : _forestGreen,
+                          size: 18,
+                        ),
+                      ),
+                      title: Text(
+                        item,
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -159,9 +194,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     required AppLocalizations l10n,
   }) {
     final displayName = _displayNameFor(auth);
+    final scheme = Theme.of(context).colorScheme;
     return Drawer(
       width: 295,
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
@@ -172,8 +208,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [_lightGreen, _midGreen],
+                  gradient: LinearGradient(
+                    colors: [
+                      scheme.primaryContainer,
+                      scheme.secondaryContainer,
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -183,7 +222,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   children: [
                     CircleAvatar(
                       radius: 22,
-                      backgroundColor: _forestGreen,
+                      backgroundColor: scheme.primary,
                       child: Text(
                         displayName.isNotEmpty
                             ? displayName[0].toUpperCase()
@@ -202,16 +241,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         children: [
                           Text(
                             displayName,
-                            style: const TextStyle(
-                              color: _forestGreen,
+                            style: TextStyle(
+                              color: scheme.primary,
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'PakFasal Farmer',
                             style: TextStyle(
-                              color: Color(0xFF388E3C),
+                              color: scheme.primary.withValues(alpha: 0.8),
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
@@ -223,7 +262,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Divider(color: Color(0xFFE8F5E9)),
+              Divider(color: scheme.outlineVariant),
               // ── Dark mode toggle ───────────────────────────────────────
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -238,7 +277,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 secondary: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: _lightGreen,
+                    color: scheme.secondaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -257,7 +296,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: _lightGreen,
+                    color: scheme.secondaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -276,7 +315,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _lightGreen,
+                    color: scheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -297,7 +336,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               // ── Sign out ───────────────────────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEE),
+                  color: scheme.errorContainer.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
@@ -308,8 +347,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   ),
                   title: Text(
                     l10n.t('authSignOut'),
-                    style: const TextStyle(
-                      color: Colors.redAccent,
+                    style: TextStyle(
+                      color: scheme.error,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -338,11 +377,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final auth = context.read<AuthSessionController>();
     final themeController = context.watch<ThemeController>();
     final displayName = _displayNameFor(auth);
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       key: _scaffoldKey,
-      // ── Green page background ──────────────────────────────────────────
-      backgroundColor: _surfaceGreen,
+      backgroundColor: scheme.surface,
       drawer: _buildLeftDrawer(
         auth: auth,
         themeController: themeController,
@@ -356,12 +395,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           child: Container(
             height: 76,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: scheme.surfaceContainer,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: _midGreen),
+              border: Border.all(color: scheme.outlineVariant),
               boxShadow: [
                 BoxShadow(
-                  color: _forestGreen.withValues(alpha: 0.10),
+                  color: scheme.shadow.withValues(alpha: 0.10),
                   blurRadius: 16,
                   offset: const Offset(0, 5),
                 ),
@@ -406,15 +445,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: _midGreen, width: 1)),
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                border: Border(
+                  bottom: BorderSide(color: scheme.outlineVariant, width: 1),
+                ),
               ),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    icon: const Icon(Icons.menu, size: 24, color: _forestGreen),
+                    icon: Icon(Icons.menu, size: 24, color: scheme.primary),
                   ),
                   Expanded(
                     child: Row(
@@ -423,13 +464,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         Container(
                           width: 36,
                           height: 36,
-                          decoration: const BoxDecoration(
-                            color: _lightGreen,
+                          decoration: BoxDecoration(
+                            color: scheme.primaryContainer,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.eco,
-                            color: _forestGreen,
+                            color: scheme.primary,
                             size: 20,
                           ),
                         ),
@@ -438,18 +479,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'PakFasal',
                               style: TextStyle(
-                                color: _forestGreen,
+                                color: scheme.primary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             Text(
                               l10n.t('appTagline'),
-                              style: const TextStyle(
-                                color: Color(0xFF66BB6A),
+                              style: TextStyle(
+                                color: scheme.primary.withValues(alpha: 0.7),
                                 fontSize: 8.5,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -463,9 +504,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     children: [
                       IconButton(
                         onPressed: () => _openNotificationsPanel(l10n),
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.notifications_none,
-                          color: _forestGreen,
+                          color: scheme.primary,
                         ),
                       ),
                       Positioned(
@@ -509,7 +550,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       Text(
                         '${_getGreeting(l10n)} $displayName',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: _forestGreen,
+                          color: scheme.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -561,7 +602,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                               ?.copyWith(
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.4,
-                                color: _forestGreen,
+                                color: scheme.primary,
                               ),
                         ),
                       ),

@@ -38,7 +38,6 @@ class _SensorScreenState extends State<SensorScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final selectedCropLabel = _localizedCropName(l10n, _selectedCrop);
     final latest = _history.isNotEmpty ? _history.last : null;
     final moistureSeries = _history.map((e) => e.soilMoisture).toList();
     final phSeries = _history.map((e) => e.phLevel).toList();

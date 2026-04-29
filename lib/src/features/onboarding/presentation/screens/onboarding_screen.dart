@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -130,7 +129,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             stops: const [0.0, 0.6, 1.0],
             colors: [
               _slides[_currentPage].gradient[0],
-              _slides[_currentPage].gradient[0].withOpacity(0.85),
+              _slides[_currentPage].gradient[0].withValues(alpha: 0.85),
               _slides[_currentPage].gradient[1],
             ],
           ),
@@ -146,10 +145,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: activeColor.withOpacity(0.08),
+                  color: activeColor.withValues(alpha: 0.08),
                   boxShadow: [
                     BoxShadow(
-                      color: activeColor.withOpacity(0.05),
+                      color: activeColor.withValues(alpha: 0.05),
                       blurRadius: 60,
                       spreadRadius: 20,
                     ),
@@ -165,10 +164,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 320,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: activeColor.withOpacity(0.06),
+                  color: activeColor.withValues(alpha: 0.06),
                   boxShadow: [
                     BoxShadow(
-                      color: activeColor.withOpacity(0.05),
+                      color: activeColor.withValues(alpha: 0.05),
                       blurRadius: 60,
                       spreadRadius: 20,
                     ),
@@ -254,7 +253,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     // Each dot uses the active slide's color
                                     color: index == _currentPage
                                         ? activeColor
-                                        : activeColor.withOpacity(0.25),
+                                        : activeColor.withValues(alpha: 0.25),
                                     borderRadius: BorderRadius.circular(24),
                                   ),
                                 ),
@@ -329,15 +328,15 @@ class _OnboardingCard extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.75),
+                color: Colors.white.withValues(alpha: 0.75),
                 borderRadius: BorderRadius.circular(36),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: slide.iconColor.withOpacity(0.10),
+                    color: slide.iconColor.withValues(alpha: 0.10),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
@@ -375,7 +374,7 @@ class _OnboardingCard extends StatelessWidget {
                         localizations.t(slide.descriptionKey),
                         textAlign: TextAlign.center,
                         style: textTheme.bodyLarge?.copyWith(
-                          color: Colors.black.withOpacity(0.65),
+                          color: Colors.black.withValues(alpha: 0.65),
                           height: 1.6,
                           fontWeight: FontWeight.w500,
                         ),
@@ -448,12 +447,12 @@ class _FloatingGraphicState extends State<_FloatingGraphic>
           ),
           boxShadow: [
             BoxShadow(
-              color: widget.slide.iconColor.withOpacity(0.30),
+              color: widget.slide.iconColor.withValues(alpha: 0.30),
               blurRadius: 30,
               offset: const Offset(0, 15),
             ),
             BoxShadow(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               blurRadius: 20,
               offset: const Offset(-10, -10),
             ),
@@ -557,7 +556,7 @@ class _BouncyButtonState extends State<_BouncyButton>
             ),
             boxShadow: [
               BoxShadow(
-                color: widget.gradientColors.last.withOpacity(0.4),
+                color: widget.gradientColors.last.withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
