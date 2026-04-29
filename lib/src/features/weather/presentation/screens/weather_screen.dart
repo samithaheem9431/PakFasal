@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/common_states.dart';
@@ -14,14 +15,36 @@ class WeatherScreen extends StatefulWidget {
   State<WeatherScreen> createState() => _WeatherScreenState();
 }
 
-class _WeatherScreenState extends State<WeatherScreen> {
+class _WeatherScreenState extends State<WeatherScreen>
+    with WidgetsBindingObserver {
   final WeatherRepository _repository = WeatherRepository();
   late Future<_WeatherScreenData> _screenFuture;
+  Timer? _autoRefreshTimer;
+  DateTime? _lastWeatherSyncAt;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _screenFuture = _loadData();
+    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
+      if (!mounted) return;
+      _refreshForecast();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _autoRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _refreshForecast();
+    }
   }
 
   Future<void> _refreshForecast() async {
@@ -38,6 +61,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
       forceRefresh: forceRefresh,
     );
     final results = await Future.wait<dynamic>([currentFuture, forecastFuture]);
+    if (mounted) {
+      setState(() => _lastWeatherSyncAt = DateTime.now());
+    } else {
+      _lastWeatherSyncAt = DateTime.now();
+    }
     return _WeatherScreenData(
       current: results[0] as CurrentWeather,
       forecast: results[1] as List<DailyForecast>,
@@ -89,7 +117,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
                 20 + MediaQuery.of(context).padding.bottom,
               ),
               children: [
-                _TopLocationBar(locationLabel: current.locationLabel),
+                _TopLocationBar(
+                  locationLabel: current.locationLabel,
+                  lastSyncedLabel: _lastWeatherSyncAt == null
+                      ? null
+                      : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(_lastWeatherSyncAt!).format(context)}',
+                ),
                 const SizedBox(height: 8),
                 _HeroWeatherCard(current: current, l10n: l10n),
                 const SizedBox(height: 8),
@@ -112,9 +145,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
 }
 
 class _TopLocationBar extends StatelessWidget {
-  const _TopLocationBar({required this.locationLabel});
+  const _TopLocationBar({required this.locationLabel, this.lastSyncedLabel});
 
   final String locationLabel;
+  final String? lastSyncedLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +173,7 @@ class _TopLocationBar extends StatelessWidget {
             ),
           ),
           Text(
-            'Updated: ${TimeOfDay.now().format(context)}',
+            lastSyncedLabel ?? '',
             style: const TextStyle(color: Colors.white70, fontSize: 11),
           ),
           const SizedBox(width: 6),

@@ -11,12 +11,14 @@ class HomeWeatherCard extends StatelessWidget {
     required this.temperatureLabel,
     required this.humidityLabel,
     required this.rainChanceLabel,
+    this.lastSyncedLabel,
   });
 
   final CurrentWeather weather;
   final String temperatureLabel;
   final String humidityLabel;
   final String rainChanceLabel;
+  final String? lastSyncedLabel;
 
   // ── Green palette ────────────────────────────────────────────────────────
   static const _cardBg = Color(0xFF1B5E20); // deep forest green
@@ -125,6 +127,17 @@ class HomeWeatherCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                      if (lastSyncedLabel != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          lastSyncedLabel!,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: _dimWhite,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
 
                       // ── Temperature display ───────────────────────
                       const SizedBox(height: 10),

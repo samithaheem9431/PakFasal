@@ -9,13 +9,32 @@ import '../../domain/entities/weather_models.dart';
 
 class WeatherRepository {
   static const Duration _currentCacheTtl = Duration(minutes: 10);
+  static const String _lastCurrentKey = 'current_last';
 
   Future<CurrentWeather> fetchCurrentWeather({
     bool forceRefresh = false,
   }) async {
+    final box = Hive.box('weather_cache');
+
+    if (!forceRefresh) {
+      // Fast path: return latest cached weather immediately (no GPS wait).
+      final lastCached = box.get(_lastCurrentKey) as String?;
+      if (lastCached != null && lastCached.isNotEmpty) {
+        final map = jsonDecode(lastCached) as Map<String, dynamic>;
+        final cachedAtMillis = (map['cachedAt'] as num?)?.toInt();
+        if (cachedAtMillis != null) {
+          final cachedAt = DateTime.fromMillisecondsSinceEpoch(cachedAtMillis);
+          final isFresh =
+              DateTime.now().difference(cachedAt) <= _currentCacheTtl;
+          if (isFresh) {
+            return _currentFromMap(map);
+          }
+        }
+      }
+    }
+
     final position = await _getCurrentPosition();
     final locationKey = _locationKey(position);
-    final box = Hive.box('weather_cache');
 
     if (!forceRefresh) {
       final cached = box.get('current_$locationKey') as String?;
@@ -85,7 +104,9 @@ class WeatherRepository {
       rainChancePercent: rainChance,
       conditionCode: ((current['weather_code'] as num?) ?? 0).toInt(),
     );
-    box.put('current_$locationKey', _currentToJson(currentWeather));
+    final encoded = _currentToJson(currentWeather);
+    box.put('current_$locationKey', encoded);
+    box.put(_lastCurrentKey, encoded);
     return currentWeather;
   }
 

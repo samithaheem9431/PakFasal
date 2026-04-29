@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
@@ -19,13 +20,16 @@ class HomeDashboardScreen extends StatefulWidget {
   State<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
 }
 
-class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
+class _HomeDashboardScreenState extends State<HomeDashboardScreen>
+    with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final WeatherRepository _weatherRepository = WeatherRepository();
   static Future<CurrentWeather>? _sharedWeatherFuture;
   late Future<CurrentWeather> _weatherFuture;
+  DateTime? _lastWeatherSyncAt;
   int _selectedBottomIndex = 0;
   bool _animateContentIn = false;
+  Timer? _weatherRefreshTimer;
 
   // ── Green palette constants ──────────────────────────────────────────────
   static const _forestGreen = Color(0xFF2E7D32);
@@ -35,7 +39,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _weatherFuture = _loadWeather();
+    _weatherRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
+      if (!mounted) return;
+      _refreshDashboard();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() => _animateContentIn = true);
     });
@@ -52,13 +61,34 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _weatherRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _refreshDashboard();
+    }
+  }
+
   Future<CurrentWeather> _loadWeather({bool forceRefresh = false}) {
     if (!forceRefresh && _sharedWeatherFuture != null) {
       return _sharedWeatherFuture!;
     }
-    final future = _weatherRepository.fetchCurrentWeather(
-      forceRefresh: forceRefresh,
-    );
+    final future = _weatherRepository
+        .fetchCurrentWeather(forceRefresh: forceRefresh)
+        .then((weather) {
+          if (mounted) {
+            setState(() => _lastWeatherSyncAt = DateTime.now());
+          } else {
+            _lastWeatherSyncAt = DateTime.now();
+          }
+          return weather;
+        });
     _sharedWeatherFuture = future;
     return future;
   }
@@ -588,6 +618,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                               temperatureLabel: l10n.t('temperature'),
                               humidityLabel: l10n.t('humidity'),
                               rainChanceLabel: l10n.t('rainChance'),
+                              lastSyncedLabel: _lastWeatherSyncAt == null
+                                  ? null
+                                  : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(_lastWeatherSyncAt!).format(context)}',
                             ),
                           );
                         },
