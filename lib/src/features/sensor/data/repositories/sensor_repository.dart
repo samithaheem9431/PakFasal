@@ -54,6 +54,25 @@ class SensorRepository {
     });
   }
 
+  Future<void> clearAllReadings() async {
+    const batchSize = 200;
+    while (true) {
+      final snapshot = await _firestore
+          .collection('sensor_readings')
+          .limit(batchSize)
+          .get();
+      if (snapshot.docs.isEmpty) {
+        break;
+      }
+
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+  }
+
   Future<SensorRuleConfig> fetchRuleConfig() async {
     final doc = await _firestore.collection('sensor_config').doc('rules').get();
     final data = doc.data();

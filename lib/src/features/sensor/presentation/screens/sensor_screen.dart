@@ -29,13 +29,17 @@ class _SensorScreenState extends State<SensorScreen>
   StreamSubscription<List<SensorReading>>? _sensorSubscription;
 
   final List<SensorReading> _history = [];
+  SensorReading? _sessionLatestReading;
 
   String _selectedCrop = 'Wheat';
   int? _rainChancePercent;
   String _recommendationDetails = '';
   bool _isSubmitting = false;
+  bool _isResettingGraphs = false;
   bool _isWeatherLoading = true;
   bool _isSpeakingRecommendation = false;
+  String? _speakingRecommendationSection;
+  String? _expandedRecommendationSection;
   DateTime? _lastWeatherSyncAt;
   SensorRuleConfig _ruleConfig = const SensorRuleConfig();
   final List<String> _savedSessions = [];
@@ -129,48 +133,99 @@ class _SensorScreenState extends State<SensorScreen>
     await _flutterTts.setPitch(1.0);
     _flutterTts.setCompletionHandler(() {
       if (!mounted) return;
-      setState(() => _isSpeakingRecommendation = false);
+      setState(() {
+        _isSpeakingRecommendation = false;
+        _speakingRecommendationSection = null;
+      });
     });
     _flutterTts.setCancelHandler(() {
       if (!mounted) return;
-      setState(() => _isSpeakingRecommendation = false);
+      setState(() {
+        _isSpeakingRecommendation = false;
+        _speakingRecommendationSection = null;
+      });
     });
     _flutterTts.setErrorHandler((_) {
       if (!mounted) return;
-      setState(() => _isSpeakingRecommendation = false);
+      setState(() {
+        _isSpeakingRecommendation = false;
+        _speakingRecommendationSection = null;
+      });
     });
   }
 
-  Future<void> _toggleSpeakRecommendation(String text) async {
+  Future<void> _toggleSpeakSection({
+    required String sectionKey,
+    required String text,
+  }) async {
     final l10n = AppLocalizations.of(context);
-    if (_isSpeakingRecommendation) {
+    if (_isSpeakingRecommendation && _speakingRecommendationSection == sectionKey) {
       await _flutterTts.stop();
       if (!mounted) return;
-      setState(() => _isSpeakingRecommendation = false);
+      setState(() {
+        _isSpeakingRecommendation = false;
+        _speakingRecommendationSection = null;
+      });
       return;
     }
 
-    final languageCode = Localizations.localeOf(context).languageCode;
-    final ttsLocale = languageCode == 'ur' ? 'ur-PK' : 'en-US';
-    final languageResult = await _flutterTts.setLanguage(ttsLocale);
-    if (languageResult == 0) {
+    if (_isSpeakingRecommendation &&
+        _speakingRecommendationSection != null &&
+        _speakingRecommendationSection != sectionKey) {
+      await _flutterTts.stop();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.t('voiceServiceUnavailable'))),
-      );
-      return;
     }
 
-    final speakResult = await _flutterTts.speak(text);
+    final didSpeak = await _speakWithRetry(text);
     if (!mounted) return;
-    if (speakResult == 1) {
-      setState(() => _isSpeakingRecommendation = true);
+    if (didSpeak) {
+      setState(() {
+        _isSpeakingRecommendation = true;
+        _speakingRecommendationSection = sectionKey;
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.t('voiceServiceUnavailable'))),
       );
     }
   }
+
+  Future<bool> _speakWithRetry(String text) async {
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final ttsLocale = languageCode == 'ur' ? 'ur-PK' : 'en-US';
+
+    for (var attempt = 0; attempt < 4; attempt++) {
+      final languageResult = await _flutterTts.setLanguage(ttsLocale);
+      if (_isLanguageUnavailable(languageResult)) {
+        await Future.delayed(const Duration(milliseconds: 250));
+        continue;
+      }
+
+      final speakResult = await _flutterTts.speak(text);
+      if (speakResult == 1 || speakResult == '1') {
+        return true;
+      }
+
+      await Future.delayed(const Duration(milliseconds: 250));
+    }
+    return false;
+  }
+
+  bool _isLanguageUnavailable(dynamic languageResult) {
+    if (languageResult is int) {
+      // Android TTS codes: 0/1/2 are available, negatives are unsupported.
+      return languageResult < 0;
+    }
+    if (languageResult is String) {
+      final parsed = int.tryParse(languageResult);
+      if (parsed != null) return parsed < 0;
+    }
+    return languageResult == null;
+  }
+
+  String _cardSpeakKey(String sectionKey) => '$sectionKey-card';
+
+  String _detailsSpeakKey(String sectionKey) => '$sectionKey-details';
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -182,18 +237,18 @@ class _SensorScreenState extends State<SensorScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final latest = _history.isNotEmpty ? _history.last : null;
+    final latest = _sessionLatestReading;
     final moistureSeries = _history.map((e) => e.soilMoisture).toList();
     final phSeries = _history.map((e) => e.phLevel).toList();
-    final localizedLatestRecommendation = latest == null
-        ? ''
+    final latestRecommendationResult = latest == null
+        ? null
         : _buildRuleBasedRecommendation(
             moisture: latest.soilMoisture,
             ph: latest.phLevel,
             crop: latest.crop ?? _selectedCrop,
             rainChancePercent: latest.rainChancePercent ?? (_rainChancePercent ?? 0),
             config: _ruleConfig,
-          ).details;
+          );
 
     return PakFasalScaffold(
       title: l10n.t('sensorData'),
@@ -241,6 +296,25 @@ class _SensorScreenState extends State<SensorScreen>
             unitSuffix: '',
             points: phSeries,
           ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton.icon(
+              onPressed: _isResettingGraphs ? null : _resetGraphData,
+              icon: _isResettingGraphs
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.restart_alt),
+              label: Text(
+                l10n.locale.languageCode == 'ur'
+                    ? 'گراف ری سیٹ کریں'
+                    : 'Reset Graph',
+              ),
+            ),
+          ),
           const SizedBox(height: 12),
           Card(
             child: Padding(
@@ -253,30 +327,6 @@ class _SensorScreenState extends State<SensorScreen>
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 6),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _toggleSpeakRecommendation(
-                        localizedLatestRecommendation.isEmpty
-                            ? l10n.t('sensorRecommendationText')
-                            : localizedLatestRecommendation,
-                      ),
-                      icon: Icon(
-                        _isSpeakingRecommendation
-                            ? Icons.stop_circle_outlined
-                            : Icons.volume_up_rounded,
-                      ),
-                      label: Text(
-                        _isSpeakingRecommendation
-                            ? (l10n.locale.languageCode == 'ur'
-                                  ? 'سفارش روکیں'
-                                  : 'Stop Recommendation')
-                            : (l10n.locale.languageCode == 'ur'
-                                  ? 'سفارش سنیں'
-                                  : 'Speak Recommendation'),
-                      ),
-                    ),
-                  ),
                   if ((latest?.recommendationPriority ?? '').isNotEmpty) ...[
                     const SizedBox(height: 8),
                     _PriorityBadge(
@@ -288,14 +338,115 @@ class _SensorScreenState extends State<SensorScreen>
                     ),
                   ],
                   const SizedBox(height: 6),
-                  Text(
-                    localizedLatestRecommendation.isEmpty
-                        ? l10n.t('sensorRecommendationText')
-                        : localizedLatestRecommendation,
-                  ),
+                  if (latestRecommendationResult == null)
+                    _RecommendationPlaceholderCard(
+                      title: l10n.locale.languageCode == 'ur'
+                          ? 'ابھی سفارش موجود نہیں'
+                          : 'No recommendation yet',
+                      subtitle: l10n.locale.languageCode == 'ur'
+                          ? 'سینسر ویلیوز درج کریں اور "Generate DSS" دبائیں۔'
+                          : 'Enter sensor values and tap "Generate DSS" to see plans.',
+                    )
+                  else ...[
+                    _RecommendationPlanCard(
+                      title: l10n.locale.languageCode == 'ur'
+                          ? 'آبپاشی پلان'
+                          : 'Irrigation Plan',
+                      preview: latestRecommendationResult.irrigationCardText,
+                      isExpanded: _expandedRecommendationSection == 'irrigation',
+                      isSpeaking: _isSpeakingRecommendation &&
+                          _speakingRecommendationSection ==
+                              _cardSpeakKey('irrigation'),
+                      onToggleView: () => _toggleRecommendationView(
+                        sectionKey: 'irrigation',
+                        title: l10n.locale.languageCode == 'ur'
+                            ? 'آبپاشی پلان'
+                            : 'Irrigation Plan',
+                        fullText: latestRecommendationResult.irrigationPlan.isEmpty
+                            ? latestRecommendationResult.irrigationCardText
+                            : latestRecommendationResult.irrigationPlan,
+                      ),
+                      onSpeak: () => _toggleSpeakSection(
+                        sectionKey: _cardSpeakKey('irrigation'),
+                        text: latestRecommendationResult.irrigationCardText,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _RecommendationPlanCard(
+                      title: l10n.locale.languageCode == 'ur'
+                          ? 'مٹی اور کھاد پلان'
+                          : 'Soil Plan',
+                      preview: latestRecommendationResult.soilCardText,
+                      isExpanded: _expandedRecommendationSection == 'soil',
+                      isSpeaking:
+                          _isSpeakingRecommendation &&
+                          _speakingRecommendationSection == _cardSpeakKey('soil'),
+                      onToggleView: () => _toggleRecommendationView(
+                        sectionKey: 'soil',
+                        title: l10n.locale.languageCode == 'ur'
+                            ? 'مٹی اور کھاد پلان'
+                            : 'Soil Plan',
+                        fullText: latestRecommendationResult.soilPlan.isEmpty
+                            ? latestRecommendationResult.soilCardText
+                            : latestRecommendationResult.soilPlan,
+                      ),
+                      onSpeak: () => _toggleSpeakSection(
+                        sectionKey: _cardSpeakKey('soil'),
+                        text: latestRecommendationResult.soilCardText,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _RecommendationPlanCard(
+                      title: l10n.locale.languageCode == 'ur'
+                          ? 'مستقبل رسک'
+                          : 'Risk Future',
+                      preview: latestRecommendationResult.riskPreview,
+                      isExpanded: _expandedRecommendationSection == 'risk',
+                      isSpeaking:
+                          _isSpeakingRecommendation &&
+                          _speakingRecommendationSection == _cardSpeakKey('risk'),
+                      onToggleView: () => _toggleRecommendationView(
+                        sectionKey: 'risk',
+                        title: l10n.locale.languageCode == 'ur'
+                            ? 'مستقبل رسک'
+                            : 'Risk Future',
+                        fullText: latestRecommendationResult.futureRisk.isEmpty
+                            ? latestRecommendationResult.riskPreview
+                            : latestRecommendationResult.futureRisk,
+                      ),
+                      onSpeak: () => _toggleSpeakSection(
+                        sectionKey: _cardSpeakKey('risk'),
+                        text: latestRecommendationResult.riskPreview,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _RecommendationPlanCard(
+                      title: l10n.locale.languageCode == 'ur'
+                          ? 'مانیٹرنگ پلان'
+                          : 'Monitoring Plan',
+                      preview: latestRecommendationResult.monitoringPreview,
+                      isExpanded: _expandedRecommendationSection == 'monitoring',
+                      isSpeaking: _isSpeakingRecommendation &&
+                          _speakingRecommendationSection ==
+                              _cardSpeakKey('monitoring'),
+                      onToggleView: () => _toggleRecommendationView(
+                        sectionKey: 'monitoring',
+                        title: l10n.locale.languageCode == 'ur'
+                            ? 'مانیٹرنگ پلان'
+                            : 'Monitoring Plan',
+                        fullText: latestRecommendationResult.monitoringPlan.isEmpty
+                            ? latestRecommendationResult.monitoringPreview
+                            : latestRecommendationResult.monitoringPlan,
+                      ),
+                      onSpeak: () => _toggleSpeakSection(
+                        sectionKey: _cardSpeakKey('monitoring'),
+                        text: latestRecommendationResult.monitoringPreview,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   Text(
-                    '${l10n.t('lastUpdated')}: ${_history.isNotEmpty ? '${_history.last.timestamp.hour}:${_history.last.timestamp.minute.toString().padLeft(2, '0')}' : '-'}',
+                    '${l10n.t('lastUpdated')}: ${latest == null ? '-' : '${latest.timestamp.hour}:${latest.timestamp.minute.toString().padLeft(2, '0')}'}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -324,6 +475,83 @@ class _SensorScreenState extends State<SensorScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _toggleRecommendationView({
+    required String sectionKey,
+    required String title,
+    required String fullText,
+  }) {
+    _showRecommendationDetails(
+      title: title,
+      details: fullText,
+      sectionKey: sectionKey,
+    );
+  }
+
+  Future<void> _showRecommendationDetails({
+    required String title,
+    required String details,
+    required String sectionKey,
+  }) async {
+    final effectiveDetails = details.trim().isEmpty
+        ? (AppLocalizations.of(context).locale.languageCode == 'ur'
+              ? 'اس سیکشن کی تفصیل ابھی دستیاب نہیں۔'
+              : 'Detailed recommendation is not available for this section yet.')
+        : details;
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final isDetailsSpeaking =
+                _isSpeakingRecommendation &&
+                _speakingRecommendationSection == _detailsSpeakKey(sectionKey);
+            return AlertDialog(
+              title: Text(title),
+              content: SingleChildScrollView(
+                child: SelectableText(
+                  effectiveDetails,
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                ),
+              ),
+              actions: [
+                TextButton.icon(
+                  onPressed: () async {
+                    if (isDetailsSpeaking) {
+                      await _flutterTts.stop();
+                      if (!mounted) return;
+                      setState(() {
+                        _isSpeakingRecommendation = false;
+                        _speakingRecommendationSection = null;
+                      });
+                      setDialogState(() {});
+                      return;
+                    }
+                    await _toggleSpeakSection(
+                      sectionKey: _detailsSpeakKey(sectionKey),
+                      text: effectiveDetails,
+                    );
+                    if (!mounted) return;
+                    setDialogState(() {});
+                  },
+                  icon: Icon(
+                    isDetailsSpeaking
+                        ? Icons.stop_circle_outlined
+                        : Icons.volume_up_rounded,
+                  ),
+                  label: Text(isDetailsSpeaking ? 'Stop' : 'Speak'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -356,6 +584,16 @@ class _SensorScreenState extends State<SensorScreen>
         .then((_) {
           if (!mounted) return;
           setState(() {
+            _sessionLatestReading = SensorReading(
+              soilMoisture: moisture,
+              phLevel: ph,
+              timestamp: DateTime.now(),
+              crop: _selectedCrop,
+              rainChancePercent: rainChance,
+              recommendationSummary: result.summary,
+              recommendationDetails: result.details,
+              recommendationPriority: result.priority,
+            );
             _moistureController.clear();
             _phController.clear();
             _isSubmitting = false;
@@ -386,10 +624,17 @@ class _SensorScreenState extends State<SensorScreen>
     final monitoringPlan = <String>[];
     final rainExpected = rainChancePercent >= config.rainChanceThreshold;
     final cropName = _localizedCropName(l10n, crop);
+    var irrigationCardText = isUrdu ? 'آبپاشی شیڈول چیک کریں۔' : 'Check irrigation schedule.';
+    var soilCardText = isUrdu
+        ? 'مٹی کی حالت کے مطابق کھاد دیں۔'
+        : 'Apply fertilizer based on soil condition.';
 
     // Moisture / irrigation rules.
     if (moisture < config.moistureLowThreshold && !rainExpected) {
       summaryParts.add(l10n.t('sensorRecIrrigateSoon'));
+      irrigationCardText = isUrdu
+          ? 'نمی کم ہے، آج یا کل ہلکی آبپاشی کریں۔'
+          : 'Moisture is low, do light irrigation today or tomorrow.';
       irrigationActions.add(
         isUrdu
             ? 'فوری آبپاشی کریں: اگلے 12-24 گھنٹے میں ہلکی/درمیانی آبپاشی دیں (قاعدہ M1)۔'
@@ -407,6 +652,9 @@ class _SensorScreenState extends State<SensorScreen>
       );
     } else if (moisture < config.moistureLowThreshold && rainExpected) {
       summaryParts.add(l10n.t('sensorRecWaitRain'));
+      irrigationCardText = isUrdu
+          ? 'بارش متوقع ہے، ابھی آبپاشی روکیں اور دوبارہ چیک کریں۔'
+          : 'Rain is expected, hold irrigation and check again.';
       irrigationActions.add(
         isUrdu
             ? 'بارش متوقع ہے، فوری آبپاشی روکیں اور 12-24 گھنٹے بعد نمی دوبارہ چیک کریں (قاعدہ M2)۔'
@@ -424,6 +672,9 @@ class _SensorScreenState extends State<SensorScreen>
       );
     } else if (moisture > config.moistureHighThreshold) {
       summaryParts.add(l10n.t('sensorRecReduceIrrigation'));
+      irrigationCardText = isUrdu
+          ? 'نمی زیادہ ہے، اگلی آبپاشی دیر سے کریں۔'
+          : 'Moisture is high, delay the next irrigation.';
       irrigationActions.add(
         isUrdu
             ? 'آبپاشی کا وقفہ بڑھائیں اور اگلی آبپاشی تاخیر سے دیں (قاعدہ M3)۔'
@@ -441,6 +692,9 @@ class _SensorScreenState extends State<SensorScreen>
       );
     } else {
       summaryParts.add(l10n.t('sensorRecMoistureOk'));
+      irrigationCardText = isUrdu
+          ? 'نمی ٹھیک ہے، موجودہ آبپاشی جاری رکھیں۔'
+          : 'Moisture is fine, continue current irrigation.';
       irrigationActions.add(
         isUrdu
             ? 'نمی مناسب حد میں ہے، موجودہ آبپاشی شیڈول برقرار رکھیں (قاعدہ M4)۔'
@@ -451,6 +705,9 @@ class _SensorScreenState extends State<SensorScreen>
     // pH / fertilizer and soil amendment rules.
     if (ph < config.phLowThreshold) {
       summaryParts.add(l10n.t('sensorRecAcidic'));
+      soilCardText = isUrdu
+          ? 'پی ایچ کم ہے، چونا اور متوازن کھاد دیں۔'
+          : 'pH is low, use lime and balanced fertilizer.';
       fertilizerActions.add(
         isUrdu
             ? 'مٹی تیزابی ہے: زرعی چونا مناسب مقدار میں شامل کریں (قاعدہ P1)۔'
@@ -468,6 +725,9 @@ class _SensorScreenState extends State<SensorScreen>
       );
     } else if (ph > config.phHighThreshold) {
       summaryParts.add(l10n.t('sensorRecAlkaline'));
+      soilCardText = isUrdu
+          ? 'پی ایچ زیادہ ہے، جپسم اور نامیاتی مادہ شامل کریں۔'
+          : 'pH is high, add gypsum and organic matter.';
       fertilizerActions.add(
         isUrdu
             ? 'مٹی الکلائن ہے: جپسم اور اچھی کوالٹی کا نامیاتی مادہ شامل کریں (قاعدہ P2)۔'
@@ -485,6 +745,9 @@ class _SensorScreenState extends State<SensorScreen>
       );
     } else {
       summaryParts.add('${l10n.t('sensorRecPhSuitable')} $cropName');
+      soilCardText = isUrdu
+          ? 'پی ایچ مناسب ہے، متوازن کھاد پلان جاری رکھیں۔'
+          : 'pH is suitable, continue balanced fertilizer plan.';
       fertilizerActions.add(
         isUrdu
             ? 'پی ایچ $cropName کے لئے مناسب ہے، متوازن کھاد منصوبہ جاری رکھیں (قاعدہ P3)۔'
@@ -543,12 +806,74 @@ class _SensorScreenState extends State<SensorScreen>
               'Fertilizer/soil plan: ${fertilizerActions.join(' ')}\n'
               'Risk notes: ${riskNotes.isEmpty ? 'No major immediate risk.' : riskNotes.join(' ')}\n'
               'Monitoring plan: ${monitoringPlan.join(' ')}';
+    final irrigationPlan = isUrdu
+        ? 'موجودہ صورتحال: نمی ${moisture.toStringAsFixed(1)}٪ ہے اور بارش امکان $rainChancePercent٪ ہے۔ '
+              'تجویز کردہ آبپاشی اقدامات: ${irrigationActions.join(' ')} '
+              'عملی نوٹ: اگلے 24 گھنٹے میں نمی دوبارہ چیک کریں اور اسی کے مطابق آبپاشی ایڈجسٹ کریں۔'
+        : 'Current status: moisture is ${moisture.toStringAsFixed(1)}% and rain chance is $rainChancePercent%. '
+              'Recommended irrigation actions: ${irrigationActions.join(' ')} '
+              'Practical note: re-check moisture within the next 24 hours and adjust irrigation accordingly.';
+    final soilPlan = isUrdu
+        ? 'موجودہ صورتحال: پی ایچ ${ph.toStringAsFixed(1)} ہے، فصل $cropName۔ '
+              'تجویز کردہ مٹی/کھاد اقدامات: ${fertilizerActions.join(' ')} '
+              'عملی نوٹ: کھاد قسطوں میں دیں اور اگلی ریڈنگ پر پی ایچ کا دوبارہ جائزہ لیں۔'
+        : 'Current status: pH is ${ph.toStringAsFixed(1)} for crop $cropName. '
+              'Recommended soil/fertilizer actions: ${fertilizerActions.join(' ')} '
+              'Practical note: apply fertilizer in split doses and review pH again on the next reading.';
+    final futureRisk = riskNotes.isEmpty
+        ? (isUrdu
+              ? 'فی الحال کوئی بڑا فوری رسک سامنے نہیں آیا، مگر ریڈنگز باقاعدگی سے مانیٹر کریں۔'
+              : 'No major immediate risk is detected right now, but keep monitoring readings regularly.')
+        : (isUrdu
+              ? 'ممکنہ رسک: ${riskNotes.join(' ')} حفاظتی اقدام: آبپاشی اور کھاد فیصلے اگلی ریڈنگ کے مطابق اپڈیٹ کریں۔'
+              : 'Potential risk: ${riskNotes.join(' ')} Preventive action: update irrigation and fertilizer decisions based on the next reading.');
+    final monitoringPlanText = isUrdu
+        ? 'مانیٹرنگ شیڈول: ${monitoringPlan.join(' ')} '
+              'فالو اپ: اگر دو مسلسل ریڈنگز میں بہتری نہ ہو تو پلان دوبارہ ترتیب دیں۔'
+        : 'Monitoring schedule: ${monitoringPlan.join(' ')} '
+              'Follow-up: if there is no improvement in two consecutive readings, revise the plan.';
 
     return _RecommendationResult(
       summary: '${summaryParts.join('. ')}.',
       details: details,
       priority: priority,
+      irrigationPlan: irrigationPlan,
+      soilPlan: soilPlan,
+      futureRisk: futureRisk,
+      monitoringPlan: monitoringPlanText,
+      irrigationPreview: _ultraShortPreview(irrigationPlan),
+      soilPreview: _ultraShortPreview(soilPlan),
+      riskPreview: _ultraShortPreview(futureRisk),
+      monitoringPreview: _ultraShortPreview(monitoringPlanText),
+      irrigationCardText: _ultraShortPreview(irrigationCardText),
+      soilCardText: _ultraShortPreview(soilCardText),
     );
+  }
+
+  String _buildPreview(String value) {
+    final parts = value
+        .split(RegExp(r'(?<=[.!؟۔])\s+'))
+        .where((e) => e.trim().isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return value;
+    if (parts.length == 1) return parts.first;
+    return '${parts[0]} ${parts[1]}';
+  }
+
+  String _tightPreview(String value) {
+    final cleaned = value.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (cleaned.length <= 95) return cleaned;
+    return '${cleaned.substring(0, 92)}...';
+  }
+
+  String _ultraShortPreview(String value) {
+    final sentence = value
+        .split(RegExp(r'(?<=[.!؟۔])\s+'))
+        .firstWhere((part) => part.trim().isNotEmpty, orElse: () => value)
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
+    if (sentence.length <= 60) return sentence;
+    return '${sentence.substring(0, 57)}...';
   }
 
   String _calculatePriority({
@@ -599,6 +924,68 @@ class _SensorScreenState extends State<SensorScreen>
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(l10n.t('sensorSessionSaved'))));
+  }
+
+  Future<void> _resetGraphData() async {
+    final l10n = AppLocalizations.of(context);
+    final shouldReset = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            l10n.locale.languageCode == 'ur' ? 'تصدیق درکار' : 'Confirmation',
+          ),
+          content: Text(
+            l10n.locale.languageCode == 'ur'
+                ? 'کیا آپ گراف کی پرانی ہسٹری ختم کرنا چاہتے ہیں؟'
+                : 'Do you want to clear old graph history?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.locale.languageCode == 'ur' ? 'نہیں' : 'No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.locale.languageCode == 'ur' ? 'ہاں' : 'Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldReset != true || !mounted) return;
+    setState(() => _isResettingGraphs = true);
+
+    try {
+      await _sensorRepository.clearAllReadings();
+      if (!mounted) return;
+      setState(() {
+        _history.clear();
+        _isResettingGraphs = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.locale.languageCode == 'ur'
+                ? 'گراف ہسٹری ری سیٹ ہو گئی ہے۔'
+                : 'Graph history has been reset.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isResettingGraphs = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.locale.languageCode == 'ur'
+                ? 'گراف ری سیٹ نہیں ہو سکا، دوبارہ کوشش کریں۔'
+                : 'Could not reset graph, please try again.',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _exportReadings() async {
@@ -922,11 +1309,130 @@ class _RecommendationResult {
     required this.summary,
     required this.details,
     required this.priority,
+    required this.irrigationPlan,
+    required this.soilPlan,
+    required this.futureRisk,
+    required this.monitoringPlan,
+    required this.irrigationPreview,
+    required this.soilPreview,
+    required this.riskPreview,
+    required this.monitoringPreview,
+    required this.irrigationCardText,
+    required this.soilCardText,
   });
 
   final String summary;
   final String details;
   final String priority;
+  final String irrigationPlan;
+  final String soilPlan;
+  final String futureRisk;
+  final String monitoringPlan;
+  final String irrigationPreview;
+  final String soilPreview;
+  final String riskPreview;
+  final String monitoringPreview;
+  final String irrigationCardText;
+  final String soilCardText;
+}
+
+class _RecommendationPlanCard extends StatelessWidget {
+  const _RecommendationPlanCard({
+    required this.title,
+    required this.preview,
+    required this.isExpanded,
+    required this.isSpeaking,
+    required this.onToggleView,
+    required this.onSpeak,
+  });
+
+  final String title;
+  final String preview;
+  final bool isExpanded;
+  final bool isSpeaking;
+  final VoidCallback onToggleView;
+  final VoidCallback onSpeak;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(preview),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: onSpeak,
+                  icon: Icon(
+                    isSpeaking ? Icons.stop_circle_outlined : Icons.volume_up_rounded,
+                  ),
+                  label: Text(isSpeaking ? 'Stop' : 'Speak'),
+                ),
+                TextButton(
+                  onPressed: onToggleView,
+                  child: const Text('View'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecommendationPlaceholderCard extends StatelessWidget {
+  const _RecommendationPlaceholderCard({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline, color: AppColors.mutedText),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _PriorityBadge extends StatelessWidget {
