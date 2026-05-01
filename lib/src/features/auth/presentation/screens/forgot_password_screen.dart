@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_form_provider.dart';
 import '../providers/auth_session_controller.dart';
@@ -66,7 +67,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.t(err)),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -77,7 +78,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.t('resetEmailSent')),
-        backgroundColor: AppTheme.primaryGreen,
+        backgroundColor: AppColors.primaryGreen,
         behavior: SnackBarBehavior.floating,
         shape:
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -104,9 +105,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                   end: Alignment.bottomCenter,
                   stops: [0.0, 0.5, 1.0],
                   colors: [
-                    isDark ? const Color(0xFF102017) : const Color(0xFFF1FBF2),
-                    isDark ? const Color(0xFF162A1D) : AppTheme.lightGreen,
-                    isDark ? const Color(0xFF1D3325) : const Color(0xFFD8EDD9),
+                    isDark ? AppColors.darkSurface : AppColors.softSurfaceGreen,
+                    isDark ? AppColors.darkSurfaceMid : AppColors.paleGreen,
+                    isDark ? AppColors.darkSurfaceHigh : AppColors.divider,
                   ],
                 ),
               ),
@@ -321,7 +322,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                                     Navigator.pop(context),
                                                 style: TextButton.styleFrom(
                                                   foregroundColor:
-                                                  Colors.grey.shade600,
+                                                  AppColors.mutedTextDark,
                                                 ),
                                                 child: Text(
                                                   l10n.t('backToLogin'),
@@ -393,9 +394,9 @@ class _GreenButton extends StatelessWidget {
         gradient: isLoading
             ? null
             : const LinearGradient(
-          colors: [Color(0xFF43A047), Color(0xFF2E7D32)],
+          colors: [AppColors.lightGreen, AppColors.primaryGreen],
         ),
-        color: isLoading ? Colors.grey.shade300 : null,
+        color: isLoading ? AppColors.lightGrey : null,
         boxShadow: isLoading
             ? []
             : [
@@ -407,7 +408,7 @@ class _GreenButton extends StatelessWidget {
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(14),
@@ -423,19 +424,19 @@ class _GreenButton extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.grey.shade600,
+                      color: AppColors.mutedTextDark,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(loadingLabel,
                       style:
-                      TextStyle(color: Colors.grey.shade600)),
+                      const TextStyle(color: AppColors.mutedTextDark)),
                 ],
               )
                   : Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                   letterSpacing: 0.4,

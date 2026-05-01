@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../data/repositories/sensor_repository.dart';
 import '../../domain/entities/sensor_reading.dart';
@@ -217,26 +218,26 @@ class _SensorScreenState extends State<SensorScreen>
             title: l10n.t('soilMoisture'),
             value: '${(latest?.soilMoisture ?? 0).toStringAsFixed(0)}%',
             status: _statusForMoisture(l10n, latest?.soilMoisture ?? 0),
-            color: Colors.green,
+            color: AppColors.success,
           ),
           const SizedBox(height: 12),
           _SensorCard(
             title: l10n.t('phLevel'),
             value: (latest?.phLevel ?? 0).toStringAsFixed(1),
             status: _statusForPh(l10n, latest?.phLevel ?? 0),
-            color: Colors.orange,
+            color: AppColors.warning,
           ),
           const SizedBox(height: 12),
           _ChartCard(
             title: l10n.t('soilMoistureTrend'),
-            lineColor: Colors.green,
+            lineColor: AppColors.success,
             unitSuffix: '%',
             points: moistureSeries,
           ),
           const SizedBox(height: 12),
           _ChartCard(
             title: l10n.t('phTrend'),
-            lineColor: Colors.orange,
+            lineColor: AppColors.warning,
             unitSuffix: '',
             points: phSeries,
           ),
@@ -653,9 +654,9 @@ class _SensorScreenState extends State<SensorScreen>
 
   Color _priorityColor(String priority) {
     return switch (priority) {
-      'HIGH' => Colors.red,
-      'MEDIUM' => Colors.orange,
-      _ => Colors.green,
+      'HIGH' => AppColors.error,
+      'MEDIUM' => AppColors.warning,
+      _ => AppColors.success,
     };
   }
 }

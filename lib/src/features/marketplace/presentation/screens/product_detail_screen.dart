@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../domain/entities/product.dart';
 
@@ -27,7 +28,7 @@ class ProductDetailScreen extends StatelessWidget {
                 product.imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  color: Colors.green.withValues(alpha: 0.12),
+                  color: AppColors.success.withValues(alpha: 0.12),
                   child: const Icon(Icons.image, size: 60),
                 ),
               ),

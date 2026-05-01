@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/offline_badge.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
@@ -141,7 +142,7 @@ class _FeaturedLearningCard extends StatelessWidget {
               aspectRatio: 16 / 9,
               child: video.thumbnailUrl.isEmpty
                   ? Container(
-                      color: Colors.green.withValues(alpha: 0.12),
+                      color: AppColors.success.withValues(alpha: 0.12),
                       child: const Icon(Icons.play_circle, size: 54),
                     )
                   : Image.network(video.thumbnailUrl, fit: BoxFit.cover),
@@ -213,7 +214,7 @@ class _LearningVideoCard extends StatelessWidget {
             height: 64,
             child: video.thumbnailUrl.isEmpty
                 ? Container(
-                    color: Colors.green.withValues(alpha: 0.1),
+                    color: AppColors.success.withValues(alpha: 0.1),
                     child: const Icon(Icons.ondemand_video),
                   )
                 : Image.network(video.thumbnailUrl, fit: BoxFit.cover),

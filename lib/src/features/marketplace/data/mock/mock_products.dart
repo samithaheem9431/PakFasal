@@ -84,7 +84,7 @@ const List<Product> mockProducts = [
     phone: '+923336661212',
     description: 'Post-emergence herbicide for controlling broadleaf weeds.',
     imageUrl:
-        'https://images.unsplash.com/photo-1530507629858-e4977d30e30e?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=1200&q=80',
     price: 2100,
     location: 'Sargodha',
     verified: true,

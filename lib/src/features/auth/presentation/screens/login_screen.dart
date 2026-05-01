@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/language_toggle_button.dart';
 import '../providers/auth_form_provider.dart';
@@ -187,7 +188,7 @@ class _LoginViewState extends State<_LoginView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.t(err)),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -223,7 +224,7 @@ class _LoginViewState extends State<_LoginView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.t(err)),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -257,9 +258,9 @@ class _LoginViewState extends State<_LoginView>
             end: Alignment.bottomRight,
             stops: [0.0, 0.6, 1.0],
             colors: [
-              isDark ? const Color(0xFF102017) : const Color(0xFFF1FBF2),
-              isDark ? const Color(0xFF162A1D) : AppTheme.lightGreen,
-              isDark ? const Color(0xFF1D3325) : const Color(0xFFD8EDD9),
+              isDark ? AppColors.darkSurface : AppColors.softSurfaceGreen,
+              isDark ? AppColors.darkSurfaceMid : AppColors.paleGreen,
+              isDark ? AppColors.darkSurfaceHigh : AppColors.divider,
             ],
           ),
         ),
@@ -551,7 +552,7 @@ class _LoginViewState extends State<_LoginView>
                                                 .textTheme
                                                 .bodySmall
                                                 ?.copyWith(
-                                                  color: Colors.grey.shade600,
+                                                  color: AppColors.mutedTextDark,
                                                 ),
                                           ),
                                         ),
@@ -600,7 +601,7 @@ class _LoginViewState extends State<_LoginView>
                                           children: [
                                             Expanded(
                                                 child: Divider(
-                                                    color: Colors.grey
+                                                    color: AppColors.mutedText
                                                         .withValues(alpha: 0.3))),
                                             Padding(
                                               padding:
@@ -609,14 +610,14 @@ class _LoginViewState extends State<_LoginView>
                                               child: Text(
                                                 l10n.t('or'),
                                                 style: TextStyle(
-                                                  color: Colors.grey.shade500,
+                                                  color: AppColors.mutedText,
                                                   fontSize: 13,
                                                 ),
                                               ),
                                             ),
                                             Expanded(
                                                 child: Divider(
-                                                    color: Colors.grey
+                                                    color: AppColors.mutedText
                                                         .withValues(alpha: 0.3))),
                                           ],
                                         ),
@@ -730,9 +731,9 @@ class _GreenButton extends StatelessWidget {
         gradient: isLoading
             ? null
             : const LinearGradient(
-          colors: [Color(0xFF43A047), Color(0xFF2E7D32)],
+          colors: [AppColors.lightGreen, AppColors.primaryGreen],
         ),
-        color: isLoading ? Colors.grey.shade300 : null,
+        color: isLoading ? AppColors.lightGrey : null,
         boxShadow: isLoading
             ? []
             : [
@@ -744,7 +745,7 @@ class _GreenButton extends StatelessWidget {
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(14),
@@ -760,18 +761,18 @@ class _GreenButton extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.grey.shade600,
+                      color: AppColors.mutedTextDark,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(loadingLabel,
-                      style: TextStyle(color: Colors.grey.shade600)),
+                      style: const TextStyle(color: AppColors.mutedTextDark)),
                 ],
               )
                   : Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                   letterSpacing: 0.4,

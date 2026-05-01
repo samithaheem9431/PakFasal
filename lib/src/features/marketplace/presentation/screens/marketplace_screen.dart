@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/widgets/offline_badge.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../providers/marketplace_provider.dart';
 import '../widgets/product_card.dart';
@@ -48,7 +47,6 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
 
     return PakFasalScaffold(
       title: l10n.t('marketplace'),
-      isOffline: provider.isOffline,
       child: Column(
         children: [
           _FadeSlideIn(
@@ -112,17 +110,6 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
               ),
             ),
           ),
-          if (provider.isOffline)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  const OfflineBadge(isOffline: true, isCompact: true),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(l10n.t('marketOfflineCached'))),
-                ],
-              ),
-            ),
           const SizedBox(height: 8),
           Expanded(
             child: AnimatedSwitcher(

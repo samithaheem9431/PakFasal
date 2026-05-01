@@ -103,11 +103,12 @@ class _DashboardTileState extends State<DashboardTile> {
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
+                      overflow: TextOverflow.visible,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                        fontSize: 12,
+                        height: 1.15,
                         letterSpacing: 0.2,
                         color: _pressed
                             ? scheme.primary

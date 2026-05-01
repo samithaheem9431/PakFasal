@@ -5,6 +5,7 @@ import 'dart:async';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 import '../../../../core/widgets/common_states.dart';
@@ -30,11 +31,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   int _selectedBottomIndex = 0;
   bool _animateContentIn = false;
   Timer? _weatherRefreshTimer;
-
-  // ── Green palette constants ──────────────────────────────────────────────
-  static const _forestGreen = Color(0xFF2E7D32);
-  static const _lightGreen = Color(0xFFE8F5E9);
-  // ────────────────────────────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -106,18 +102,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final scheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final sheetColor = isDark
-        ? Color.alphaBlend(Colors.white.withValues(alpha: 0.04), scheme.surface)
-        : Colors.white;
+        ? Color.alphaBlend(AppColors.white.withValues(alpha: 0.04), scheme.surface)
+        : AppColors.white;
     final tileColor = isDark
         ? Color.alphaBlend(
-            _forestGreen.withValues(alpha: 0.28),
+            AppColors.primaryGreen.withValues(alpha: 0.28),
             scheme.surfaceContainerHighest,
           )
         : scheme.surfaceContainerLow;
     final iconBgColor = isDark
-        ? _forestGreen.withValues(alpha: 0.40)
-        : _lightGreen;
-    final titleColor = isDark ? scheme.onSurface : _forestGreen;
+        ? AppColors.primaryGreen.withValues(alpha: 0.40)
+        : AppColors.paleGreen;
+    final titleColor = isDark ? scheme.onSurface : AppColors.primaryGreen;
     final textColor = isDark ? scheme.onSurface : scheme.onSurfaceVariant;
 
     showModalBottomSheet<void>(
@@ -155,7 +151,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       color: tileColor,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: _forestGreen.withValues(alpha: isDark ? 0.50 : 0.18),
+                        color: AppColors.primaryGreen.withValues(
+                          alpha: isDark ? 0.50 : 0.18,
+                        ),
                       ),
                     ),
                     child: ListTile(
@@ -171,7 +169,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         ),
                         child: Icon(
                           Icons.notifications_active_outlined,
-                          color: isDark ? Colors.white : _forestGreen,
+                          color: isDark ? AppColors.white : AppColors.primaryGreen,
                           size: 18,
                         ),
                       ),
@@ -191,13 +189,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         );
       },
     );
-  }
-
-  String _getGreeting(AppLocalizations l10n) {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return l10n.t('goodMorning');
-    if (hour < 17) return l10n.t('goodAfternoon');
-    return l10n.t('goodEvening');
   }
 
   void _onBottomNavTap(int index) {
@@ -258,7 +249,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             ? displayName[0].toUpperCase()
                             : 'F',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
                         ),
@@ -297,7 +288,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 value: themeController.isDarkMode,
-                activeColor: _forestGreen,
+                activeColor: AppColors.primaryGreen,
                 title: Text(
                   themeController.isDarkMode
                       ? l10n.t('darkMode')
@@ -314,7 +305,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     themeController.isDarkMode
                         ? Icons.dark_mode
                         : Icons.light_mode,
-                    color: _forestGreen,
+                    color: AppColors.primaryGreen,
                     size: 18,
                   ),
                 ),
@@ -331,7 +322,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   ),
                   child: const Icon(
                     Icons.language,
-                    color: _forestGreen,
+                    color: AppColors.primaryGreen,
                     size: 18,
                   ),
                 ),
@@ -353,7 +344,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         ? 'اردو'
                         : 'EN',
                     style: const TextStyle(
-                      color: _forestGreen,
+                      color: AppColors.primaryGreen,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -373,7 +364,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   leading: const Icon(
                     Icons.logout_rounded,
-                    color: Colors.redAccent,
+                    color: AppColors.error,
                   ),
                   title: Text(
                     l10n.t('authSignOut'),
@@ -406,7 +397,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final l10n = AppLocalizations.of(context);
     final auth = context.read<AuthSessionController>();
     final themeController = context.watch<ThemeController>();
-    final displayName = _displayNameFor(auth);
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -546,14 +536,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                           width: 15,
                           height: 15,
                           decoration: const BoxDecoration(
-                            color: Colors.red,
+                            color: AppColors.error,
                             shape: BoxShape.circle,
                           ),
                           child: const Center(
                             child: Text(
                               '3',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 fontSize: 8,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -570,21 +560,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshDashboard,
-                color: _forestGreen,
+                color: AppColors.primaryGreen,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        '${_getGreeting(l10n)} $displayName',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
                       FutureBuilder<CurrentWeather>(
                         future: _weatherFuture,
                         builder: (context, snapshot) {
@@ -646,7 +628,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         crossAxisCount: 3,
                         mainAxisSpacing: 10,
                         crossAxisSpacing: 10,
-                        childAspectRatio: 1.0,
+                        childAspectRatio: 0.9,
                         children: [
                           _FadeSlideIn(
                             delayMs: 160,
@@ -756,12 +738,9 @@ class _BottomTabItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
-  static const _active = Color(0xFF2E7D32);
-  static const _activeBg = Color(0xFFE8F5E9);
-  static const _inactive = Color(0xFF9E9E9E);
-
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -772,7 +751,7 @@ class _BottomTabItem extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? _activeBg : Colors.transparent,
+            color: isActive ? AppColors.paleGreen : AppColors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -785,7 +764,7 @@ class _BottomTabItem extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 19,
-                  color: isActive ? _active : _inactive,
+                  color: isActive ? scheme.primary : scheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 2),
@@ -795,7 +774,7 @@ class _BottomTabItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  color: isActive ? _active : _inactive,
+                  color: isActive ? scheme.primary : scheme.onSurfaceVariant,
                 ),
                 child: Text(label),
               ),

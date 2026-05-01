@@ -4,6 +4,7 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 
 class AiQueryScreen extends StatefulWidget {
@@ -24,14 +25,12 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
   bool _isListening = false;
   int? _speakingMessageIndex;
 
-  // ── Green palette ────────────────────────────────────────────────────────
-  static const _forestGreen  = Color(0xFF2E7D32);
-  static const _emerald      = Color(0xFF43A047);
-  static const _lightGreen   = Color(0xFFE8F5E9);
-  static const _midGreen     = Color(0xFFC8E6C9);
-  static const _surfaceGreen = Color(0xFFF1FBF2);
-  static const _mintText     = Color(0xFF66BB6A);
-  // ────────────────────────────────────────────────────────────────────────
+  static const _forestGreen = AppColors.primaryGreen;
+  static const _emerald = AppColors.lightGreen;
+  static const _lightGreen = AppColors.paleGreen;
+  static const _midGreen = AppColors.mintGreen;
+  static const _surfaceGreen = AppColors.softSurfaceGreen;
+  static const _mintText = AppColors.lightGreen;
 
   @override
   void initState() {
@@ -86,7 +85,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -425,7 +424,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: _midGreen),
                   boxShadow: [
@@ -464,7 +463,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 16),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         border: Border(top: BorderSide(color: _midGreen)),
       ),
       child: SafeArea(
@@ -508,11 +507,11 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
               duration: const Duration(milliseconds: 200),
               decoration: BoxDecoration(
                 color: _isListening
-                    ? const Color(0xFFFFEBEE)
+                    ? AppColors.error.withValues(alpha: 0.10)
                     : _lightGreen,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: _isListening ? Colors.redAccent : _midGreen,
+                  color: _isListening ? AppColors.error : _midGreen,
                 ),
               ),
               child: IconButton(
@@ -520,7 +519,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   _isListening
                       ? Icons.mic_off_rounded
                       : Icons.mic_rounded,
-                  color: _isListening ? Colors.redAccent : _forestGreen,
+                  color: _isListening ? AppColors.error : _forestGreen,
                 ),
                 tooltip: _isListening
                     ? l10n.t('voiceListeningNow')
@@ -548,7 +547,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                 ],
               ),
               child: IconButton(
-                icon: const Icon(Icons.send_rounded, color: Colors.white),
+                icon: const Icon(Icons.send_rounded, color: AppColors.white),
                 onPressed: () => _handleSubmitted(_textController.text),
               ),
             ),
@@ -603,7 +602,7 @@ class _TypingDotsState extends State<_TypingDots>
               height: 7,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF66BB6A).withValues(alpha: opacity),
+                color: AppColors.lightGreen.withValues(alpha: opacity),
               ),
             );
           }),
@@ -635,10 +634,10 @@ class _ChatBubble extends StatelessWidget {
   final bool isSpeaking;
   final VoidCallback? onSpeak;
 
-  static const _forestGreen = Color(0xFF2E7D32);
-  static const _emerald     = Color(0xFF43A047);
-  static const _lightGreen  = Color(0xFFE8F5E9);
-  static const _mintText    = Color(0xFF66BB6A);
+  static const _forestGreen = AppColors.primaryGreen;
+  static const _emerald = AppColors.lightGreen;
+  static const _lightGreen = AppColors.paleGreen;
+  static const _mintText = AppColors.lightGreen;
 
   @override
   Widget build(BuildContext context) {
@@ -701,7 +700,7 @@ class _ChatBubble extends StatelessWidget {
                       end: Alignment.bottomRight,
                     )
                         : null,
-                    color: message.isUser ? null : Colors.white,
+                    color: message.isUser ? null : AppColors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -714,7 +713,7 @@ class _ChatBubble extends StatelessWidget {
                     ),
                     border: message.isUser
                         ? null
-                        : Border.all(color: const Color(0xFFE8F5E9)),
+                        : Border.all(color: AppColors.paleGreen),
                     boxShadow: [
                       BoxShadow(
                         color: _forestGreen.withValues(
@@ -728,7 +727,7 @@ class _ChatBubble extends StatelessWidget {
                     message.text,
                     style: TextStyle(
                       color: message.isUser
-                          ? Colors.white
+                          ? AppColors.white
                           : _forestGreen,
                       fontSize: 15,
                       height: 1.45,

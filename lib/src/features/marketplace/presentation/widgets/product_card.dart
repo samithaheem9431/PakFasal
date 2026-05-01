@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/product.dart';
 
 class ProductCard extends StatefulWidget {
@@ -55,7 +56,7 @@ class _ProductCardState extends State<ProductCard> {
                         widget.product.imageUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                          color: Colors.green.withValues(alpha: 0.1),
+                          color: AppColors.success.withValues(alpha: 0.1),
                           child: const Icon(Icons.image_not_supported),
                         ),
                       ),
@@ -93,7 +94,7 @@ class _ProductCardState extends State<ProductCard> {
                                       ? Icons.favorite
                                       : Icons.favorite_border,
                                   key: ValueKey(widget.isFavorite),
-                                  color: widget.isFavorite ? Colors.red : null,
+                                  color: widget.isFavorite ? AppColors.error : null,
                                 ),
                               ),
                             ),
@@ -118,7 +119,7 @@ class _ProductCardState extends State<ProductCard> {
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.15),
+                                  color: AppColors.success.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
