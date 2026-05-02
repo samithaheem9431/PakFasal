@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
+import 'crop_selection_screen.dart';
 import 'learning_screen.dart';
 
 /// Entry hub for all learning content. Opens dedicated flows per topic.
@@ -101,7 +102,15 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
         descKey: 'learningOptionPestsDesc',
         accentBg: const Color(0xFFFFF8E1),
         accentFg: const Color(0xFFF9A825),
-        onTap: () => _showComingSoon(context),
+        isActive: true,
+        onTap: () {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => const CropSelectionScreen(),
+            ),
+          );
+        },
       ),
       _LearningOption(
         icon: Icons.eco_outlined,
