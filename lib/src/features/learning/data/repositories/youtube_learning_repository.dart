@@ -20,6 +20,33 @@ class YouTubeLearningRepository {
   String get _effectiveApiKey => _apiKey.isNotEmpty ? _apiKey : _embeddedApiKey;
   bool get isConfigured => _effectiveApiKey.isNotEmpty;
 
+  /// Loads videos for every crop category in parallel, deduped by [LearningVideo.videoId].
+  Future<List<LearningVideo>> fetchVideosForAllCategories({
+    bool forceRefresh = false,
+  }) async {
+    const categories = [
+      'Wheat',
+      'Rice',
+      'Cotton',
+      'Sugarcane',
+      'Maize',
+    ];
+    final lists = await Future.wait(
+      categories.map(
+        (c) => fetchVideosByCategory(c, forceRefresh: forceRefresh),
+      ),
+    );
+    final byId = <String, LearningVideo>{};
+    for (final list in lists) {
+      for (final v in list) {
+        byId.putIfAbsent(v.videoId, () => v);
+      }
+    }
+    final merged = byId.values.toList()
+      ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+    return merged;
+  }
+
   Future<List<LearningVideo>> fetchVideosByCategory(
     String category, {
     bool forceRefresh = false,

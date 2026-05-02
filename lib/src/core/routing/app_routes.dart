@@ -6,7 +6,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/crop_calendar/presentation/screens/crop_calendar_screen.dart';
 import '../../features/home/presentation/screens/home_dashboard_screen.dart';
-import '../../features/learning/presentation/screens/learning_screen.dart';
+import '../../features/learning/presentation/screens/learning_dashboard_screen.dart';
 import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -44,7 +44,7 @@ class AppRoutes {
       case home:
         return _materialRoute(const HomeDashboardScreen());
       case learning:
-        return _materialRoute(const LearningScreen());
+        return _materialRoute(const LearningDashboardScreen());
       case weather:
         return _materialRoute(const WeatherScreen());
       case aiQuery:
