@@ -12,7 +12,7 @@
 /// flutter run --dart-define-from-file=config/dev.json
 /// ```
 ///
-/// See `config/app_config.example.json` for the schema.
+/// See `config/app_config.json` for the schema.
 class AppConfig {
   AppConfig._();
 

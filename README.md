@@ -15,7 +15,7 @@ All secrets and tunable URLs are injected at build time via `--dart-define`.
 Nothing sensitive should ever live in source. Copy the example and fill it in:
 
 ```bash
-cp config/app_config.example.json config/dev.json
+cp config/app_config.json config/dev.json
 ```
 
 Then edit `config/dev.json`. The file is **git-ignored**.
