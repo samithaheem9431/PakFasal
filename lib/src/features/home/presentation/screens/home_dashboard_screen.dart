@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_controller.dart';
-import '../../../auth/presentation/providers/auth_session_controller.dart';
 import '../../../../core/widgets/common_states.dart';
-import '../../../weather/data/repositories/weather_repository.dart';
-import '../../../weather/domain/entities/weather_models.dart';
+import '../../../auth/presentation/providers/auth_session_controller.dart';
+import '../../../weather/presentation/providers/weather_provider.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/home_weather_card.dart';
 
@@ -24,77 +22,37 @@ class HomeDashboardScreen extends StatefulWidget {
 class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final WeatherRepository _weatherRepository = WeatherRepository();
-  static Future<CurrentWeather>? _sharedWeatherFuture;
-  late Future<CurrentWeather> _weatherFuture;
-  DateTime? _lastWeatherSyncAt;
   int _selectedBottomIndex = 0;
   bool _animateContentIn = false;
-  Timer? _weatherRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _weatherFuture = _loadWeather();
-    _weatherRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
-      if (!mounted) return;
-      _refreshDashboard();
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _animateContentIn = true);
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final signedIn = context.read<AuthSessionController>().isSignedIn;
-      if (!signedIn) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (_) => false,
-        );
-      }
+      setState(() => _animateContentIn = true);
+      context.read<WeatherProvider>().ensureLoaded();
     });
+    // Auth-state guarding is handled by AuthGate at the route level.
+    // Weather state and its auto-refresh timer live in WeatherProvider.
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _weatherRefreshTimer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
-      _refreshDashboard();
+      context.read<WeatherProvider>().refreshAll();
     }
-  }
-
-  Future<CurrentWeather> _loadWeather({bool forceRefresh = false}) {
-    if (!forceRefresh && _sharedWeatherFuture != null) {
-      return _sharedWeatherFuture!;
-    }
-    final future = _weatherRepository
-        .fetchCurrentWeather(forceRefresh: forceRefresh)
-        .then((weather) {
-          if (mounted) {
-            setState(() => _lastWeatherSyncAt = DateTime.now());
-          } else {
-            _lastWeatherSyncAt = DateTime.now();
-          }
-          return weather;
-        });
-    _sharedWeatherFuture = future;
-    return future;
   }
 
   Future<void> _refreshDashboard() async {
-    final refreshedFuture = _loadWeather(forceRefresh: true);
-    setState(() {
-      _weatherFuture = refreshedFuture;
-    });
-    await refreshedFuture;
+    await context.read<WeatherProvider>().refreshAll();
   }
 
   void _openNotificationsPanel(AppLocalizations l10n) {
@@ -567,31 +525,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      FutureBuilder<CurrentWeather>(
-                        future: _weatherFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
+                      Consumer<WeatherProvider>(
+                        builder: (context, weather, _) {
+                          if (weather.current == null &&
+                              weather.isLoadingCurrent) {
                             return const _FadeSlideIn(
                               delayMs: 40,
                               child: LoadingStateCard(),
                             );
                           }
-                          if (snapshot.hasError || snapshot.data == null) {
+                          if (weather.current == null) {
                             return _FadeSlideIn(
                               delayMs: 40,
                               child: ErrorStateCard(
-                                onRetry: () {
-                                  setState(() {
-                                    _weatherFuture = _loadWeather(
-                                      forceRefresh: true,
-                                    );
-                                  });
-                                },
+                                onRetry: () => weather.loadCurrent(
+                                  forceRefresh: true,
+                                ),
                               ),
                             );
                           }
-                          final data = snapshot.data!;
+                          final data = weather.current!;
+                          final lastSyncAt = weather.lastSyncAt;
                           return _FadeSlideIn(
                             delayMs: 40,
                             animate: _animateContentIn,
@@ -600,9 +554,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                               temperatureLabel: l10n.t('temperature'),
                               humidityLabel: l10n.t('humidity'),
                               rainChanceLabel: l10n.t('rainChance'),
-                              lastSyncedLabel: _lastWeatherSyncAt == null
+                              lastSyncedLabel: lastSyncAt == null
                                   ? null
-                                  : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(_lastWeatherSyncAt!).format(context)}',
+                                  : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',
                             ),
                           );
                         },

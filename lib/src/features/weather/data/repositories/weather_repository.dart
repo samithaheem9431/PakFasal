@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../domain/entities/weather_models.dart';
 
 class WeatherRepository {
@@ -55,7 +56,7 @@ class WeatherRepository {
     }
 
     final uri = Uri.parse(
-      'https://api.open-meteo.com/v1/forecast'
+      '${AppConfig.weatherApiBaseUrl}/forecast'
       '?latitude=${position.latitude}'
       '&longitude=${position.longitude}'
       '&current=temperature_2m,relative_humidity_2m,weather_code'
@@ -125,7 +126,7 @@ class WeatherRepository {
     }
 
     final uri = Uri.parse(
-      'https://api.open-meteo.com/v1/forecast'
+      '${AppConfig.weatherApiBaseUrl}/forecast'
       '?latitude=${position.latitude}'
       '&longitude=${position.longitude}'
       '&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'

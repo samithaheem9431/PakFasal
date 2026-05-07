@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Build-time configuration with secrets — DO NOT COMMIT
+# Use config/app_config.example.json as a template.
+config/*.json
+!config/*.example.json
+.env
+.env.*
+!.env.example
+

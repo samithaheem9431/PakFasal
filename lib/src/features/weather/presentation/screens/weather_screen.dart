@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
-import '../../data/repositories/weather_repository.dart';
 import '../../domain/entities/weather_models.dart';
+import '../providers/weather_provider.dart';
 import '../utils/weather_view_mapper.dart';
 
 class WeatherScreen extends StatefulWidget {
@@ -18,60 +18,30 @@ class WeatherScreen extends StatefulWidget {
 
 class _WeatherScreenState extends State<WeatherScreen>
     with WidgetsBindingObserver {
-  final WeatherRepository _repository = WeatherRepository();
-  late Future<_WeatherScreenData> _screenFuture;
-  Timer? _autoRefreshTimer;
-  DateTime? _lastWeatherSyncAt;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _screenFuture = _loadData();
-    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _refreshForecast();
+      context.read<WeatherProvider>().ensureLoaded();
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _autoRefreshTimer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
-      _refreshForecast();
+      context.read<WeatherProvider>().refreshAll();
     }
   }
 
-  Future<void> _refreshForecast() async {
-    final refreshed = _loadData(forceRefresh: true);
-    setState(() => _screenFuture = refreshed);
-    await refreshed;
-  }
-
-  Future<_WeatherScreenData> _loadData({bool forceRefresh = false}) async {
-    final currentFuture = _repository.fetchCurrentWeather(
-      forceRefresh: forceRefresh,
-    );
-    final forecastFuture = _repository.fetchSevenDayForecast(
-      forceRefresh: forceRefresh,
-    );
-    final results = await Future.wait<dynamic>([currentFuture, forecastFuture]);
-    if (mounted) {
-      setState(() => _lastWeatherSyncAt = DateTime.now());
-    } else {
-      _lastWeatherSyncAt = DateTime.now();
-    }
-    return _WeatherScreenData(
-      current: results[0] as CurrentWeather,
-      forecast: results[1] as List<DailyForecast>,
-    );
-  }
+  Future<void> _refresh() => context.read<WeatherProvider>().refreshAll();
 
   @override
   Widget build(BuildContext context) {
@@ -81,35 +51,42 @@ class _WeatherScreenState extends State<WeatherScreen>
       showBack: true,
       child: RefreshIndicator(
         color: AppColors.primaryGreen,
-        onRefresh: _refreshForecast,
-        child: FutureBuilder<_WeatherScreenData>(
-          future: _screenFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        onRefresh: _refresh,
+        child: Consumer<WeatherProvider>(
+          builder: (context, weather, _) {
+            final current = weather.current;
+            final forecast = weather.forecast;
+
+            if (current == null && weather.isLoading) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: const [LoadingStateCard()],
               );
             }
-            if (snapshot.hasError || snapshot.data == null) {
+
+            if (current == null) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
-                children: [ErrorStateCard(onRetry: _refreshForecast)],
+                children: [ErrorStateCard(onRetry: _refresh)],
               );
             }
 
-            final current = snapshot.data!.current;
-            final forecast = snapshot.data!.forecast;
             if (forecast.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
-                children: [ErrorStateCard(onRetry: _refreshForecast)],
+                children: [
+                  if (weather.isLoadingForecast)
+                    const LoadingStateCard()
+                  else
+                    ErrorStateCard(onRetry: _refresh),
+                ],
               );
             }
 
+            final lastSyncAt = weather.lastSyncAt;
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
@@ -121,9 +98,9 @@ class _WeatherScreenState extends State<WeatherScreen>
               children: [
                 _TopLocationBar(
                   locationLabel: current.locationLabel,
-                  lastSyncedLabel: _lastWeatherSyncAt == null
+                  lastSyncedLabel: lastSyncAt == null
                       ? null
-                      : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(_lastWeatherSyncAt!).format(context)}',
+                      : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',
                 ),
                 const SizedBox(height: 8),
                 _HeroWeatherCard(current: current, l10n: l10n),
@@ -767,13 +744,4 @@ class _InsightTile extends StatelessWidget {
       ),
     );
   }
-}
-
-// ─── Data class ──────────────────────────────────────────────────────────────
-
-class _WeatherScreenData {
-  const _WeatherScreenData({required this.current, required this.forecast});
-
-  final CurrentWeather current;
-  final List<DailyForecast> forecast;
 }

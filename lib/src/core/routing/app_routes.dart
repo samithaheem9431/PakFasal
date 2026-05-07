@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/auth_gate.dart';
 import '../../features/ai_query/presentation/screens/ai_query_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -42,21 +43,23 @@ class AppRoutes {
       case onboarding:
         return _materialRoute(const OnboardingScreen());
       case home:
-        return _materialRoute(const HomeDashboardScreen());
+        return _materialRoute(const AuthGate(child: HomeDashboardScreen()));
       case learning:
-        return _materialRoute(const LearningDashboardScreen());
+        return _materialRoute(
+          const AuthGate(child: LearningDashboardScreen()),
+        );
       case weather:
-        return _materialRoute(const WeatherScreen());
+        return _materialRoute(const AuthGate(child: WeatherScreen()));
       case aiQuery:
-        return _materialRoute(const AiQueryScreen());
+        return _materialRoute(const AuthGate(child: AiQueryScreen()));
       case sensor:
-        return _materialRoute(const SensorScreen());
+        return _materialRoute(const AuthGate(child: SensorScreen()));
       case profile:
-        return _materialRoute(const ProfileScreen());
+        return _materialRoute(const AuthGate(child: ProfileScreen()));
       case marketplace:
-        return _materialRoute(const MarketplaceScreen());
+        return _materialRoute(const AuthGate(child: MarketplaceScreen()));
       case cropCalendar:
-        return _materialRoute(const CropCalendarScreen());
+        return _materialRoute(const AuthGate(child: CropCalendarScreen()));
       default:
         return _materialRoute(const SplashScreen());
     }

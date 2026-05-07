@@ -7,6 +7,7 @@ import 'src/app.dart';
 import 'src/core/localization/localization_controller.dart';
 import 'src/core/theme/theme_controller.dart';
 import 'src/features/auth/presentation/providers/auth_session_controller.dart';
+import 'src/features/weather/presentation/providers/weather_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +36,9 @@ Future<void> main() async {
             controller.onUserChanged(auth.userId);
             return controller;
           },
+        ),
+        ChangeNotifierProvider(
+          create: (_) => WeatherProvider()..startAutoRefresh(),
         ),
       ],
       child: const PakFasalApp(),

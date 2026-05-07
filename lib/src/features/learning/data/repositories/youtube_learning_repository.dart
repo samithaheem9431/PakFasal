@@ -3,22 +3,14 @@ import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../../core/config/app_config.dart';
 import '../../domain/entities/learning_video.dart';
 
 class YouTubeLearningRepository {
-  static const String _apiKey = String.fromEnvironment(
-    'YOUTUBE_API_KEY',
-    defaultValue: '',
-  );
-  static const String _embeddedApiKey =
-      'AIzaSyDGdz2gyxqzMGrdi-MpGbaIYTQ0-5IuTEM';
-  static const String _channelId = String.fromEnvironment(
-    'YOUTUBE_CHANNEL_ID',
-    defaultValue: '',
-  );
+  String get _apiKey => AppConfig.youtubeApiKey;
+  String get _channelId => AppConfig.youtubeChannelId;
 
-  String get _effectiveApiKey => _apiKey.isNotEmpty ? _apiKey : _embeddedApiKey;
-  bool get isConfigured => _effectiveApiKey.isNotEmpty;
+  bool get isConfigured => AppConfig.hasYoutubeApiKey;
 
   /// Loads videos for every crop category in parallel, deduped by [LearningVideo.videoId].
   Future<List<LearningVideo>> fetchVideosForAllCategories({
@@ -61,13 +53,13 @@ class YouTubeLearningRepository {
     if (!forceRefresh && cached != null && cached.isNotEmpty) {
       // If API key exists but cached content is demo, try live fetch again.
       final shouldUseCachedImmediately =
-          _effectiveApiKey.isEmpty || cachedSource == 'live';
+          _apiKey.isEmpty || cachedSource == 'live';
       if (shouldUseCachedImmediately && cachedVideos.isNotEmpty) {
         return cachedVideos;
       }
     }
 
-    if (_effectiveApiKey.isEmpty) {
+    if (_apiKey.isEmpty) {
       final demo = _demoVideos(category);
       box.put(cacheKey, _toJson(demo, source: 'demo'));
       return demo;
@@ -76,14 +68,14 @@ class YouTubeLearningRepository {
     try {
       final query = 'Pakistan farming $category';
       final uri = Uri.parse(
-        'https://www.googleapis.com/youtube/v3/search'
+        '${AppConfig.youtubeApiBaseUrl}/search'
         '?part=snippet'
         '&type=video'
         '&maxResults=12'
         '&order=relevance'
         '&q=${Uri.encodeQueryComponent(query)}'
         '${_channelId.isNotEmpty ? '&channelId=$_channelId' : ''}'
-        '&key=$_effectiveApiKey',
+        '&key=$_apiKey',
       );
 
       final response = await http.get(uri);
