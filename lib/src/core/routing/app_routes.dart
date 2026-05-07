@@ -33,39 +33,43 @@ class AppRoutes {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
-        return _materialRoute(const SplashScreen());
+        return _materialRoute(const SplashScreen(), settings);
       case login:
-        return _materialRoute(const LoginScreen());
+        return _materialRoute(const LoginScreen(), settings);
       case signup:
-        return _materialRoute(const SignupScreen());
+        return _materialRoute(const SignupScreen(), settings);
       case forgotPassword:
-        return _materialRoute(const ForgotPasswordScreen());
+        return _materialRoute(const ForgotPasswordScreen(), settings);
       case onboarding:
-        return _materialRoute(const OnboardingScreen());
+        return _materialRoute(const OnboardingScreen(), settings);
       case home:
-        return _materialRoute(const AuthGate(child: HomeDashboardScreen()));
+        return _materialRoute(const AuthGate(child: HomeDashboardScreen()), settings);
       case learning:
         return _materialRoute(
           const AuthGate(child: LearningDashboardScreen()),
+          settings,
         );
       case weather:
-        return _materialRoute(const AuthGate(child: WeatherScreen()));
+        return _materialRoute(const AuthGate(child: WeatherScreen()), settings);
       case aiQuery:
-        return _materialRoute(const AuthGate(child: AiQueryScreen()));
+        return _materialRoute(const AuthGate(child: AiQueryScreen()), settings);
       case sensor:
-        return _materialRoute(const AuthGate(child: SensorScreen()));
+        return _materialRoute(const AuthGate(child: SensorScreen()), settings);
       case profile:
-        return _materialRoute(const AuthGate(child: ProfileScreen()));
+        return _materialRoute(const AuthGate(child: ProfileScreen()), settings);
       case marketplace:
-        return _materialRoute(const AuthGate(child: MarketplaceScreen()));
+        return _materialRoute(const AuthGate(child: MarketplaceScreen()), settings);
       case cropCalendar:
-        return _materialRoute(const AuthGate(child: CropCalendarScreen()));
+        return _materialRoute(const AuthGate(child: CropCalendarScreen()), settings);
       default:
-        return _materialRoute(const SplashScreen());
+        return _materialRoute(const SplashScreen(), settings);
     }
   }
 
-  static MaterialPageRoute _materialRoute(Widget child) {
-    return MaterialPageRoute(builder: (_) => child);
+  static MaterialPageRoute _materialRoute(Widget child, RouteSettings settings) {
+    return MaterialPageRoute(
+      builder: (_) => child,
+      settings: settings,
+    );
   }
 }

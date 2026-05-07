@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/error/error_logger.dart';
 import '../../data/repositories/weather_repository.dart';
 import '../../domain/entities/weather_models.dart';
 
@@ -88,8 +89,14 @@ class WeatherProvider extends ChangeNotifier {
       _current = result;
       _lastSyncAt = DateTime.now();
       return result;
-    } catch (error) {
+    } catch (error, stack) {
       _currentError = error;
+      ErrorLogger.instance.recordNonFatal(
+        error,
+        stack,
+        context: 'WeatherProvider.loadCurrent',
+        attributes: {'force_refresh': forceRefresh},
+      );
       return null;
     } finally {
       _isLoadingCurrent = false;
@@ -116,8 +123,14 @@ class WeatherProvider extends ChangeNotifier {
       _forecast = result;
       _lastSyncAt = DateTime.now();
       return result;
-    } catch (error) {
+    } catch (error, stack) {
       _forecastError = error;
+      ErrorLogger.instance.recordNonFatal(
+        error,
+        stack,
+        context: 'WeatherProvider.loadForecast',
+        attributes: {'force_refresh': forceRefresh},
+      );
       return null;
     } finally {
       _isLoadingForecast = false;
