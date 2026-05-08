@@ -219,7 +219,7 @@ class HomeWeatherCard extends StatelessWidget {
                         Expanded(
                           child: _MetricCell(
                             icon: Icons.air,
-                            value: '12 km/h',
+                            value: '${weather.windSpeedKmh.toStringAsFixed(0)} km/h',
                             label: l10n.t('wind'),
                           ),
                         ),

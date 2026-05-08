@@ -1,265 +1,530 @@
 import 'dart:convert';
 
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../core/config/app_config.dart';
+import '../../constants/weather_constants.dart';
 import '../../domain/entities/weather_models.dart';
+import '../services/location_service.dart';
+import '../services/weather_api_service.dart';
 
+/// Result returned by the repository — surfaces both the data and any
+/// transient state (offline/stale cache) for the UI to render correctly.
+class WeatherFetchResult {
+  const WeatherFetchResult({
+    required this.snapshot,
+    required this.fromCache,
+    required this.isStale,
+    this.error,
+  });
+
+  /// Always populated when a snapshot was available (live or cached).
+  /// Null only when the very first call fails and there is no cache yet.
+  final WeatherSnapshot? snapshot;
+
+  /// True when [snapshot] came from disk (Hive) instead of the network.
+  final bool fromCache;
+
+  /// True when [snapshot] exists but is older than the configured TTL.
+  /// Used by the UI to show a subtle "showing cached data" hint.
+  final bool isStale;
+
+  /// Network/parse error encountered. May be non-null even when [snapshot]
+  /// is non-null (e.g. cache served because network failed).
+  final Object? error;
+}
+
+/// Orchestrates location → API → cache for the weather feature.
+///
+/// Responsibilities:
+///   * Resolve the active [WeatherLocation] (GPS or user-picked).
+///   * Fetch a [WeatherSnapshot] via [WeatherApiService] and cache it.
+///   * Serve cached data when the network fails (offline first).
+///   * Persist the user's last-selected city + saved cities list so the
+///     next launch shows their preferred location instantly.
 class WeatherRepository {
-  static const Duration _currentCacheTtl = Duration(minutes: 10);
-  static const String _lastCurrentKey = 'current_last';
+  WeatherRepository({
+    WeatherApiService? apiService,
+    LocationService? locationService,
+    Box? cacheBox,
+  })  : _api = apiService ?? WeatherApiService(),
+        _location = locationService ?? const LocationService(),
+        _box = cacheBox ?? Hive.box(WeatherConstants.hiveBoxName);
+
+  final WeatherApiService _api;
+  final LocationService _location;
+  final Box _box;
+
+  // ── Public API ─────────────────────────────────────────────────────────
+
+  /// Resolves the active location for this session.
+  ///
+  /// Priority:
+  ///   1. User's last manually-selected city (persistent).
+  ///   2. Device GPS (when available).
+  ///   3. Last successfully-used location from cache.
+  ///   4. A safe default (Lahore, Pakistan) so the UI never crashes.
+  Future<WeatherLocation> resolveActiveLocation({
+    bool forceGps = false,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (!forceGps) {
+      final raw = prefs.getString(WeatherConstants.prefSelectedLocation);
+      if (raw != null && raw.isNotEmpty) {
+        try {
+          final selected = WeatherLocation.fromJson(
+            jsonDecode(raw) as Map<String, dynamic>,
+          );
+          if (!selected.isCurrent) return selected;
+        } catch (_) {/* fall through to GPS */}
+      }
+    }
+
+    final gps = await _location.getCurrentPosition();
+    if (gps.isSuccess && gps.position != null) {
+      final pos = gps.position!;
+      final label = await _api.reverseGeocode(
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+      );
+      final location = WeatherLocation(
+        label: label,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        isCurrent: true,
+      );
+      await _persistSelectedLocation(location);
+      return location;
+    }
+
+    // Fall back to whatever we cached last time.
+    final cachedSnapshot = _readSnapshotCache(_lastUsedLocationKey(prefs));
+    if (cachedSnapshot != null) return cachedSnapshot.location;
+
+    // Absolute fallback so the UI always has something to render.
+    return const WeatherLocation(
+      label: 'Lahore, Pakistan',
+      latitude: 31.5204,
+      longitude: 74.3587,
+    );
+  }
+
+  /// Fetches a complete [WeatherSnapshot] for [location].
+  ///
+  /// Behaviour:
+  ///   * When `forceRefresh` is false and cache is fresh → returns cache.
+  ///   * Otherwise → fetches from network; on failure, falls back to
+  ///     whatever cache exists (even if stale) so the UI stays usable
+  ///     when offline.
+  Future<WeatherFetchResult> fetchSnapshot({
+    required WeatherLocation location,
+    bool forceRefresh = false,
+  }) async {
+    final key = _locationKey(location.latitude, location.longitude);
+    final cached = _readSnapshotCache(key);
+
+    if (!forceRefresh && cached != null && _isFresh(cached)) {
+      return WeatherFetchResult(
+        snapshot: cached,
+        fromCache: true,
+        isStale: false,
+      );
+    }
+
+    final result = await _api.fetchSnapshot(
+      latitude: location.latitude,
+      longitude: location.longitude,
+      locationLabel: location.label,
+    );
+
+    if (result.isSuccess && result.data != null) {
+      await _writeSnapshotCache(key, result.data!);
+      await _persistLastUsedLocation(location);
+      return WeatherFetchResult(
+        snapshot: result.data,
+        fromCache: false,
+        isStale: false,
+      );
+    }
+
+    // Network/parse failure — fall back to cache if any.
+    if (cached != null) {
+      return WeatherFetchResult(
+        snapshot: cached,
+        fromCache: true,
+        isStale: true,
+        error: result.error,
+      );
+    }
+    return WeatherFetchResult(
+      snapshot: null,
+      fromCache: false,
+      isStale: false,
+      error: result.error,
+    );
+  }
+
+  // ── Saved cities ───────────────────────────────────────────────────────
+
+  Future<List<WeatherLocation>> loadSavedLocations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw =
+        prefs.getStringList(WeatherConstants.prefSavedLocations) ?? const [];
+    return raw
+        .map((entry) {
+          try {
+            return WeatherLocation.fromJson(
+              jsonDecode(entry) as Map<String, dynamic>,
+            );
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<WeatherLocation>()
+        .toList(growable: false);
+  }
+
+  Future<void> addSavedLocation(WeatherLocation location) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing =
+        prefs.getStringList(WeatherConstants.prefSavedLocations) ?? const [];
+    final list = [...existing];
+
+    list.removeWhere((entry) {
+      try {
+        final loc = WeatherLocation.fromJson(
+          jsonDecode(entry) as Map<String, dynamic>,
+        );
+        return _sameLocation(loc, location);
+      } catch (_) {
+        return false;
+      }
+    });
+    list.insert(0, jsonEncode(location.toJson()));
+
+    final trimmed = list.take(WeatherConstants.savedLocationsLimit).toList();
+    await prefs.setStringList(
+      WeatherConstants.prefSavedLocations,
+      trimmed,
+    );
+  }
+
+  Future<void> removeSavedLocation(WeatherLocation location) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing =
+        prefs.getStringList(WeatherConstants.prefSavedLocations) ?? const [];
+    final list = existing.where((entry) {
+      try {
+        final loc = WeatherLocation.fromJson(
+          jsonDecode(entry) as Map<String, dynamic>,
+        );
+        return !_sameLocation(loc, location);
+      } catch (_) {
+        return true;
+      }
+    }).toList();
+    await prefs.setStringList(
+      WeatherConstants.prefSavedLocations,
+      list,
+    );
+  }
+
+  Future<void> selectLocation(WeatherLocation location) =>
+      _persistSelectedLocation(location);
+
+  Future<WeatherApiResult<List<WeatherLocation>>> searchCities(
+    String query,
+  ) =>
+      _api.searchCities(query);
+
+  // ── Backwards compatibility helpers ────────────────────────────────────
+  // The legacy [SensorScreen] calls fetchCurrentWeather() directly. Keep
+  // a thin wrapper so existing call sites keep working without churn.
 
   Future<CurrentWeather> fetchCurrentWeather({
     bool forceRefresh = false,
   }) async {
-    final box = Hive.box('weather_cache');
-
-    if (!forceRefresh) {
-      // Fast path: return latest cached weather immediately (no GPS wait).
-      final lastCached = box.get(_lastCurrentKey) as String?;
-      if (lastCached != null && lastCached.isNotEmpty) {
-        final map = jsonDecode(lastCached) as Map<String, dynamic>;
-        final cachedAtMillis = (map['cachedAt'] as num?)?.toInt();
-        if (cachedAtMillis != null) {
-          final cachedAt = DateTime.fromMillisecondsSinceEpoch(cachedAtMillis);
-          final isFresh =
-              DateTime.now().difference(cachedAt) <= _currentCacheTtl;
-          if (isFresh) {
-            return _currentFromMap(map);
-          }
-        }
-      }
-    }
-
-    final position = await _getCurrentPosition();
-    final locationKey = _locationKey(position);
-
-    if (!forceRefresh) {
-      final cached = box.get('current_$locationKey') as String?;
-      if (cached != null && cached.isNotEmpty) {
-        final map = jsonDecode(cached) as Map<String, dynamic>;
-        final cachedAtMillis = (map['cachedAt'] as num?)?.toInt();
-        if (cachedAtMillis != null) {
-          final cachedAt = DateTime.fromMillisecondsSinceEpoch(cachedAtMillis);
-          final isFresh =
-              DateTime.now().difference(cachedAt) <= _currentCacheTtl;
-          if (isFresh) {
-            return _currentFromMap(map);
-          }
-        } else {
-          return _currentFromMap(map);
-        }
-      }
-    }
-
-    final uri = Uri.parse(
-      '${AppConfig.weatherApiBaseUrl}/forecast'
-      '?latitude=${position.latitude}'
-      '&longitude=${position.longitude}'
-      '&current=temperature_2m,relative_humidity_2m,weather_code'
-      '&hourly=precipitation_probability'
-      '&daily=precipitation_probability_max'
-      '&forecast_days=1'
-      '&timezone=auto',
+    final location = await resolveActiveLocation();
+    final result = await fetchSnapshot(
+      location: location,
+      forceRefresh: forceRefresh,
     );
-
-    final response = await http.get(uri);
-    if (response.statusCode != 200) {
-      final cached = box.get('current_$locationKey') as String?;
-      if (cached != null && cached.isNotEmpty) {
-        return _currentFromJson(cached);
-      }
-      throw Exception('Could not fetch current weather');
-    }
-
-    final Map<String, dynamic> json =
-        jsonDecode(response.body) as Map<String, dynamic>;
-    final current = json['current'] as Map<String, dynamic>? ?? {};
-    final hourly = json['hourly'] as Map<String, dynamic>? ?? {};
-    final daily = json['daily'] as Map<String, dynamic>? ?? {};
-    final hourlyTimes = (hourly['time'] as List<dynamic>? ?? []).cast<String>();
-    final precipitation =
-        (hourly['precipitation_probability'] as List<dynamic>? ?? [])
-            .cast<num>();
-    final dailyRainList =
-        (daily['precipitation_probability_max'] as List<dynamic>? ?? [])
-            .cast<num>();
-    final currentTime = (current['time'] as String?) ?? '';
-    final currentHourIndex = hourlyTimes.indexOf(currentTime);
-    final hourlyRainChance =
-        (currentHourIndex >= 0 && currentHourIndex < precipitation.length)
-        ? precipitation[currentHourIndex].toInt()
-        : (precipitation.isNotEmpty ? precipitation.first.toInt() : 0);
-    final rainChance = dailyRainList.isNotEmpty
-        ? dailyRainList.first.toInt()
-        : hourlyRainChance;
-
-    final currentWeather = CurrentWeather(
-      locationLabel:
-          '${position.latitude.toStringAsFixed(2)}, ${position.longitude.toStringAsFixed(2)}',
-      temperatureC: ((current['temperature_2m'] as num?) ?? 0).toDouble(),
-      humidity: ((current['relative_humidity_2m'] as num?) ?? 0).toInt(),
-      rainChancePercent: rainChance,
-      conditionCode: ((current['weather_code'] as num?) ?? 0).toInt(),
-    );
-    final encoded = _currentToJson(currentWeather);
-    box.put('current_$locationKey', encoded);
-    box.put(_lastCurrentKey, encoded);
-    return currentWeather;
+    if (result.snapshot != null) return result.snapshot!.current;
+    throw result.error ?? Exception('Could not fetch current weather');
   }
 
   Future<List<DailyForecast>> fetchSevenDayForecast({
     bool forceRefresh = false,
   }) async {
-    final position = await _getCurrentPosition();
-    final locationKey = _locationKey(position);
-    final box = Hive.box('weather_cache');
-
-    if (!forceRefresh) {
-      final cached = box.get('forecast_$locationKey') as String?;
-      if (cached != null && cached.isNotEmpty) {
-        return _forecastFromJson(cached);
-      }
-    }
-
-    final uri = Uri.parse(
-      '${AppConfig.weatherApiBaseUrl}/forecast'
-      '?latitude=${position.latitude}'
-      '&longitude=${position.longitude}'
-      '&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
-      '&timezone=auto'
-      '&forecast_days=7',
+    final location = await resolveActiveLocation();
+    final result = await fetchSnapshot(
+      location: location,
+      forceRefresh: forceRefresh,
     );
-
-    final response = await http.get(uri);
-    if (response.statusCode != 200) {
-      final cached = box.get('forecast_$locationKey') as String?;
-      if (cached != null && cached.isNotEmpty) {
-        return _forecastFromJson(cached);
-      }
-      throw Exception('Could not fetch 7-day forecast');
-    }
-
-    final Map<String, dynamic> json =
-        jsonDecode(response.body) as Map<String, dynamic>;
-    final daily = json['daily'] as Map<String, dynamic>? ?? {};
-    final dates = (daily['time'] as List<dynamic>? ?? []).cast<String>();
-    final maxTemps = (daily['temperature_2m_max'] as List<dynamic>? ?? [])
-        .cast<num>();
-    final minTemps = (daily['temperature_2m_min'] as List<dynamic>? ?? [])
-        .cast<num>();
-    final rainList =
-        (daily['precipitation_probability_max'] as List<dynamic>? ?? [])
-            .cast<num>();
-    final weatherCodes = (daily['weathercode'] as List<dynamic>? ?? [])
-        .cast<num>();
-
-    final itemCount = [
-      dates.length,
-      maxTemps.length,
-      minTemps.length,
-      rainList.length,
-      weatherCodes.length,
-      7,
-    ].reduce((a, b) => a < b ? a : b);
-
-    final forecast = List.generate(itemCount, (index) {
-      final date = DateTime.tryParse(dates[index]) ?? DateTime.now();
-      return DailyForecast(
-        dateLabel: DateFormat('EEE, d MMM').format(date),
-        maxTempC: maxTemps[index].toDouble(),
-        minTempC: minTemps[index].toDouble(),
-        rainChance: rainList[index].toInt(),
-        conditionCode: weatherCodes[index].toInt(),
-      );
-    });
-    box.put('forecast_$locationKey', _forecastToJson(forecast));
-    return forecast;
+    if (result.snapshot != null) return result.snapshot!.daily;
+    throw result.error ?? Exception('Could not fetch 7-day forecast');
   }
 
-  Future<Position> _getCurrentPosition() async {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Location services are disabled.');
-    }
+  Future<List<HourlyForecastPoint>> fetchHourlyForecast({
+    bool forceRefresh = false,
+  }) async {
+    final location = await resolveActiveLocation();
+    final result = await fetchSnapshot(
+      location: location,
+      forceRefresh: forceRefresh,
+    );
+    if (result.snapshot != null) return result.snapshot!.hourly;
+    throw result.error ?? Exception('Could not fetch hourly forecast');
+  }
 
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
+  // ── Cache helpers ──────────────────────────────────────────────────────
 
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      throw Exception('Location permission not granted.');
-    }
+  String _locationKey(double lat, double lon) =>
+      '${lat.toStringAsFixed(2)}_${lon.toStringAsFixed(2)}';
 
-    return Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.medium,
+  String? _lastUsedLocationKey(SharedPreferences prefs) {
+    final raw = prefs.getString(WeatherConstants.prefSelectedLocation);
+    if (raw == null) return null;
+    try {
+      final loc =
+          WeatherLocation.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      return _locationKey(loc.latitude, loc.longitude);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _sameLocation(WeatherLocation a, WeatherLocation b) {
+    return (a.latitude - b.latitude).abs() < 0.01 &&
+        (a.longitude - b.longitude).abs() < 0.01;
+  }
+
+  bool _isFresh(WeatherSnapshot snapshot) {
+    return DateTime.now().difference(snapshot.fetchedAt) <
+        WeatherConstants.currentCacheTtl;
+  }
+
+  Future<void> _persistSelectedLocation(WeatherLocation location) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      WeatherConstants.prefSelectedLocation,
+      jsonEncode(location.toJson()),
+    );
+  }
+
+  Future<void> _persistLastUsedLocation(WeatherLocation location) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      WeatherConstants.prefLastSyncMillis,
+      DateTime.now().millisecondsSinceEpoch,
+    );
+    // Only overwrite the selected pointer if user hasn't explicitly picked
+    // something else (selected is preserved by [selectLocation]).
+    if (location.isCurrent) {
+      await prefs.setString(
+        WeatherConstants.prefSelectedLocation,
+        jsonEncode(location.toJson()),
+      );
+    }
+  }
+
+  WeatherSnapshot? _readSnapshotCache(String? key) {
+    if (key == null) return null;
+    final raw = _box.get('snapshot_$key') as String?;
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      return _snapshotFromJson(map);
+    } catch (e, s) {
+      debugPrint('weather_repository: cache decode failed → $e\n$s');
+      return null;
+    }
+  }
+
+  Future<void> _writeSnapshotCache(
+    String key,
+    WeatherSnapshot snapshot,
+  ) async {
+    try {
+      await _box.put('snapshot_$key', jsonEncode(_snapshotToJson(snapshot)));
+    } catch (e, s) {
+      debugPrint('weather_repository: cache write failed → $e\n$s');
+    }
+  }
+
+  Map<String, dynamic> _snapshotToJson(WeatherSnapshot s) => {
+        'fetchedAt': s.fetchedAt.millisecondsSinceEpoch,
+        'location': s.location.toJson(),
+        'current': _currentToJson(s.current),
+        'hourly': s.hourly.map(_hourlyToJson).toList(),
+        'daily': s.daily.map(_dailyToJson).toList(),
+        'alerts': s.alerts.map(_alertToJson).toList(),
+      };
+
+  WeatherSnapshot _snapshotFromJson(Map<String, dynamic> json) {
+    return WeatherSnapshot(
+      location: WeatherLocation.fromJson(
+        (json['location'] as Map<String, dynamic>?) ?? const {},
+      ),
+      current: _currentFromJson(
+        (json['current'] as Map<String, dynamic>?) ?? const {},
+      ),
+      hourly: ((json['hourly'] as List<dynamic>?) ?? const [])
+          .cast<Map<String, dynamic>>()
+          .map(_hourlyFromJson)
+          .toList(),
+      daily: ((json['daily'] as List<dynamic>?) ?? const [])
+          .cast<Map<String, dynamic>>()
+          .map(_dailyFromJson)
+          .toList(),
+      alerts: ((json['alerts'] as List<dynamic>?) ?? const [])
+          .cast<Map<String, dynamic>>()
+          .map(_alertFromJson)
+          .toList(),
+      fetchedAt: DateTime.fromMillisecondsSinceEpoch(
+        ((json['fetchedAt'] as num?) ?? 0).toInt(),
       ),
     );
   }
 
-  String _locationKey(Position position) {
-    return '${position.latitude.toStringAsFixed(2)}_${position.longitude.toStringAsFixed(2)}';
-  }
+  // ── (de)serialization ──────────────────────────────────────────────────
 
-  String _currentToJson(CurrentWeather data) {
-    return jsonEncode({
-      'locationLabel': data.locationLabel,
-      'temperatureC': data.temperatureC,
-      'humidity': data.humidity,
-      'rainChancePercent': data.rainChancePercent,
-      'conditionCode': data.conditionCode,
-      'cachedAt': DateTime.now().millisecondsSinceEpoch,
-    });
-  }
+  Map<String, dynamic> _currentToJson(CurrentWeather c) => {
+        'locationLabel': c.locationLabel,
+        'temperatureC': c.temperatureC,
+        'apparentTemperatureC': c.apparentTemperatureC,
+        'humidity': c.humidity,
+        'windSpeedKmh': c.windSpeedKmh,
+        'pressureHpa': c.pressureHpa,
+        'visibilityKm': c.visibilityKm,
+        'uvIndex': c.uvIndex,
+        'airQualityIndex': c.airQualityIndex,
+        'weatherAlert': c.weatherAlert,
+        'rainChancePercent': c.rainChancePercent,
+        'conditionCode': c.conditionCode,
+        'conditionLabel': c.conditionLabel,
+        'iconCode': c.iconCode,
+        'minTempC': c.minTempC,
+        'maxTempC': c.maxTempC,
+        'dewPointC': c.dewPointC,
+        'cloudCoverPercent': c.cloudCoverPercent,
+        'windDirectionDeg': c.windDirectionDeg,
+        'sunrise': c.sunrise?.millisecondsSinceEpoch,
+        'sunset': c.sunset?.millisecondsSinceEpoch,
+        'observedAt': c.observedAt?.millisecondsSinceEpoch,
+        'latitude': c.latitude,
+        'longitude': c.longitude,
+      };
 
-  CurrentWeather _currentFromJson(String source) {
-    final map = jsonDecode(source) as Map<String, dynamic>;
-    return _currentFromMap(map);
-  }
-
-  CurrentWeather _currentFromMap(Map<String, dynamic> map) {
-    return CurrentWeather(
-      locationLabel: (map['locationLabel'] as String?) ?? 'Unknown',
-      temperatureC: ((map['temperatureC'] as num?) ?? 0).toDouble(),
-      humidity: ((map['humidity'] as num?) ?? 0).toInt(),
-      rainChancePercent: ((map['rainChancePercent'] as num?) ?? 0).toInt(),
-      conditionCode: ((map['conditionCode'] as num?) ?? 0).toInt(),
-    );
-  }
-
-  String _forecastToJson(List<DailyForecast> forecast) {
-    return jsonEncode(
-      forecast
-          .map(
-            (e) => {
-              'dateLabel': e.dateLabel,
-              'maxTempC': e.maxTempC,
-              'minTempC': e.minTempC,
-              'rainChance': e.rainChance,
-              'conditionCode': e.conditionCode,
-            },
-          )
-          .toList(),
-    );
-  }
-
-  List<DailyForecast> _forecastFromJson(String source) {
-    final list = (jsonDecode(source) as List<dynamic>);
-    return list.map((item) {
-      final map = item as Map<String, dynamic>;
-      return DailyForecast(
-        dateLabel: (map['dateLabel'] as String?) ?? '',
-        maxTempC: ((map['maxTempC'] as num?) ?? 0).toDouble(),
-        minTempC: ((map['minTempC'] as num?) ?? 0).toDouble(),
-        rainChance: ((map['rainChance'] as num?) ?? 0).toInt(),
-        conditionCode: ((map['conditionCode'] as num?) ?? 0).toInt(),
+  CurrentWeather _currentFromJson(Map<String, dynamic> m) => CurrentWeather(
+        locationLabel: (m['locationLabel'] as String?) ?? 'Unknown',
+        temperatureC: ((m['temperatureC'] as num?) ?? 0).toDouble(),
+        apparentTemperatureC:
+            ((m['apparentTemperatureC'] as num?) ?? 0).toDouble(),
+        humidity: ((m['humidity'] as num?) ?? 0).toInt(),
+        windSpeedKmh: ((m['windSpeedKmh'] as num?) ?? 0).toDouble(),
+        pressureHpa: ((m['pressureHpa'] as num?) ?? 0).toInt(),
+        visibilityKm: ((m['visibilityKm'] as num?) ?? 0).toDouble(),
+        uvIndex: ((m['uvIndex'] as num?) ?? 0).toDouble(),
+        airQualityIndex: ((m['airQualityIndex'] as num?) ?? 0).toInt(),
+        weatherAlert: m['weatherAlert'] as String?,
+        rainChancePercent: ((m['rainChancePercent'] as num?) ?? 0).toInt(),
+        conditionCode: ((m['conditionCode'] as num?) ?? 0).toInt(),
+        conditionLabel: m['conditionLabel'] as String?,
+        iconCode: m['iconCode'] as String?,
+        minTempC: (m['minTempC'] as num?)?.toDouble(),
+        maxTempC: (m['maxTempC'] as num?)?.toDouble(),
+        dewPointC: (m['dewPointC'] as num?)?.toDouble(),
+        cloudCoverPercent: (m['cloudCoverPercent'] as num?)?.toInt(),
+        windDirectionDeg: (m['windDirectionDeg'] as num?)?.toInt(),
+        sunrise: _maybeDate(m['sunrise']),
+        sunset: _maybeDate(m['sunset']),
+        observedAt: _maybeDate(m['observedAt']),
+        latitude: (m['latitude'] as num?)?.toDouble(),
+        longitude: (m['longitude'] as num?)?.toDouble(),
       );
-    }).toList();
+
+  Map<String, dynamic> _hourlyToJson(HourlyForecastPoint h) => {
+        'timeLabel': h.timeLabel,
+        'temperatureC': h.temperatureC,
+        'conditionCode': h.conditionCode,
+        'time': h.time?.millisecondsSinceEpoch,
+        'iconCode': h.iconCode,
+        'rainProbabilityPercent': h.rainProbabilityPercent,
+        'windSpeedKmh': h.windSpeedKmh,
+      };
+
+  HourlyForecastPoint _hourlyFromJson(Map<String, dynamic> m) =>
+      HourlyForecastPoint(
+        timeLabel: (m['timeLabel'] as String?) ?? '--',
+        temperatureC: ((m['temperatureC'] as num?) ?? 0).toDouble(),
+        conditionCode: ((m['conditionCode'] as num?) ?? 0).toInt(),
+        time: _maybeDate(m['time']),
+        iconCode: m['iconCode'] as String?,
+        rainProbabilityPercent: (m['rainProbabilityPercent'] as num?)?.toInt(),
+        windSpeedKmh: (m['windSpeedKmh'] as num?)?.toDouble(),
+      );
+
+  Map<String, dynamic> _dailyToJson(DailyForecast d) => {
+        'dateLabel': d.dateLabel,
+        'maxTempC': d.maxTempC,
+        'minTempC': d.minTempC,
+        'rainChance': d.rainChance,
+        'conditionCode': d.conditionCode,
+        'date': d.date?.millisecondsSinceEpoch,
+        'iconCode': d.iconCode,
+        'conditionLabel': d.conditionLabel,
+        'windSpeedKmh': d.windSpeedKmh,
+        'humidity': d.humidity,
+        'uvIndex': d.uvIndex,
+        'sunrise': d.sunrise?.millisecondsSinceEpoch,
+        'sunset': d.sunset?.millisecondsSinceEpoch,
+      };
+
+  DailyForecast _dailyFromJson(Map<String, dynamic> m) => DailyForecast(
+        dateLabel: (m['dateLabel'] as String?) ?? '',
+        maxTempC: ((m['maxTempC'] as num?) ?? 0).toDouble(),
+        minTempC: ((m['minTempC'] as num?) ?? 0).toDouble(),
+        rainChance: ((m['rainChance'] as num?) ?? 0).toInt(),
+        conditionCode: ((m['conditionCode'] as num?) ?? 0).toInt(),
+        date: _maybeDate(m['date']),
+        iconCode: m['iconCode'] as String?,
+        conditionLabel: m['conditionLabel'] as String?,
+        windSpeedKmh: (m['windSpeedKmh'] as num?)?.toDouble(),
+        humidity: (m['humidity'] as num?)?.toInt(),
+        uvIndex: (m['uvIndex'] as num?)?.toDouble(),
+        sunrise: _maybeDate(m['sunrise']),
+        sunset: _maybeDate(m['sunset']),
+      );
+
+  Map<String, dynamic> _alertToJson(WeatherAlert a) => {
+        'title': a.title,
+        'description': a.description,
+        'severity': a.severity.name,
+        'sender': a.sender,
+        'start': a.start?.millisecondsSinceEpoch,
+        'end': a.end?.millisecondsSinceEpoch,
+        'tags': a.tags,
+      };
+
+  WeatherAlert _alertFromJson(Map<String, dynamic> m) => WeatherAlert(
+        title: (m['title'] as String?) ?? 'Weather alert',
+        description: (m['description'] as String?) ?? '',
+        severity: WeatherSeverity.values.firstWhere(
+          (s) => s.name == m['severity'],
+          orElse: () => WeatherSeverity.warning,
+        ),
+        sender: m['sender'] as String?,
+        start: _maybeDate(m['start']),
+        end: _maybeDate(m['end']),
+        tags:
+            ((m['tags'] as List<dynamic>?) ?? const []).whereType<String>().toList(),
+      );
+
+  DateTime? _maybeDate(dynamic v) {
+    if (v is num) return DateTime.fromMillisecondsSinceEpoch(v.toInt());
+    return null;
   }
 }

@@ -196,6 +196,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
 
   Future<void> _startListening(AppLocalizations l10n) async {
     if (_isListening) return;
+    final messenger = ScaffoldMessenger.of(context);
     if (!_speechReady) {
       _speechReady = await _speechToText.initialize(
         onStatus: (status) {
@@ -206,14 +207,14 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
           if (!mounted) return;
           setState(() => _isListening = false);
           if (!error.permanent) return;
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(content: Text(l10n.t('voiceInputStartFailed'))),
           );
         },
       );
     }
     if (!_speechReady) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(l10n.t('voiceInputUnavailable'))),
       );
       return;
@@ -221,13 +222,15 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
     setState(() => _isListening = true);
     final started = await _speechToText.listen(
       onResult: _onSpeechResult,
-      listenMode: ListenMode.confirmation,
-      cancelOnError: true,
-      partialResults: true,
+      listenOptions: SpeechListenOptions(
+        listenMode: ListenMode.confirmation,
+        cancelOnError: true,
+        partialResults: true,
+      ),
     );
     if (!started && mounted) {
       setState(() => _isListening = false);
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(l10n.t('voiceInputStartFailed'))),
       );
     }

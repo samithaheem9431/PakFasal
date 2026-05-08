@@ -173,6 +173,104 @@ class AppLocalizations {
       'weatherSnow': 'Snow',
       'weatherStorm': 'Storm',
       'weatherGeneral': 'Weather',
+
+      // ── Weather screen redesign ──
+      'weatherToday': 'Today',
+      'weatherTomorrow': 'Tomorrow',
+      'weatherNow': 'Now',
+      'weatherHourlyTitle': 'Hourly forecast',
+      'weather7DayTitle': '7-day forecast',
+      'weatherHighlights': 'Today\u2019s highlights',
+      'weatherSunrise': 'Sunrise',
+      'weatherSunset': 'Sunset',
+      'weatherUVIndex': 'UV Index',
+      'weatherUVLow': 'Low',
+      'weatherUVModerate': 'Moderate',
+      'weatherUVHigh': 'High',
+      'weatherUVVeryHigh': 'Very high',
+      'weatherUVExtreme': 'Extreme',
+      'weatherAirQuality': 'Air quality',
+      'weatherPressure': 'Pressure',
+      'weatherVisibility': 'Visibility',
+      'weatherDewPoint': 'Dew point',
+      'weatherCloudCover': 'Cloud cover',
+      'weatherHigh': 'H',
+      'weatherLow': 'L',
+      'weatherMinMax': 'Min/Max',
+      'weatherRefresh': 'Refresh',
+      'weatherSearchCity': 'Search city',
+      'weatherSearchCityHint': 'Type a city name (e.g. Lahore)',
+      'weatherUseCurrentLocation': 'Use current location',
+      'weatherSavedLocations': 'Saved locations',
+      'weatherRemove': 'Remove',
+      'weatherNoSearchResults': 'No matching cities found.',
+      'dowMon': 'Mon',
+      'dowTue': 'Tue',
+      'dowWed': 'Wed',
+      'dowThu': 'Thu',
+      'dowFri': 'Fri',
+      'dowSat': 'Sat',
+      'dowSun': 'Sun',
+      'weatherSearchError': 'Could not search cities. Try again.',
+      'weatherLocationDenied': 'Location permission is required.',
+      'weatherLocationDisabled': 'Please turn on device location services.',
+      'weatherOpenSettings': 'Open settings',
+      'weatherOfflineNotice':
+          'You\u2019re offline. Showing last saved weather.',
+      'weatherFetchError':
+          'Could not load latest weather. Pull down to retry.',
+      'weatherNoApiKeyNotice':
+          'OPENWEATHER_API_KEY not set. Using free fallback provider.',
+      'weatherCancel': 'Cancel',
+
+      // ── Crop alerts ──
+      'cropAlertHeavyRain': 'Heavy rain alert',
+      'cropAlertHeavyRainBody':
+          'Heavy rainfall expected. Postpone irrigation and secure produce.',
+      'cropAlertHeatwave': 'Heatwave alert',
+      'cropAlertHeatwaveBody':
+          'Extreme heat expected. Irrigate early morning and protect young crops.',
+      'cropAlertHighWind': 'High wind alert',
+      'cropAlertHighWindBody':
+          'Strong winds expected. Avoid spraying and secure field covers.',
+      'cropAlertFrost': 'Frost warning',
+      'cropAlertFrostBody':
+          'Frost likely tonight. Protect sensitive crops and seedlings.',
+      'cropAlertThunderstorm': 'Thunderstorm warning',
+      'cropAlertThunderstormBody':
+          'Thunderstorms expected. Stay away from open fields and tall trees.',
+
+      // ── Farmer advisories ──
+      'farmerAdvisory': 'Farmer advisory',
+      'advisoryGoodIrrigation': 'Good day for irrigation',
+      'advisoryGoodIrrigationBody':
+          'Mild temperature with low rain chance. Ideal window to water your fields.',
+      'advisoryAvoidIrrigation': 'Skip irrigation today',
+      'advisoryAvoidIrrigationBody':
+          'Rain expected within 24 hours \u2014 save water and let nature do the work.',
+      'advisoryAvoidSpraying': 'Avoid pesticide spray today',
+      'advisoryAvoidSprayingBody':
+          'High wind or rain reduces spray efficiency and may harm nearby crops.',
+      'advisoryGoodSpraying': 'Good window for spraying',
+      'advisoryGoodSprayingBody':
+          'Calm winds and dry weather \u2014 a safe time to apply pesticides early morning.',
+      'advisoryRainTomorrow': 'Rain expected tomorrow',
+      'advisoryRainTomorrowBody':
+          'Plan field operations today; harvest mature produce if possible.',
+      'advisoryHarvestWindow': 'Good harvest window',
+      'advisoryHarvestWindowBody':
+          'Dry, mild weather expected next 48 hours. Plan harvesting accordingly.',
+      'advisoryProtectFromHeat': 'Protect crops from heat',
+      'advisoryProtectFromHeatBody':
+          'Use mulching and irrigate early morning to reduce heat stress.',
+
+      // ── Misc weather UI ──
+      'mph': 'mph',
+      'kmh': 'km/h',
+      'percent': '%',
+      'degreeC': '°C',
+      'hpa': 'hPa',
+      'km': 'km',
       'soilMoisture': 'Soil Moisture',
       'phLevel': 'pH Level',
       'contact': 'Contact',
@@ -457,6 +555,104 @@ class AppLocalizations {
       'weatherSnow': 'برف',
       'weatherStorm': 'طوفانی',
       'weatherGeneral': 'موسم',
+
+      // ── Weather screen redesign (Urdu) ──
+      'weatherToday': 'آج',
+      'weatherTomorrow': 'کل',
+      'weatherNow': 'ابھی',
+      'weatherHourlyTitle': 'گھنٹہ وار پیشن گوئی',
+      'weather7DayTitle': '7 دن کی پیشن گوئی',
+      'weatherHighlights': 'آج کی نمایاں جھلکیاں',
+      'weatherSunrise': 'طلوع آفتاب',
+      'weatherSunset': 'غروب آفتاب',
+      'weatherUVIndex': 'یو وی انڈیکس',
+      'weatherUVLow': 'کم',
+      'weatherUVModerate': 'درمیانہ',
+      'weatherUVHigh': 'زیادہ',
+      'weatherUVVeryHigh': 'بہت زیادہ',
+      'weatherUVExtreme': 'انتہائی',
+      'weatherAirQuality': 'فضائی معیار',
+      'weatherPressure': 'دباؤ',
+      'weatherVisibility': 'منظر',
+      'weatherDewPoint': 'شبنم نقطہ',
+      'weatherCloudCover': 'بادل',
+      'weatherHigh': 'زیادہ',
+      'weatherLow': 'کم',
+      'weatherMinMax': 'کم/زیادہ',
+      'weatherRefresh': 'تازہ کریں',
+      'weatherSearchCity': 'شہر تلاش کریں',
+      'weatherSearchCityHint': 'شہر کا نام لکھیں (مثال: لاہور)',
+      'weatherUseCurrentLocation': 'موجودہ مقام استعمال کریں',
+      'weatherSavedLocations': 'محفوظ مقامات',
+      'weatherRemove': 'ہٹائیں',
+      'weatherNoSearchResults': 'کوئی شہر نہیں ملا۔',
+      'dowMon': 'پیر',
+      'dowTue': 'منگل',
+      'dowWed': 'بدھ',
+      'dowThu': 'جمعرات',
+      'dowFri': 'جمعہ',
+      'dowSat': 'ہفتہ',
+      'dowSun': 'اتوار',
+      'weatherSearchError': 'شہر تلاش نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
+      'weatherLocationDenied': 'مقام کی اجازت درکار ہے۔',
+      'weatherLocationDisabled': 'براہ کرم ڈیوائس کی لوکیشن آن کریں۔',
+      'weatherOpenSettings': 'سیٹنگز کھولیں',
+      'weatherOfflineNotice':
+          'آپ آف لائن ہیں۔ آخری محفوظ موسم دکھایا جا رہا ہے۔',
+      'weatherFetchError':
+          'تازہ موسم لوڈ نہیں ہوا۔ دوبارہ کوشش کے لیے کھینچیں۔',
+      'weatherNoApiKeyNotice':
+          'OPENWEATHER_API_KEY سیٹ نہیں ہے۔ مفت متبادل استعمال کیا جا رہا ہے۔',
+      'weatherCancel': 'منسوخ',
+
+      // ── Crop alerts (Urdu) ──
+      'cropAlertHeavyRain': 'شدید بارش الرٹ',
+      'cropAlertHeavyRainBody':
+          'شدید بارش متوقع ہے۔ آبپاشی روک دیں اور پیداوار محفوظ کریں۔',
+      'cropAlertHeatwave': 'گرمی کی لہر الرٹ',
+      'cropAlertHeatwaveBody':
+          'انتہائی گرمی متوقع ہے۔ صبح سویرے آبپاشی کریں اور نوجوان فصلوں کی حفاظت کریں۔',
+      'cropAlertHighWind': 'تیز ہوا الرٹ',
+      'cropAlertHighWindBody':
+          'تیز ہوائیں متوقع ہیں۔ اسپرے سے گریز کریں اور کھیت کے ڈھکن محفوظ کریں۔',
+      'cropAlertFrost': 'پالے کی وارننگ',
+      'cropAlertFrostBody':
+          'آج رات پالا متوقع ہے۔ حساس فصلوں اور پنیریوں کی حفاظت کریں۔',
+      'cropAlertThunderstorm': 'گرج چمک کی وارننگ',
+      'cropAlertThunderstormBody':
+          'گرج چمک متوقع ہے۔ کھلے کھیتوں اور بلند درختوں سے دور رہیں۔',
+
+      // ── Farmer advisories (Urdu) ──
+      'farmerAdvisory': 'کاشتکار مشورہ',
+      'advisoryGoodIrrigation': 'آبپاشی کے لیے اچھا دن',
+      'advisoryGoodIrrigationBody':
+          'موزوں درجہ حرارت اور بارش کا کم امکان۔ کھیت کو پانی دینے کا بہترین وقت۔',
+      'advisoryAvoidIrrigation': 'آج آبپاشی نہ کریں',
+      'advisoryAvoidIrrigationBody':
+          'اگلے 24 گھنٹوں میں بارش متوقع \u2014 پانی بچائیں اور قدرت پر چھوڑیں۔',
+      'advisoryAvoidSpraying': 'آج اسپرے نہ کریں',
+      'advisoryAvoidSprayingBody':
+          'تیز ہوا یا بارش اسپرے کا اثر کم کرتی ہے اور قریبی فصلوں کو نقصان دے سکتی ہے۔',
+      'advisoryGoodSpraying': 'اسپرے کے لیے مناسب وقت',
+      'advisoryGoodSprayingBody':
+          'ہلکی ہوا اور خشک موسم \u2014 صبح سویرے کیڑے مار اسپرے کا محفوظ وقت۔',
+      'advisoryRainTomorrow': 'کل بارش متوقع',
+      'advisoryRainTomorrowBody':
+          'آج کے کھیت کے کام مکمل کریں؛ ممکن ہو تو پکی پیداوار کاٹ لیں۔',
+      'advisoryHarvestWindow': 'کٹائی کا اچھا موقع',
+      'advisoryHarvestWindowBody':
+          'اگلے 48 گھنٹے خشک اور موزوں موسم۔ کٹائی کی منصوبہ بندی کریں۔',
+      'advisoryProtectFromHeat': 'گرمی سے فصل بچائیں',
+      'advisoryProtectFromHeatBody':
+          'ملچنگ کریں اور صبح سویرے آبپاشی سے گرمی کا دباؤ کم کریں۔',
+
+      // ── Misc weather UI (Urdu) ──
+      'mph': 'میل/گھنٹہ',
+      'kmh': 'کلومیٹر/گھنٹہ',
+      'percent': '٪',
+      'degreeC': '°C',
+      'hpa': 'ہیکٹو پاسکل',
+      'km': 'کلومیٹر',
       'soilMoisture': 'مٹی کی نمی',
       'phLevel': 'پی ایچ لیول',
       'contact': 'رابطہ',

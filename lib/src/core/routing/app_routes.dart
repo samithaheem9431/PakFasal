@@ -13,6 +13,7 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/sensor/presentation/screens/sensor_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/weather/presentation/screens/city_search_screen.dart';
 import '../../features/weather/presentation/screens/weather_screen.dart';
 
 class AppRoutes {
@@ -24,6 +25,7 @@ class AppRoutes {
   static const home = '/home';
   static const learning = '/learning';
   static const weather = '/weather';
+  static const weatherCitySearch = '/weather/city-search';
   static const aiQuery = '/ai-query';
   static const sensor = '/sensor';
   static const profile = '/profile';
@@ -51,6 +53,11 @@ class AppRoutes {
         );
       case weather:
         return _materialRoute(const AuthGate(child: WeatherScreen()), settings);
+      case weatherCitySearch:
+        return _materialRoute(
+          const AuthGate(child: CitySearchScreen()),
+          settings,
+        );
       case aiQuery:
         return _materialRoute(const AuthGate(child: AiQueryScreen()), settings);
       case sensor:

@@ -33,7 +33,6 @@ class _SensorScreenState extends State<SensorScreen>
 
   String _selectedCrop = 'Wheat';
   int? _rainChancePercent;
-  String _recommendationDetails = '';
   bool _isSubmitting = false;
   bool _isResettingGraphs = false;
   bool _isWeatherLoading = true;
@@ -848,22 +847,6 @@ class _SensorScreenState extends State<SensorScreen>
       irrigationCardText: _ultraShortPreview(irrigationCardText),
       soilCardText: _ultraShortPreview(soilCardText),
     );
-  }
-
-  String _buildPreview(String value) {
-    final parts = value
-        .split(RegExp(r'(?<=[.!؟۔])\s+'))
-        .where((e) => e.trim().isNotEmpty)
-        .toList();
-    if (parts.isEmpty) return value;
-    if (parts.length == 1) return parts.first;
-    return '${parts[0]} ${parts[1]}';
-  }
-
-  String _tightPreview(String value) {
-    final cleaned = value.trim().replaceAll(RegExp(r'\s+'), ' ');
-    if (cleaned.length <= 95) return cleaned;
-    return '${cleaned.substring(0, 92)}...';
   }
 
   String _ultraShortPreview(String value) {

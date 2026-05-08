@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/offline_badge.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
@@ -19,14 +18,10 @@ class _G {
   static const dark       = Color(0xFF1B5E20);
   static const tint       = Color(0xFFE8F5E9);
   static const border     = Color(0xFFC8E6C9);
-  static const surface    = Color(0xFFF5F5F5);
   static const white      = Color(0xFFFFFFFF);
   static const textDark   = Color(0xFF212121);
   static const textGrey   = Color(0xFF757575);
   static const textLight  = Color(0xFF9E9E9E);
-  static const yellow     = Color(0xFFFBC02D);
-  static const brown      = Color(0xFF6D4C41);
-  static const blue       = Color(0xFF29B6F6);
 }
 
 class LearningScreen extends StatefulWidget {
@@ -664,7 +659,6 @@ class _LearningVideoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final date = DateFormat('d MMM y').format(video.publishedAt);
 
     return GestureDetector(
