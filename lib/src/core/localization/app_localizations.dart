@@ -402,6 +402,173 @@ class AppLocalizations {
       'onboardingTitle3': 'Track your farm with confidence',
       'onboardingDesc3':
           'Use sensor trends and recommendations to plan irrigation and soil care on time.',
+      // ── Crop Calendar — UI ─────────────────────────────────────────────
+      'cropCalendarRegion': 'Punjab area',
+      'cropCalendarRegionLahore': 'Lahore (Central Punjab)',
+      'cropCalendarRegionMultan': 'Multan (South Punjab)',
+      'cropCalendarSetSowingDate': 'Set sowing date',
+      'cropCalendarChangeSowingDate': 'Change date',
+      'cropCalendarSowingDateLabel': 'Sowing date',
+      'cropCalendarHarvestEta': 'Estimated harvest',
+      'cropCalendarRecommendedWindow': 'Recommended sowing window',
+      'cropCalendarSeasonProgress': 'Season progress',
+      'cropCalendarDaysSinceSowing': 'Days since sowing',
+      'cropCalendarDaysToHarvest': 'Days to harvest',
+      'cropCalendarTodayBadge': 'TODAY',
+      'cropCalendarStatusPast': 'Done',
+      'cropCalendarStatusCurrent': 'In progress',
+      'cropCalendarStatusUpcoming': 'Upcoming',
+      'cropCalendarNoSowingTitle': 'Personalize your calendar',
+      'cropCalendarNoSowingHint':
+          'Tap below to choose when you sowed (or plan to sow) this crop. Stages and reminders will be calculated from that date.',
+      'cropCalendarStartsIn': 'Starts in',
+      'cropCalendarEndedAgo': 'Ended',
+      'cropCalendarDaysShort': 'd',
+      'cropCalendarReset': 'Reset plan',
+      'cropCalendarResetConfirmTitle': 'Reset sowing plan?',
+      'cropCalendarResetConfirmBody':
+          'This will clear the sowing date and any saved reminders for this crop.',
+      'cropCalendarPlanSaved': 'Sowing plan saved',
+      'cropCalendarPlanCleared': 'Plan cleared',
+      'cropCalendarRegionalNote': 'Regional note',
+      'cropCalendarReminderToggle': 'Notify me when stages start',
+      'cropCalendarReminderHint':
+          'Push notifications will arrive when each stage begins.',
+      'cropCalendarBeforeSowing': 'Before sowing',
+      'cropCalendarAfterHarvest': 'Season finished',
+      'cropCalendarTodayLabel': 'Today',
+      'cropCalendarCancel': 'Cancel',
+      'cropCalendarConfirm': 'Confirm',
+      'cropCalendarMonthsLabel': 'Months',
+      'cropCalendarStageWindow': 'Stage window',
+      // ── Crop Calendar — shared stage names ─────────────────────────────
+      'stageLandPrep': 'Land Preparation',
+      'stageNursery': 'Nursery',
+      'stageSowing': 'Sowing',
+      'stageTransplanting': 'Transplanting',
+      'stageIrrigation1': 'First Irrigation',
+      'stageIrrigation2': 'Second Irrigation',
+      'stageIrrigation3': 'Third Irrigation',
+      'stageIrrigation4': 'Fourth Irrigation',
+      'stageFertilizer1': 'First Fertilizer',
+      'stageFertilizer2': 'Second Fertilizer',
+      'stageWeeding': 'Weeding & Thinning',
+      'stageEarthingUp': 'Earthing Up',
+      'stageTying': 'Tying',
+      'stagePestControl': 'Pest Control',
+      'stageHarvest': 'Harvest',
+      'stagePicking1': 'First Picking',
+      'stagePicking2': 'Second Picking',
+      // ── Crop Calendar — per-area regional notes ───────────────────────
+      'wheatLahoreNote':
+          'Central Punjab is cooler. Sow Oct 25 – Nov 15 for best tillering. Late sowing reduces yield sharply.',
+      'wheatMultanNote':
+          'South Punjab is hotter. Sow Nov 1 – Nov 25 to keep grain-fill in cooler weather and avoid March heat stress.',
+      'riceLahoreNote':
+          'Basmati belt. Raise nursery around May 15; transplant Jun 15 – Jul 5. Use Super Basmati or Kainat varieties.',
+      'riceMultanNote':
+          'Less common here — most farmers prefer cotton. If grown, use IRRI-6 / IRRI-9 and transplant in May for cooler grain-fill.',
+      'cottonLahoreNote':
+          'Cotton sows Apr 20 – May 20 in Central Punjab. Cooler nights slow establishment — always use fungicide-treated Bt seed.',
+      'cottonMultanNote':
+          'Core cotton zone of Pakistan. Sow Apr 1 – May 5 — early sowing avoids monsoon boll-rot and pink boll-worm peak.',
+      'sugarcaneLahoreNote':
+          'Spring (Feb–Mar) gives an 11-month crop. Autumn (Sep–Oct) yields better but ties up land longer.',
+      'sugarcaneMultanNote':
+          'Autumn planting (Sep–Oct) is recommended — escapes the summer heat stress that hurts germination here.',
+      'maizeLahoreNote':
+          'Spring: late Feb – mid March. Autumn: Jul 20 – Aug 10. Use hybrid seed for both seasons.',
+      'maizeMultanNote':
+          'Spring sowing is risky (heat at flowering). Prefer autumn Aug 1 – Aug 25 with heat-tolerant hybrids.',
+      // ── Crop Calendar — Wheat ─────────────────────────────────────────
+      'wheatLandPrepDesc':
+          'Plough deep twice, level the field, and apply 2–3 trolleys of farmyard manure per acre.',
+      'wheatSowingDesc':
+          '50 kg/acre treated seed, line spacing 22 cm, depth 5 cm. Apply 1 bag DAP + 1/3 bag Urea at sowing.',
+      'wheatIrrigation1Desc':
+          'Crown root irrigation 21–25 days after sowing — the most critical irrigation for tillering and yield.',
+      'wheatFertilizer1Desc':
+          'Top-dress 1 bag Urea per acre at first irrigation while soil is moist.',
+      'wheatIrrigation2Desc':
+          'Tillering-stage irrigation around day 60. Skip if rain has wet the field within 48 hours.',
+      'wheatIrrigation3Desc':
+          'Booting / heading irrigation — critical for grain fill. Avoid during strong winds to prevent lodging.',
+      'wheatHarvestDesc':
+          'Harvest when grains are hard and golden (moisture < 15%). A combine harvester is preferred to reduce loss.',
+      // ── Crop Calendar — Rice ──────────────────────────────────────────
+      'riceNurseryDesc':
+          'Sow 8–10 kg seed per acre in a well-prepared nursery bed 25 days before transplanting.',
+      'riceLandPrepDesc':
+          'Puddle the field with 5–7 cm standing water and level it perfectly so water depth stays uniform.',
+      'riceTransplantingDesc':
+          'Transplant 25-day-old seedlings, 2–3 per hill at 22×22 cm spacing.',
+      'riceFertilizer1Desc':
+          'Apply 1 bag DAP + 1/3 bag Urea at transplanting as the basal dose.',
+      'riceIrrigation1Desc':
+          'Maintain 5–7 cm of continuous standing water for the first 60 days; then alternate wet & dry.',
+      'riceFertilizer2Desc':
+          'Top-dress the remaining ~2/3 bag of Urea split between tillering and panicle initiation.',
+      'ricePestControlDesc':
+          'Scout weekly for stem borer and leaf folder around panicle initiation. Use pheromone traps before pesticides.',
+      'riceHarvestDesc':
+          'Harvest when 80% of panicles turn golden. Drain water 10 days before cutting to firm up the field.',
+      // ── Crop Calendar — Cotton ────────────────────────────────────────
+      'cottonLandPrepDesc':
+          'Deep ploughing in summer, two cross-ploughs, and final levelling for a clean seedbed.',
+      'cottonSowingDesc':
+          'Sow Bt cotton 6–8 kg/acre, line spacing 75 cm, plant spacing 22 cm. Treat seeds before sowing.',
+      'cottonIrrigation1Desc':
+          'First irrigation 25–30 days after sowing once true leaves appear.',
+      'cottonWeedingDesc':
+          'Thin to one healthy plant per spot. Hand weed or apply a post-emergence herbicide.',
+      'cottonFertilizer1Desc':
+          'Apply 1 bag DAP + 1 bag Urea per acre at first irrigation.',
+      'cottonPestControlDesc':
+          'Scout weekly for boll worm, whitefly and jassid. Use ETL-based spray decisions, not the calendar.',
+      'cottonFertilizer2Desc':
+          'Second Urea top-dress at flowering (~day 70). Foliar potassium helps boll retention in heat.',
+      'cottonPicking1Desc':
+          'Start first picking when 30–40% of bolls have opened. Pick only in dry weather.',
+      'cottonPicking2Desc':
+          'Second picking 3–4 weeks later. Keep cotton clean — moisture and trash drop the price.',
+      // ── Crop Calendar — Sugarcane ─────────────────────────────────────
+      'sugarcaneLandPrepDesc':
+          'Deep plough and level the field. Trench planting saves water and lifts yield.',
+      'sugarcaneSowingDesc':
+          'Plant 3-bud setts treated with fungicide — about 30,000 setts per acre.',
+      'sugarcaneIrrigation1Desc':
+          'Light irrigation 15–20 days after planting to support germination of the buds.',
+      'sugarcaneFertilizer1Desc':
+          'Basal dose: 2 bags DAP + 1 bag SOP per acre at planting.',
+      'sugarcaneWeedingDesc':
+          'The first 90 days are critical. Hand-weed or apply post-emergence herbicide.',
+      'sugarcaneFertilizer2Desc':
+          'Top-dress 3 bags Urea per acre — split between months 2 and 4.',
+      'sugarcaneEarthingUpDesc':
+          'Earth up around the plant base at month 4 to prevent lodging and support tiller growth.',
+      'sugarcaneTyingDesc':
+          'Tie standing canes into bundles around month 6 so wind and irrigation do not flatten them.',
+      'sugarcaneHarvestDesc':
+          'Harvest at 11–12 months when brix reaches 18–20%. Cut close to the ground for maximum sugar recovery.',
+      // ── Crop Calendar — Maize ─────────────────────────────────────────
+      'maizeLandPrepDesc':
+          'Plough twice and level. Add 2 trolleys of farmyard manure per acre.',
+      'maizeSowingDesc':
+          'Hybrid seed 8–10 kg/acre, line 75 cm, plant 22 cm. Apply 1 bag DAP at sowing.',
+      'maizeIrrigation1Desc':
+          'Light irrigation 15 days after sowing once seedlings establish.',
+      'maizeWeedingDesc':
+          'Thin extra plants to keep 22 cm spacing. Hand weed or spray atrazine pre-emergence.',
+      'maizeFertilizer1Desc':
+          '1 bag Urea per acre top-dressed at knee-high stage (~day 30).',
+      'maizeIrrigation2Desc':
+          'Second irrigation at tasseling — the most critical irrigation for grain fill.',
+      'maizePestControlDesc':
+          'Watch for stem borer at the whorl stage. Spray only if larvae cross the economic threshold.',
+      'maizeFertilizer2Desc':
+          'Final Urea top-dress at tasseling (~day 60).',
+      'maizeHarvestDesc':
+          'Harvest when kernels are hard and the dent appears. Grain moisture under 20% before storage.',
     },
     'ur': {
       'appName': 'پاک فصل',
@@ -786,6 +953,173 @@ class AppLocalizations {
       'onboardingTitle3': 'اپنے کھیت کی نگرانی اعتماد سے کریں',
       'onboardingDesc3':
           'سینسر ٹرینڈز اور سفارشات سے آبپاشی اور مٹی کی دیکھ بھال بروقت پلان کریں۔',
+      // ── Crop Calendar — UI ─────────────────────────────────────────────
+      'cropCalendarRegion': 'پنجاب علاقہ',
+      'cropCalendarRegionLahore': 'لاہور (وسطی پنجاب)',
+      'cropCalendarRegionMultan': 'ملتان (جنوبی پنجاب)',
+      'cropCalendarSetSowingDate': 'بوائی کی تاریخ مقرر کریں',
+      'cropCalendarChangeSowingDate': 'تاریخ تبدیل کریں',
+      'cropCalendarSowingDateLabel': 'بوائی کی تاریخ',
+      'cropCalendarHarvestEta': 'متوقع کٹائی',
+      'cropCalendarRecommendedWindow': 'تجویز کردہ بوائی کا وقت',
+      'cropCalendarSeasonProgress': 'موسم کی پیش رفت',
+      'cropCalendarDaysSinceSowing': 'بوائی کو دن',
+      'cropCalendarDaysToHarvest': 'کٹائی میں باقی دن',
+      'cropCalendarTodayBadge': 'آج',
+      'cropCalendarStatusPast': 'مکمل',
+      'cropCalendarStatusCurrent': 'جاری',
+      'cropCalendarStatusUpcoming': 'آنے والا',
+      'cropCalendarNoSowingTitle': 'اپنا کیلنڈر ذاتی بنائیں',
+      'cropCalendarNoSowingHint':
+          'نیچے دبا کر بوائی کی تاریخ منتخب کریں (یا منصوبہ شدہ تاریخ)۔ تمام مراحل اور یاد دہانیاں اسی تاریخ کے مطابق بنیں گی۔',
+      'cropCalendarStartsIn': 'شروع ہوگا',
+      'cropCalendarEndedAgo': 'ختم',
+      'cropCalendarDaysShort': 'دن',
+      'cropCalendarReset': 'پلان ری سیٹ',
+      'cropCalendarResetConfirmTitle': 'بوائی کا پلان ری سیٹ کریں؟',
+      'cropCalendarResetConfirmBody':
+          'اس فصل کی بوائی کی تاریخ اور یاد دہانیاں صاف ہو جائیں گی۔',
+      'cropCalendarPlanSaved': 'بوائی کا پلان محفوظ ہوگیا',
+      'cropCalendarPlanCleared': 'پلان صاف ہوگیا',
+      'cropCalendarRegionalNote': 'علاقائی نوٹ',
+      'cropCalendarReminderToggle': 'ہر مرحلے کے شروع پر یاد دہانی',
+      'cropCalendarReminderHint':
+          'ہر مرحلے کے شروع پر آپ کو پش نوٹیفکیشن ملے گی۔',
+      'cropCalendarBeforeSowing': 'بوائی سے پہلے',
+      'cropCalendarAfterHarvest': 'موسم مکمل',
+      'cropCalendarTodayLabel': 'آج',
+      'cropCalendarCancel': 'منسوخ',
+      'cropCalendarConfirm': 'تصدیق',
+      'cropCalendarMonthsLabel': 'مہینے',
+      'cropCalendarStageWindow': 'مرحلے کا وقت',
+      // ── Crop Calendar — shared stage names ─────────────────────────────
+      'stageLandPrep': 'زمین کی تیاری',
+      'stageNursery': 'نرسری',
+      'stageSowing': 'بوائی',
+      'stageTransplanting': 'پنیری منتقلی',
+      'stageIrrigation1': 'پہلی آبپاشی',
+      'stageIrrigation2': 'دوسری آبپاشی',
+      'stageIrrigation3': 'تیسری آبپاشی',
+      'stageIrrigation4': 'چوتھی آبپاشی',
+      'stageFertilizer1': 'پہلی کھاد',
+      'stageFertilizer2': 'دوسری کھاد',
+      'stageWeeding': 'گوڈی اور چھدائی',
+      'stageEarthingUp': 'مٹی چڑھائی',
+      'stageTying': 'بندھائی',
+      'stagePestControl': 'کیڑے مار اقدام',
+      'stageHarvest': 'کٹائی',
+      'stagePicking1': 'پہلی چنائی',
+      'stagePicking2': 'دوسری چنائی',
+      // ── Crop Calendar — per-area regional notes ───────────────────────
+      'wheatLahoreNote':
+          'وسطی پنجاب نسبتاً ٹھنڈا ہے۔ بہترین پھٹاؤ کے لیے 25 اکتوبر تا 15 نومبر بوائی کریں۔ دیر سے بوائی پیداوار بہت کم کر دیتی ہے۔',
+      'wheatMultanNote':
+          'جنوبی پنجاب گرم ہے۔ 1 تا 25 نومبر بوائی کریں تاکہ دانہ بھرنے کا وقت ٹھنڈے موسم میں آئے اور مارچ کی گرمی سے بچ جائے۔',
+      'riceLahoreNote':
+          'باسمتی کا علاقہ۔ پنیری 15 مئی کے قریب تیار کریں اور 15 جون تا 5 جولائی منتقل کریں۔ سپر باسمتی یا کائنات استعمال کریں۔',
+      'riceMultanNote':
+          'یہاں چاول کم بوتے ہیں — زیادہ تر کپاس۔ اگر بونا ہو تو IRRI-6/IRRI-9 استعمال کریں اور مئی میں منتقلی کریں۔',
+      'cottonLahoreNote':
+          'وسطی پنجاب میں 20 اپریل تا 20 مئی بوائی۔ ٹھنڈی راتیں اگاؤ سست کرتی ہیں — ہمیشہ علاج شدہ بی ٹی بیج استعمال کریں۔',
+      'cottonMultanNote':
+          'پاکستان کا اصل کپاس کا علاقہ۔ 1 اپریل تا 5 مئی بوائی — جلدی بوائی برسات کی سڑن اور گلابی سنڈی سے بچاتی ہے۔',
+      'sugarcaneLahoreNote':
+          'بہار (فروری-مارچ) کی فصل 11 ماہ کی۔ خزاں (ستمبر-اکتوبر) زیادہ پیداوار دیتی ہے مگر زمین زیادہ مدت کے لیے بند رہتی ہے۔',
+      'sugarcaneMultanNote':
+          'خزاں کی بوائی (ستمبر-اکتوبر) بہتر ہے — یہاں کی شدید گرمی سے اگاؤ کا تناؤ بچ جاتا ہے۔',
+      'maizeLahoreNote':
+          'بہار: آخر فروری تا وسط مارچ۔ خزاں: 20 جولائی تا 10 اگست۔ دونوں موسموں میں ہائبرڈ بیج استعمال کریں۔',
+      'maizeMultanNote':
+          'بہار کی بوائی خطرناک (پھول پر گرمی)۔ خزاں 1 تا 25 اگست بہتر ہے، گرمی برداشت کرنے والے ہائبرڈ کا انتخاب کریں۔',
+      // ── Crop Calendar — Wheat ─────────────────────────────────────────
+      'wheatLandPrepDesc':
+          'دو بار گہری ہل چلائیں، کھیت ہموار کریں اور فی ایکڑ 2-3 ٹرالی روڑی کھاد ڈالیں۔',
+      'wheatSowingDesc':
+          'فی ایکڑ 50 کلو علاج شدہ بیج، قطار 22 سینٹی میٹر، گہرائی 5 سینٹی میٹر۔ بوائی پر 1 بوری DAP اور 1/3 بوری یوریا۔',
+      'wheatIrrigation1Desc':
+          'بوائی کے 21-25 دن بعد کراؤن روٹ آبپاشی — پھٹاؤ اور پیداوار کے لیے سب سے اہم۔',
+      'wheatFertilizer1Desc':
+          'پہلی آبپاشی پر زمین گیلی ہو تو فی ایکڑ 1 بوری یوریا چھٹا چھڑکیں۔',
+      'wheatIrrigation2Desc':
+          'پھٹاؤ کے مرحلے میں دن 60 کے قریب آبپاشی۔ اگر 48 گھنٹے میں بارش ہو چکی ہو تو چھوڑ دیں۔',
+      'wheatIrrigation3Desc':
+          'گوبھ اور سٹہ پر آبپاشی، دانہ بھرنے کے لیے اہم۔ تیز ہوا میں نہ کریں ورنہ فصل گر سکتی ہے۔',
+      'wheatHarvestDesc':
+          'دانے سخت اور سنہری ہوں (نمی 15% سے کم) تو کاٹیں۔ نقصان کم کرنے کے لیے کمبائن ہارویسٹر بہتر ہے۔',
+      // ── Crop Calendar — Rice ──────────────────────────────────────────
+      'riceNurseryDesc':
+          'پنیری منتقلی سے 25 دن پہلے، تیار کیاری میں فی ایکڑ 8-10 کلو بیج بویں۔',
+      'riceLandPrepDesc':
+          '5-7 سینٹی میٹر کھڑے پانی میں کھیت کو گارا کریں اور بالکل ہموار کریں تاکہ پانی برابر رہے۔',
+      'riceTransplantingDesc':
+          '25 دن کی پنیری ہر گڑھے میں 2-3 پودے، 22×22 سینٹی میٹر فاصلہ پر لگائیں۔',
+      'riceFertilizer1Desc':
+          'پنیری لگاتے وقت بنیادی خوراک کے طور پر 1 بوری DAP اور 1/3 بوری یوریا ڈالیں۔',
+      'riceIrrigation1Desc':
+          'پہلے 60 دن 5-7 سینٹی میٹر کھڑا پانی برقرار رکھیں؛ اس کے بعد گیلی-خشک کا چکر چلائیں۔',
+      'riceFertilizer2Desc':
+          'بقیہ تقریباً 2/3 بوری یوریا پھٹاؤ اور سٹہ بنتے وقت دو حصوں میں ڈالیں۔',
+      'ricePestControlDesc':
+          'سٹہ بنتے وقت تنے کا کیڑا اور پتہ لپیٹ کیڑا ہفتہ وار چیک کریں۔ پہلے فرومون جالے استعمال کریں۔',
+      'riceHarvestDesc':
+          '80% بالیاں سنہری ہوں تو کٹائی کریں۔ کٹائی سے 10 دن پہلے پانی نکال دیں۔',
+      // ── Crop Calendar — Cotton ────────────────────────────────────────
+      'cottonLandPrepDesc':
+          'گرمیوں میں گہری ہل، دو بار کراس ہل اور آخری ہمواری سے صاف بیڈ تیار کریں۔',
+      'cottonSowingDesc':
+          'بی ٹی کاٹن 6-8 کلو فی ایکڑ، قطار 75 سینٹی میٹر، پودا 22 سینٹی میٹر۔ بوائی سے پہلے بیج کا علاج۔',
+      'cottonIrrigation1Desc':
+          'بوائی کے 25-30 دن بعد جب اصل پتے نمودار ہوں تو پہلی آبپاشی کریں۔',
+      'cottonWeedingDesc':
+          'ہر جگہ ایک صحت مند پودا رکھیں۔ ہاتھ سے یا پوسٹ-ایمرجنس کیمیکل سے گوڈی۔',
+      'cottonFertilizer1Desc':
+          'پہلی آبپاشی پر فی ایکڑ 1 بوری DAP اور 1 بوری یوریا ڈالیں۔',
+      'cottonPestControlDesc':
+          'ہفتہ وار سنڈی، سفید مکھی اور جیسد کی نگرانی۔ ETL کے مطابق اسپرے کریں، کیلنڈر سے نہیں۔',
+      'cottonFertilizer2Desc':
+          'پھول آنے پر دوسری یوریا (تقریباً دن 70)۔ گرمی میں پوٹاش کا چھڑکاؤ ٹینڈے روکنے میں مدد دیتا ہے۔',
+      'cottonPicking1Desc':
+          '30-40% ٹینڈے کھل جائیں تو پہلی چنائی شروع کریں۔ صرف خشک موسم میں چنیں۔',
+      'cottonPicking2Desc':
+          'پہلی چنائی کے 3-4 ہفتے بعد دوسری چنائی۔ صاف رکھیں — نمی اور کچرا قیمت گرا دیتا ہے۔',
+      // ── Crop Calendar — Sugarcane ─────────────────────────────────────
+      'sugarcaneLandPrepDesc':
+          'گہری ہل اور کھیت ہموار کریں۔ خندق میں بوائی پانی بچاتی ہے اور پیداوار بڑھاتی ہے۔',
+      'sugarcaneSowingDesc':
+          '3 آنکھ والی سیٹ فنگس کش سے علاج کر کے لگائیں — فی ایکڑ تقریباً 30,000 سیٹ۔',
+      'sugarcaneIrrigation1Desc':
+          'بوائی کے 15-20 دن بعد ہلکی آبپاشی تاکہ آنکھیں اگ سکیں۔',
+      'sugarcaneFertilizer1Desc':
+          'بنیادی خوراک: بوائی پر فی ایکڑ 2 بوری DAP اور 1 بوری SOP۔',
+      'sugarcaneWeedingDesc':
+          'پہلے 90 دن انتہائی اہم ہیں۔ ہاتھ سے یا پوسٹ-ایمرجنس کیمیکل سے گوڈی کریں۔',
+      'sugarcaneFertilizer2Desc':
+          'فی ایکڑ 3 بوری یوریا — 2 اور 4 ماہ پر دو حصوں میں ڈالیں۔',
+      'sugarcaneEarthingUpDesc':
+          '4 ماہ پر پودے کی جڑوں پر مٹی چڑھائیں تاکہ گرے نہیں اور پھٹاؤ بڑھے۔',
+      'sugarcaneTyingDesc':
+          '6 ماہ پر کھڑے گنوں کو بندھائی کریں تاکہ ہوا اور آبپاشی سے گرے نہیں۔',
+      'sugarcaneHarvestDesc':
+          '11-12 ماہ پر جب چینی 18-20% ہو تو کٹائی کریں۔ زمین کے قریب سے کاٹیں تاکہ زیادہ چینی ملے۔',
+      // ── Crop Calendar — Maize ─────────────────────────────────────────
+      'maizeLandPrepDesc':
+          'دو بار ہل اور کھیت ہموار کریں۔ فی ایکڑ 2 ٹرالی روڑی کھاد ڈالیں۔',
+      'maizeSowingDesc':
+          'ہائبرڈ بیج 8-10 کلو فی ایکڑ، قطار 75 سینٹی میٹر، پودا 22 سینٹی میٹر۔ بوائی پر 1 بوری DAP۔',
+      'maizeIrrigation1Desc':
+          'بوائی کے 15 دن بعد جب پودے قائم ہو جائیں تو ہلکی آبپاشی۔',
+      'maizeWeedingDesc':
+          '22 سینٹی میٹر فاصلہ رکھنے کے لیے اضافی پودے نکالیں۔ ہاتھ سے یا اٹرازین سے گوڈی۔',
+      'maizeFertilizer1Desc':
+          'گھٹنے کی اونچائی (تقریباً دن 30) پر فی ایکڑ 1 بوری یوریا چھڑکیں۔',
+      'maizeIrrigation2Desc':
+          'پھول کے وقت دوسری آبپاشی — دانہ بھرنے کے لیے سب سے اہم۔',
+      'maizePestControlDesc':
+          'گٹھیاں بنتے وقت تنے کا کیڑا چیک کریں۔ صرف ضرورت پر اسپرے کریں۔',
+      'maizeFertilizer2Desc':
+          'پھول کے وقت آخری یوریا (تقریباً دن 60)۔',
+      'maizeHarvestDesc':
+          'دانے سخت اور دانتیلے ہوں تو کٹائی۔ ذخیرہ کرنے سے پہلے نمی 20% سے کم ہو۔',
     },
   };
 

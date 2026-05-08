@@ -11,6 +11,7 @@ import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
 import 'src/core/theme/theme_controller.dart';
 import 'src/features/auth/presentation/providers/auth_session_controller.dart';
+import 'src/features/crop_calendar/presentation/providers/crop_calendar_provider.dart';
 import 'src/features/weather/presentation/providers/weather_provider.dart';
 
 Future<void> main() async {
@@ -62,6 +63,9 @@ Future<void> main() async {
             ),
             ChangeNotifierProvider(
               create: (_) => WeatherProvider()..startAutoRefresh(),
+            ),
+            ChangeNotifierProvider(
+              create: (_) => CropCalendarProvider(),
             ),
           ],
           child: const PakFasalApp(),
