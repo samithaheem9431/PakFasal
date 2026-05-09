@@ -809,14 +809,38 @@ String _localizedCropName(AppLocalizations l10n, String crop) {
 }
 
 Future<void> _openYoutube(BuildContext context, String url) async {
-  final uri = Uri.parse(url);
-  final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-  if (!opened && context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context).t('couldNotOpenVideo')),
-        backgroundColor: _G.forest,
-      ),
-    );
+  final uri = Uri.tryParse(url);
+  if (uri == null) {
+    if (context.mounted) _showCouldNotOpen(context);
+    return;
   }
+
+  // Try, in order: external app (YouTube / browser), in-app web view, and
+  // finally the platform default. Each individual launch can both return
+  // false *and* throw a PlatformException when no handler is installed, so
+  // we must guard every attempt.
+  const modes = <LaunchMode>[
+    LaunchMode.externalApplication,
+    LaunchMode.inAppBrowserView,
+    LaunchMode.platformDefault,
+  ];
+
+  for (final mode in modes) {
+    try {
+      if (await launchUrl(uri, mode: mode)) return;
+    } catch (_) {
+      // Try the next mode.
+    }
+  }
+
+  if (context.mounted) _showCouldNotOpen(context);
+}
+
+void _showCouldNotOpen(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(AppLocalizations.of(context).t('couldNotOpenVideo')),
+      backgroundColor: _G.forest,
+    ),
+  );
 }

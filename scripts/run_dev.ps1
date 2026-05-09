@@ -19,7 +19,7 @@ Set-Location $repoRoot
 $configFile = Join-Path $repoRoot 'config\dev.json'
 if (-not (Test-Path $configFile)) {
     Write-Host "config\dev.json not found." -ForegroundColor Yellow
-    Write-Host "Copy config\app_config.example.json to config\dev.json and fill in your keys." -ForegroundColor Yellow
+    Write-Host "Copy config\app_config.json to config\dev.json and fill in your keys." -ForegroundColor Yellow
     exit 1
 }
 

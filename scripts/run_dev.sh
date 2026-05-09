@@ -11,7 +11,7 @@ cd "$(dirname "$0")/.."
 
 if [ ! -f config/dev.json ]; then
     echo "config/dev.json not found."
-    echo "Copy config/app_config.example.json to config/dev.json and fill in your keys."
+    echo "Copy config/app_config.json to config/dev.json and fill in your keys."
     exit 1
 fi
 

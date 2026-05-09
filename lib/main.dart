@@ -1,12 +1,11 @@
 import 'dart:async';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-
 import 'firebase_options.dart';
 import 'src/app.dart';
+import 'src/core/config/app_config.dart';
 import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
 import 'src/core/theme/theme_controller.dart';
@@ -21,6 +20,10 @@ Future<void> main() async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      // Load runtime config (config/app_config.json) before any feature reads
+      // from AppConfig. Compile-time --dart-define values still take priority
+      // for production / CI builds.
+      await AppConfig.init();
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );

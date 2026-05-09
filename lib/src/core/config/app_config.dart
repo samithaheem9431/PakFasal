@@ -1,78 +1,145 @@
-/// Centralised, build-time application configuration.
+import 'dart:convert';
+
+import 'package:flutter/services.dart' show rootBundle;
+
+/// Centralised, runtime-aware application configuration.
 ///
-/// All values are read from `--dart-define` (or
-/// `--dart-define-from-file=config/dev.json`) so that **no secret ever lives
-/// in the source tree**. If a value is not provided at build time, a safe
-/// default is used (or the feature gracefully degrades — see
-/// [hasYoutubeApiKey]).
+/// Values are resolved with the following precedence (highest first):
 ///
-/// To run with secrets locally:
+/// 1. **`--dart-define` / `--dart-define-from-file`** — compile-time defines.
+///    Used in CI / production builds so secrets can be injected without
+///    shipping them in the asset bundle.
+/// 2. **`config/app_config.json`** — bundled JSON asset, loaded once at
+///    startup via [AppConfig.init]. This is the convenient development flow
+///    where running `flutter run` (or pressing the IDE's Run button) "just
+///    works" without remembering CLI flags.
+/// 3. **Hard-coded defaults** — empty / safe fallbacks so the app degrades
+///    gracefully (e.g. learning module shows demo data when no key is set).
 ///
-/// ```bash
-/// flutter run --dart-define-from-file=config/dev.json
-/// ```
-///
-/// See `config/app_config.json` for the schema.
+/// Call [AppConfig.init] **before** any feature reads from this class —
+/// `main.dart` does this immediately after `WidgetsFlutterBinding.ensureInitialized()`.
 class AppConfig {
   AppConfig._();
+
+  // ── Compile-time defines (kept for prod / CI) ────────────────────────────
+
+  static const String _envYoutubeApiKey = String.fromEnvironment(
+    'YOUTUBE_API_KEY',
+    defaultValue: '',
+  );
+  static const String _envYoutubeChannelId = String.fromEnvironment(
+    'YOUTUBE_CHANNEL_ID',
+    defaultValue: '',
+  );
+  static const String _envYoutubeApiBaseUrl = String.fromEnvironment(
+    'YOUTUBE_API_BASE_URL',
+    defaultValue: 'https://www.googleapis.com/youtube/v3',
+  );
+
+  static const String _envWeatherApiBaseUrl = String.fromEnvironment(
+    'WEATHER_API_BASE_URL',
+    defaultValue: 'https://api.open-meteo.com/v1',
+  );
+  static const String _envOpenWeatherApiKey = String.fromEnvironment(
+    'OPENWEATHER_API_KEY',
+    defaultValue: '',
+  );
+  static const String _envOpenWeatherBaseUrl = String.fromEnvironment(
+    'OPENWEATHER_API_BASE_URL',
+    defaultValue: 'https://api.openweathermap.org',
+  );
+  static const String _envOpenWeatherUseOneCallV3 = String.fromEnvironment(
+    'OPENWEATHER_USE_ONECALL_V3',
+    defaultValue: 'false',
+  );
+  static const String _envEnvironment = String.fromEnvironment(
+    'APP_ENV',
+    defaultValue: 'dev',
+  );
+
+  // ── Runtime overrides loaded from bundled JSON ───────────────────────────
+
+  static Map<String, String> _runtime = const <String, String>{};
+  static bool _initialised = false;
+
+  /// Loads `config/app_config.json` from the bundled assets (if present) so
+  /// development builds don't need `--dart-define-from-file`.
+  ///
+  /// Safe to call multiple times — subsequent calls are no-ops. Failures are
+  /// swallowed so the app keeps working with compile-time / default values.
+  static Future<void> init() async {
+    if (_initialised) return;
+    _initialised = true;
+
+    try {
+      final raw = await rootBundle.loadString('config/app_config.json');
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) {
+        _runtime = <String, String>{
+          for (final entry in decoded.entries)
+            if (entry.value != null && !entry.key.startsWith('_'))
+              entry.key: entry.value.toString(),
+        };
+      }
+    } catch (_) {
+      // Asset missing or malformed — fall back to compile-time defines.
+      _runtime = const <String, String>{};
+    }
+  }
+
+  /// Resolves a value, preferring `--dart-define` (when non-empty), then the
+  /// runtime JSON, then the supplied default.
+  static String _resolve(String key, String envValue, String fallback) {
+    if (envValue.isNotEmpty) return envValue;
+    final fromJson = _runtime[key];
+    if (fromJson != null && fromJson.isNotEmpty) return fromJson;
+    return fallback;
+  }
 
   // ── YouTube Data API v3 ──────────────────────────────────────────────────
 
   /// API key for the YouTube Data API. When empty, the learning module
   /// silently falls back to local demo videos.
-  static const String youtubeApiKey = String.fromEnvironment(
-    'YOUTUBE_API_KEY',
-    defaultValue: '',
-  );
+  static String get youtubeApiKey =>
+      _resolve('YOUTUBE_API_KEY', _envYoutubeApiKey, '');
 
   /// Optional channel filter for YouTube search.
-  static const String youtubeChannelId = String.fromEnvironment(
-    'YOUTUBE_CHANNEL_ID',
-    defaultValue: '',
-  );
+  static String get youtubeChannelId =>
+      _resolve('YOUTUBE_CHANNEL_ID', _envYoutubeChannelId, '');
 
   /// Base URL for the YouTube Data API. Configurable for testing / proxying.
-  static const String youtubeApiBaseUrl = String.fromEnvironment(
-    'YOUTUBE_API_BASE_URL',
-    defaultValue: 'https://www.googleapis.com/youtube/v3',
-  );
+  static String get youtubeApiBaseUrl => _resolve(
+        'YOUTUBE_API_BASE_URL',
+        _envYoutubeApiBaseUrl,
+        'https://www.googleapis.com/youtube/v3',
+      );
 
   static bool get hasYoutubeApiKey => youtubeApiKey.isNotEmpty;
 
   // ── Weather (Open-Meteo, legacy fallback) ────────────────────────────────
 
-  /// Legacy base URL kept for the offline-friendly Open-Meteo fallback.
-  /// Used only when [openWeatherApiKey] is empty so the app keeps working
-  /// without paid keys (e.g. in development / CI).
-  static const String weatherApiBaseUrl = String.fromEnvironment(
-    'WEATHER_API_BASE_URL',
-    defaultValue: 'https://api.open-meteo.com/v1',
-  );
+  static String get weatherApiBaseUrl => _resolve(
+        'WEATHER_API_BASE_URL',
+        _envWeatherApiBaseUrl,
+        'https://api.open-meteo.com/v1',
+      );
 
   // ── Weather (OpenWeatherMap — primary provider) ──────────────────────────
 
-  /// API key for OpenWeatherMap. When empty, the weather feature
-  /// transparently falls back to the keyless Open-Meteo provider so the
-  /// rest of the app continues to work in dev builds.
-  static const String openWeatherApiKey = String.fromEnvironment(
-    'OPENWEATHER_API_KEY',
-    defaultValue: '',
-  );
+  static String get openWeatherApiKey =>
+      _resolve('OPENWEATHER_API_KEY', _envOpenWeatherApiKey, '');
 
-  /// Base URL for OpenWeatherMap. Configurable for testing / proxying.
-  static const String openWeatherBaseUrl = String.fromEnvironment(
-    'OPENWEATHER_API_BASE_URL',
-    defaultValue: 'https://api.openweathermap.org',
-  );
+  static String get openWeatherBaseUrl => _resolve(
+        'OPENWEATHER_API_BASE_URL',
+        _envOpenWeatherBaseUrl,
+        'https://api.openweathermap.org',
+      );
 
-  /// When `true`, the app uses One Call API 3.0 (paid plan, single request
-  /// returning current + hourly + daily + alerts). When `false`, the
-  /// service falls back to free 2.5 endpoints (current + 5-day/3-hour
-  /// forecast) and synthesises 7-day data on the client side.
-  static const String _openWeatherUseOneCallV3 = String.fromEnvironment(
-    'OPENWEATHER_USE_ONECALL_V3',
-    defaultValue: 'false',
-  );
+  static String get _openWeatherUseOneCallV3 => _resolve(
+        'OPENWEATHER_USE_ONECALL_V3',
+        _envOpenWeatherUseOneCallV3,
+        'false',
+      );
 
   static bool get hasOpenWeatherApiKey => openWeatherApiKey.isNotEmpty;
   static bool get useOneCallV3 =>
@@ -80,12 +147,8 @@ class AppConfig {
 
   // ── Build-time environment label ─────────────────────────────────────────
 
-  /// Optional label like `dev`, `staging`, `prod` to distinguish builds in
-  /// logs / crash reports.
-  static const String environment = String.fromEnvironment(
-    'APP_ENV',
-    defaultValue: 'dev',
-  );
+  static String get environment =>
+      _resolve('APP_ENV', _envEnvironment, 'dev');
 
   static bool get isProduction => environment == 'prod';
 }
