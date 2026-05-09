@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../data/crop_diseases_catalog.dart';
 import 'crop_disease_detail_screen.dart';
@@ -108,17 +107,17 @@ class _CropCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.softSurfaceGreen,
-                AppColors.paleGreen.withValues(alpha: 0.65),
+                scheme.primaryContainer.withValues(alpha: 0.55),
+                scheme.surfaceContainerHighest,
               ],
             ),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: AppColors.mintGreen.withValues(alpha: 0.9),
+              color: scheme.primary.withValues(alpha: 0.35),
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                color: scheme.primary.withValues(alpha: 0.12),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -139,7 +138,7 @@ class _CropCard extends StatelessWidget {
                   child: Icon(
                     crop.icon,
                     size: 28,
-                    color: AppColors.primaryGreen,
+                    color: scheme.primary,
                   ),
                 ),
                 const Spacer(),
@@ -147,7 +146,7 @@ class _CropCard extends StatelessWidget {
                   l10n.t(crop.nameKey),
                   style: textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AppColors.darkGreen,
+                    color: scheme.primary,
                   ),
                 ),
                 const SizedBox(height: 4),

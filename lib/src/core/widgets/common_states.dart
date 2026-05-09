@@ -35,8 +35,9 @@ class ErrorStateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: Colors.red.withValues(alpha: 0.08),
+      color: scheme.errorContainer.withValues(alpha: 0.55),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -44,7 +45,10 @@ class ErrorStateCard extends StatelessWidget {
           children: [
             Text(
               localizations.t('errorState'),
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: scheme.onErrorContainer,
+              ),
             ),
             const SizedBox(height: 10),
             SizedBox(

@@ -9,19 +9,58 @@ import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../data/repositories/youtube_learning_repository.dart';
 import '../../domain/entities/learning_video.dart';
 
-// ── Green palette ─────────────────────────────────────────────────────────────
-// All values kept as local constants so the file is self-contained.
-// They mirror AppColors to avoid import changes elsewhere.
-class _G {
-  static const forest     = Color(0xFF2E7D32);
-  static const emerald    = Color(0xFF43A047);
-  static const dark       = Color(0xFF1B5E20);
-  static const tint       = Color(0xFFE8F5E9);
-  static const border     = Color(0xFFC8E6C9);
-  static const white      = Color(0xFFFFFFFF);
-  static const textDark   = Color(0xFF212121);
-  static const textGrey   = Color(0xFF757575);
-  static const textLight  = Color(0xFF9E9E9E);
+/// Theme-aware palette derived per build so the Learning surface flips
+/// cleanly between light and dark modes. Uses the active [ColorScheme] so
+/// branding stays consistent with the rest of the app.
+class _LearningPalette {
+  _LearningPalette({
+    required this.primary,
+    required this.onPrimary,
+    required this.primaryContainer,
+    required this.onPrimaryContainer,
+    required this.surface,
+    required this.surfaceMuted,
+    required this.outline,
+    required this.outlineSoft,
+    required this.onSurface,
+    required this.onSurfaceMuted,
+    required this.onSurfaceFaded,
+    required this.fallbackGradient,
+  });
+
+  factory _LearningPalette.of(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return _LearningPalette(
+      primary: scheme.primary,
+      onPrimary: scheme.onPrimary,
+      primaryContainer: scheme.primaryContainer,
+      onPrimaryContainer: scheme.onPrimaryContainer,
+      surface: scheme.surface,
+      surfaceMuted: scheme.surfaceContainerHighest,
+      outline: scheme.outline,
+      outlineSoft: scheme.outlineVariant,
+      onSurface: scheme.onSurface,
+      onSurfaceMuted: scheme.onSurfaceVariant,
+      onSurfaceFaded: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+      fallbackGradient: isDark
+          ? const [Color(0xFF1B5E20), Color(0xFF66BB6A)]
+          : const [Color(0xFF1B5E20), Color(0xFF43A047)],
+    );
+  }
+
+  final Color primary;
+  final Color onPrimary;
+  final Color primaryContainer;
+  final Color onPrimaryContainer;
+  final Color surface;
+  final Color surfaceMuted;
+  final Color outline;
+  final Color outlineSoft;
+  final Color onSurface;
+  final Color onSurfaceMuted;
+  final Color onSurfaceFaded;
+  final List<Color> fallbackGradient;
 }
 
 class LearningScreen extends StatefulWidget {
@@ -70,7 +109,6 @@ class _LearningScreenState extends State<LearningScreen> {
     super.dispose();
   }
 
-  // --- UNCHANGED LOGIC ---
   void _onSearchChanged() {
     final next = _searchController.text;
     if (_searchQuery == next) return;
@@ -116,16 +154,16 @@ class _LearningScreenState extends State<LearningScreen> {
     });
     await _videosFuture;
   }
-  // -----------------------
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final palette = _LearningPalette.of(context);
 
     return PakFasalScaffold(
       title: l10n.t('learningYoutubeVideos'),
       child: RefreshIndicator(
-        color: _G.forest,
+        color: palette.primary,
         onRefresh: _refreshLearning,
         child: FutureBuilder<List<LearningVideo>>(
           future: _videosFuture,
@@ -141,26 +179,22 @@ class _LearningScreenState extends State<LearningScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
               children: [
-                // ── Search field ──────────────────────────────────────
                 _LearningSearchField(
                   controller: _searchController,
                   hint: l10n.t('learningSearchHint'),
+                  palette: palette,
                 ),
                 const SizedBox(height: 14),
-
-                // ── Filter label ──────────────────────────────────────
                 Text(
                   l10n.t('learningFilterByCrop'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: _G.textGrey,
+                    color: palette.onSurfaceMuted,
                     letterSpacing: 0.2,
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // ── Category chips ────────────────────────────────────
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -170,6 +204,7 @@ class _LearningScreenState extends State<LearningScreen> {
                       child: _CropChip(
                         label: _localizedCropName(l10n, category),
                         isSelected: _selectedCategory == category,
+                        palette: palette,
                         onTap: () {
                           setState(() {
                             _selectedCategory = category;
@@ -189,48 +224,51 @@ class _LearningScreenState extends State<LearningScreen> {
                 ),
                 const SizedBox(height: 18),
 
-                // ── Loading ───────────────────────────────────────────
                 if (snapshot.connectionState == ConnectionState.waiting)
-                  const _GreenLoadingCard(),
+                  _LoadingPlaceholder(palette: palette),
 
-                // ── Error ─────────────────────────────────────────────
                 if (snapshot.hasError)
                   ErrorStateCard(onRetry: _refreshLearning),
 
-                // ── Empty (no videos) ─────────────────────────────────
                 if (!snapshot.hasError &&
                     snapshot.connectionState == ConnectionState.done &&
                     rawVideos.isEmpty)
-                  _EmptyStateCard(message: l10n.t('learningEmpty')),
+                  _EmptyStateCard(
+                    message: l10n.t('learningEmpty'),
+                    palette: palette,
+                  ),
 
-                // ── Empty (search no results) ─────────────────────────
                 if (!snapshot.hasError &&
                     snapshot.connectionState == ConnectionState.done &&
                     rawVideos.isNotEmpty &&
                     videos.isEmpty &&
                     isSearching)
                   _EmptyStateCard(
-                      message: l10n.t('learningNoSearchResults')),
+                    message: l10n.t('learningNoSearchResults'),
+                    palette: palette,
+                  ),
 
-                // ── Content ───────────────────────────────────────────
                 if (!snapshot.hasError &&
                     snapshot.connectionState == ConnectionState.done &&
                     videos.isNotEmpty) ...[
                   if (showFeatured) ...[
                     _SectionHeader(
                       title: l10n.t('featuredLearning'),
+                      palette: palette,
                     ),
                     const SizedBox(height: 10),
                     _FeaturedLearningCard(
                       video: videos.first,
                       gradientColors: _categoryGradients[_selectedCategory] ??
-                          const [_G.dark, _G.emerald],
+                          palette.fallbackGradient,
+                      palette: palette,
                     ),
                     const SizedBox(height: 14),
                     if (videos.length > 1) ...[
                       _SectionHeader(
                         title: l10n.t('latest'),
                         count: videos.length - 1,
+                        palette: palette,
                       ),
                       const SizedBox(height: 10),
                       ...videos.skip(1).map(
@@ -240,7 +278,8 @@ class _LearningScreenState extends State<LearningScreen> {
                             video: video,
                             gradientColors:
                             _categoryGradients[_selectedCategory] ??
-                                const [_G.dark, _G.emerald],
+                                palette.fallbackGradient,
+                            palette: palette,
                           ),
                         ),
                       ),
@@ -249,6 +288,7 @@ class _LearningScreenState extends State<LearningScreen> {
                     _SectionHeader(
                       title: l10n.t('latest'),
                       count: videos.length,
+                      palette: palette,
                     ),
                     const SizedBox(height: 10),
                     ...videos.map(
@@ -258,7 +298,8 @@ class _LearningScreenState extends State<LearningScreen> {
                           video: video,
                           gradientColors:
                           _categoryGradients[_selectedCategory] ??
-                              const [_G.dark, _G.emerald],
+                              palette.fallbackGradient,
+                          palette: palette,
                         ),
                       ),
                     ),
@@ -273,30 +314,31 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 }
 
-// ── Search field ──────────────────────────────────────────────────────────────
 class _LearningSearchField extends StatelessWidget {
   const _LearningSearchField({
     required this.controller,
     required this.hint,
+    required this.palette,
   });
 
   final TextEditingController controller;
   final String hint;
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       textInputAction: TextInputAction.search,
-      style: const TextStyle(
-        color: _G.textDark,
+      style: TextStyle(
+        color: palette.onSurface,
         fontSize: 15,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: _G.textLight.withValues(alpha: 0.8)),
-        prefixIcon: const Icon(Icons.search_rounded, color: _G.forest, size: 22),
+        hintStyle: TextStyle(color: palette.onSurfaceFaded),
+        prefixIcon: Icon(Icons.search_rounded, color: palette.primary, size: 22),
         suffixIcon: ValueListenableBuilder<TextEditingValue>(
           valueListenable: controller,
           builder: (context, value, _) {
@@ -305,43 +347,44 @@ class _LearningSearchField extends StatelessWidget {
               tooltip:
               MaterialLocalizations.of(context).deleteButtonTooltip,
               onPressed: controller.clear,
-              icon: const Icon(Icons.close_rounded,
-                  color: _G.textLight, size: 20),
+              icon: Icon(Icons.close_rounded,
+                  color: palette.onSurfaceMuted, size: 20),
             );
           },
         ),
         filled: true,
-        fillColor: _G.white,
+        fillColor: palette.surface,
         contentPadding: const EdgeInsets.symmetric(
             horizontal: 8, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _G.border),
+          borderSide: BorderSide(color: palette.outlineSoft),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _G.border),
+          borderSide: BorderSide(color: palette.outlineSoft),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _G.forest, width: 2),
+          borderSide: BorderSide(color: palette.primary, width: 2),
         ),
       ),
     );
   }
 }
 
-// ── Crop chip ──────────────────────────────────────────────────────────────────
 class _CropChip extends StatelessWidget {
   const _CropChip({
     required this.label,
     required this.isSelected,
     required this.onTap,
+    required this.palette,
   });
 
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -351,16 +394,16 @@ class _CropChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? _G.tint : _G.white,
+          color: isSelected ? palette.primaryContainer : palette.surface,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: isSelected ? _G.forest : _G.border,
+            color: isSelected ? palette.primary : palette.outlineSoft,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
               ? [
             BoxShadow(
-              color: _G.forest.withValues(alpha: 0.12),
+              color: palette.primary.withValues(alpha: 0.12),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -373,7 +416,9 @@ class _CropChip extends StatelessWidget {
             fontSize: 13,
             fontWeight:
             isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? _G.forest : _G.textGrey,
+            color: isSelected
+                ? palette.onPrimaryContainer
+                : palette.onSurfaceMuted,
           ),
         ),
       ),
@@ -381,12 +426,16 @@ class _CropChip extends StatelessWidget {
   }
 }
 
-// ── Section header ─────────────────────────────────────────────────────────────
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.count});
+  const _SectionHeader({
+    required this.title,
+    required this.palette,
+    this.count,
+  });
 
   final String title;
   final int? count;
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -394,10 +443,10 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: _G.textDark,
+            color: palette.onSurface,
             letterSpacing: 0.2,
           ),
         ),
@@ -407,15 +456,15 @@ class _SectionHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
                 horizontal: 9, vertical: 2),
             decoration: BoxDecoration(
-              color: _G.tint,
+              color: palette.primaryContainer,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '$count',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
-                color: _G.forest,
+                color: palette.onPrimaryContainer,
               ),
             ),
           ),
@@ -425,9 +474,10 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Green shimmer loading card ─────────────────────────────────────────────────
-class _GreenLoadingCard extends StatelessWidget {
-  const _GreenLoadingCard();
+class _LoadingPlaceholder extends StatelessWidget {
+  const _LoadingPlaceholder({required this.palette});
+
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +487,7 @@ class _GreenLoadingCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 10),
           height: i == 0 ? 180 : 80,
           decoration: BoxDecoration(
-            color: _G.tint.withValues(alpha: 0.7),
+            color: palette.surfaceMuted.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(16),
           ),
         );
@@ -446,32 +496,35 @@ class _GreenLoadingCard extends StatelessWidget {
   }
 }
 
-// ── Empty state card ───────────────────────────────────────────────────────────
 class _EmptyStateCard extends StatelessWidget {
-  const _EmptyStateCard({required this.message});
+  const _EmptyStateCard({
+    required this.message,
+    required this.palette,
+  });
 
   final String message;
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
       decoration: BoxDecoration(
-        color: _G.tint.withValues(alpha: 0.6),
+        color: palette.primaryContainer.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _G.border),
+        border: Border.all(color: palette.outlineSoft),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: _G.tint,
+            decoration: BoxDecoration(
+              color: palette.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.info_outline_rounded,
-              color: _G.forest,
+              color: palette.primary,
               size: 22,
             ),
           ),
@@ -479,9 +532,9 @@ class _EmptyStateCard extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: _G.textDark,
+                color: palette.onSurface,
                 height: 1.4,
               ),
             ),
@@ -492,28 +545,29 @@ class _EmptyStateCard extends StatelessWidget {
   }
 }
 
-// ── Featured card ──────────────────────────────────────────────────────────────
 class _FeaturedLearningCard extends StatelessWidget {
   const _FeaturedLearningCard({
     required this.video,
     required this.gradientColors,
+    required this.palette,
   });
 
   final LearningVideo video;
   final List<Color> gradientColors;
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: _G.white,
+        color: palette.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: _G.forest.withValues(alpha: 0.22), width: 1.2),
+            color: palette.primary.withValues(alpha: 0.22), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: _G.forest.withValues(alpha: 0.08),
+            color: palette.primary.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -523,7 +577,6 @@ class _FeaturedLearningCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Thumbnail ──────────────────────────────────────────────
           Stack(
             children: [
               AspectRatio(
@@ -550,7 +603,6 @@ class _FeaturedLearningCard extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              // Gradient overlay
               Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
@@ -565,7 +617,6 @@ class _FeaturedLearningCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // Watch Now button
               Positioned(
                 bottom: 10,
                 left: 12,
@@ -575,19 +626,19 @@ class _FeaturedLearningCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: _G.forest,
+                      color: palette.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.play_arrow_rounded,
-                            color: _G.white, size: 20),
+                        Icon(Icons.play_arrow_rounded,
+                            color: palette.onPrimary, size: 20),
                         const SizedBox(width: 5),
                         Text(
                           l10n.t('watchNow'),
-                          style: const TextStyle(
-                            color: _G.white,
+                          style: TextStyle(
+                            color: palette.onPrimary,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
@@ -600,7 +651,6 @@ class _FeaturedLearningCard extends StatelessWidget {
             ],
           ),
 
-          // ── Info section ───────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
             child: Column(
@@ -610,27 +660,27 @@ class _FeaturedLearningCard extends StatelessWidget {
                   video.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: _G.textDark,
+                    color: palette.onSurface,
                     height: 1.25,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.verified_rounded,
-                        size: 15, color: _G.forest),
+                    Icon(Icons.verified_rounded,
+                        size: 15, color: palette.primary),
                     const SizedBox(width: 5),
                     Expanded(
                       child: Text(
                         video.channelTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: _G.textGrey,
+                          color: palette.onSurfaceMuted,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -647,15 +697,16 @@ class _FeaturedLearningCard extends StatelessWidget {
   }
 }
 
-// ── Video list card ────────────────────────────────────────────────────────────
 class _LearningVideoCard extends StatelessWidget {
   const _LearningVideoCard({
     required this.video,
     required this.gradientColors,
+    required this.palette,
   });
 
   final LearningVideo video;
   final List<Color> gradientColors;
+  final _LearningPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -665,12 +716,12 @@ class _LearningVideoCard extends StatelessWidget {
       onTap: () => _openYoutube(context, video.youtubeUrl),
       child: Container(
         decoration: BoxDecoration(
-          color: _G.white,
+          color: palette.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _G.border),
+          border: Border.all(color: palette.outlineSoft),
           boxShadow: [
             BoxShadow(
-              color: _G.forest.withValues(alpha: 0.05),
+              color: palette.primary.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -681,7 +732,6 @@ class _LearningVideoCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Thumbnail ─────────────────────────────────────────
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
@@ -713,7 +763,7 @@ class _LearningVideoCard extends StatelessWidget {
                           ),
                           child: const Icon(
                             Icons.play_arrow_rounded,
-                            color: _G.white,
+                            color: Colors.white,
                             size: 26,
                           ),
                         ),
@@ -724,7 +774,6 @@ class _LearningVideoCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
 
-              // ── Text info ─────────────────────────────────────────
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,27 +782,27 @@ class _LearningVideoCard extends StatelessWidget {
                       video.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: _G.textDark,
+                        color: palette.onSurface,
                         height: 1.25,
                       ),
                     ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Icon(Icons.tv_outlined,
-                            size: 12, color: _G.textLight),
+                        Icon(Icons.tv_outlined,
+                            size: 12, color: palette.onSurfaceFaded),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             video.channelTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: _G.textGrey,
+                              color: palette.onSurfaceMuted,
                             ),
                           ),
                         ),
@@ -762,14 +811,14 @@ class _LearningVideoCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_today_outlined,
-                            size: 11, color: _G.textLight),
+                        Icon(Icons.calendar_today_outlined,
+                            size: 11, color: palette.onSurfaceFaded),
                         const SizedBox(width: 4),
                         Text(
                           date,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: _G.textLight,
+                            color: palette.onSurfaceFaded,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -779,12 +828,11 @@ class _LearningVideoCard extends StatelessWidget {
                 ),
               ),
 
-              // ── Open icon ─────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.only(top: 2),
                 child: Icon(
                   Icons.open_in_new_rounded,
-                  color: _G.forest,
+                  color: palette.primary,
                   size: 18,
                 ),
               ),
@@ -796,7 +844,6 @@ class _LearningVideoCard extends StatelessWidget {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 String _localizedCropName(AppLocalizations l10n, String crop) {
   return switch (crop) {
     'Wheat'     => l10n.t('cropWheat'),
@@ -837,10 +884,11 @@ Future<void> _openYoutube(BuildContext context, String url) async {
 }
 
 void _showCouldNotOpen(BuildContext context) {
+  final scheme = Theme.of(context).colorScheme;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(AppLocalizations.of(context).t('couldNotOpenVideo')),
-      backgroundColor: _G.forest,
+      backgroundColor: scheme.primary,
     ),
   );
 }

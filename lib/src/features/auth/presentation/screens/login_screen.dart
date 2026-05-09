@@ -552,7 +552,7 @@ class _LoginViewState extends State<_LoginView>
                                                 .textTheme
                                                 .bodySmall
                                                 ?.copyWith(
-                                                  color: AppColors.mutedTextDark,
+                                                  color: scheme.onSurfaceVariant,
                                                 ),
                                           ),
                                         ),
@@ -601,7 +601,7 @@ class _LoginViewState extends State<_LoginView>
                                           children: [
                                             Expanded(
                                                 child: Divider(
-                                                    color: AppColors.mutedText
+                                                    color: scheme.onSurfaceVariant
                                                         .withValues(alpha: 0.3))),
                                             Padding(
                                               padding:
@@ -610,14 +610,14 @@ class _LoginViewState extends State<_LoginView>
                                               child: Text(
                                                 l10n.t('or'),
                                                 style: TextStyle(
-                                                  color: AppColors.mutedText,
+                                                  color: scheme.onSurfaceVariant,
                                                   fontSize: 13,
                                                 ),
                                               ),
                                             ),
                                             Expanded(
                                                 child: Divider(
-                                                    color: AppColors.mutedText
+                                                    color: scheme.onSurfaceVariant
                                                         .withValues(alpha: 0.3))),
                                           ],
                                         ),
@@ -724,6 +724,9 @@ class _GreenButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final disabledBg = scheme.surfaceContainerHighest;
+    final disabledFg = scheme.onSurfaceVariant;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
@@ -733,7 +736,7 @@ class _GreenButton extends StatelessWidget {
             : const LinearGradient(
           colors: [AppColors.lightGreen, AppColors.primaryGreen],
         ),
-        color: isLoading ? AppColors.lightGrey : null,
+        color: isLoading ? disabledBg : null,
         boxShadow: isLoading
             ? []
             : [
@@ -761,12 +764,12 @@ class _GreenButton extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: AppColors.mutedTextDark,
+                      color: disabledFg,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Text(loadingLabel,
-                      style: const TextStyle(color: AppColors.mutedTextDark)),
+                      style: TextStyle(color: disabledFg)),
                 ],
               )
                   : Text(

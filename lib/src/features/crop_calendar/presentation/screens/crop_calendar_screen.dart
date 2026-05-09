@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 import '../providers/crop_calendar_provider.dart';
@@ -182,7 +181,7 @@ class _SelectorsSection extends StatelessWidget {
             l10n.t('cropCalAreasTitle'),
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: AppColors.darkGreen,
+                  color: scheme.primary,
                 ),
           ),
           const SizedBox(height: 8),

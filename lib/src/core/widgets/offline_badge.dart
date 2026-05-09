@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class OfflineBadge extends StatelessWidget {
   const OfflineBadge({
     super.key,
@@ -12,7 +14,12 @@ class OfflineBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isOffline ? Colors.orange : Colors.green;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Tuned slightly brighter in dark mode so the badge reads against
+    // dark surfaces while staying within the warning/success palette.
+    final color = isOffline
+        ? (isDark ? const Color(0xFFFFB74D) : AppColors.warning)
+        : (isDark ? const Color(0xFF81C784) : AppColors.success);
     final icon = isOffline ? Icons.cloud_off : Icons.cloud_done;
     final text = isOffline ? 'Offline' : 'Online';
 
@@ -22,7 +29,7 @@ class OfflineBadge extends StatelessWidget {
         vertical: isCompact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: isDark ? 0.18 : 0.12),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

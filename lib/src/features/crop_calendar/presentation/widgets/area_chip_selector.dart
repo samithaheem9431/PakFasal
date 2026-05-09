@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 import '../utils/crop_calendar_visuals.dart';
 
@@ -24,12 +23,15 @@ class AreaChipSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
 
     return Wrap(
       spacing: 10,
       runSpacing: 8,
       children: areas.map((area) {
         final selected = selectedArea == area;
+        final fg = selected ? scheme.onPrimary : scheme.primary;
+        final labelColor = selected ? scheme.onPrimary : scheme.onSurface;
         return ChoiceChip(
           label: Row(
             mainAxisSize: MainAxisSize.min,
@@ -37,8 +39,7 @@ class AreaChipSelector extends StatelessWidget {
               Icon(
                 Icons.location_on_rounded,
                 size: 16,
-                color:
-                    selected ? AppColors.white : AppColors.primaryGreen,
+                color: fg,
               ),
               const SizedBox(width: 4),
               Text(l10n.t(CropCalendarVisuals.areaLabelKey(area))),
@@ -46,11 +47,11 @@ class AreaChipSelector extends StatelessWidget {
           ),
           selected: selected,
           showCheckmark: false,
-          selectedColor: AppColors.primaryGreen,
-          backgroundColor: AppColors.paleGreen,
+          selectedColor: scheme.primary,
+          backgroundColor: scheme.surfaceContainerHighest,
           labelStyle: TextStyle(
             fontWeight: FontWeight.w700,
-            color: selected ? AppColors.white : AppColors.darkText,
+            color: labelColor,
           ),
           onSelected: (_) => onAreaSelected(area),
         );

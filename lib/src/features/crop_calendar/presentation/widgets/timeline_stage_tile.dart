@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 import '../utils/crop_calendar_visuals.dart';
 
@@ -47,14 +46,14 @@ class TimelineStageTile extends StatelessWidget {
       StageStatus.upcoming => 'cropCalUpcoming',
     };
     final statusBackground = switch (status) {
-      StageStatus.completed => AppColors.lightGrey,
+      StageStatus.completed => scheme.surfaceContainerHighest,
       StageStatus.active => stageColor.withValues(alpha: 0.15),
-      StageStatus.upcoming => AppColors.paleGreen,
+      StageStatus.upcoming => scheme.primaryContainer,
     };
     final statusForeground = switch (status) {
-      StageStatus.completed => AppColors.mutedTextDark,
+      StageStatus.completed => scheme.onSurfaceVariant,
       StageStatus.active => stageColor,
-      StageStatus.upcoming => AppColors.primaryGreen,
+      StageStatus.upcoming => scheme.onPrimaryContainer,
     };
 
     return IntrinsicHeight(
@@ -142,16 +141,16 @@ class TimelineStageTile extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.paleGreen,
+                              color: scheme.primaryContainer,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               CropCalendarVisuals.formatMonthRange(
                                   l10n, activity.months),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.primaryGreen,
+                                color: scheme.onPrimaryContainer,
                               ),
                             ),
                           ),
@@ -187,7 +186,7 @@ class TimelineStageTile extends StatelessWidget {
                                   .labelMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.primaryGreen,
+                                    color: scheme.primary,
                                   ),
                               overflow: TextOverflow.ellipsis,
                             ),

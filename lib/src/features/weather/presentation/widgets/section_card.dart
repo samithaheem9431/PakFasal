@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-
 /// Lightweight container used by every section on the weather screen
 /// (hourly slider, daily list, highlights grid). Keeps padding, borders,
 /// and the section heading consistent across the screen.
@@ -30,12 +28,12 @@ class SectionCard extends StatelessWidget {
         color: scheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.primaryGreen.withValues(alpha: 0.12),
+          color: scheme.primary.withValues(alpha: 0.12),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: scheme.shadow.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -47,7 +45,7 @@ class SectionCard extends StatelessWidget {
           Row(
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 16, color: AppColors.primaryGreen),
+                Icon(icon, size: 16, color: scheme.primary),
                 const SizedBox(width: 6),
               ],
               Expanded(
@@ -56,7 +54,7 @@ class SectionCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5,
-                    color: AppColors.darkGreen,
+                    color: scheme.primary,
                     letterSpacing: 0.2,
                   ),
                 ),

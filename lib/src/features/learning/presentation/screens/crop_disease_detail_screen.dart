@@ -38,13 +38,13 @@ class CropDiseaseDetailScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.paleGreen,
+                      color: scheme.primaryContainer,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
                       crop.icon,
                       size: 28,
-                      color: AppColors.primaryGreen,
+                      color: scheme.primary,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -79,7 +79,7 @@ class CropDiseaseDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12),
             child: Card(
               elevation: 2,
-              shadowColor: AppColors.primaryGreen.withValues(alpha: 0.2),
+              shadowColor: scheme.primary.withValues(alpha: 0.2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(

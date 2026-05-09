@@ -7,6 +7,73 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 
+/// Theme-aware palette derived per build so the AI surface flips cleanly
+/// between light and dark modes. We still lean on the green branding via
+/// [ColorScheme.primary], but every supporting surface comes from the
+/// active scheme.
+class _AiPalette {
+  _AiPalette({
+    required this.primary,
+    required this.onPrimary,
+    required this.primaryContainer,
+    required this.onPrimaryContainer,
+    required this.surface,
+    required this.surfaceMuted,
+    required this.surfaceHigh,
+    required this.outline,
+    required this.outlineSoft,
+    required this.onSurface,
+    required this.onSurfaceMuted,
+    required this.onSurfaceFaded,
+    required this.userBubbleGradient,
+    required this.botBubbleColor,
+    required this.botBubbleBorder,
+    required this.botBubbleText,
+  });
+
+  factory _AiPalette.of(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return _AiPalette(
+      primary: scheme.primary,
+      onPrimary: scheme.onPrimary,
+      primaryContainer: scheme.primaryContainer,
+      onPrimaryContainer: scheme.onPrimaryContainer,
+      surface: scheme.surface,
+      surfaceMuted: scheme.surfaceContainerHighest,
+      surfaceHigh: scheme.surfaceContainerHigh,
+      outline: scheme.outline,
+      outlineSoft: scheme.outlineVariant,
+      onSurface: scheme.onSurface,
+      onSurfaceMuted: scheme.onSurfaceVariant,
+      onSurfaceFaded: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+      userBubbleGradient: isDark
+          ? [scheme.primary, scheme.primaryContainer]
+          : [scheme.primary.withValues(alpha: 0.85), scheme.primary],
+      botBubbleColor: scheme.surfaceContainerHigh,
+      botBubbleBorder: scheme.outlineVariant,
+      botBubbleText: scheme.onSurface,
+    );
+  }
+
+  final Color primary;
+  final Color onPrimary;
+  final Color primaryContainer;
+  final Color onPrimaryContainer;
+  final Color surface;
+  final Color surfaceMuted;
+  final Color surfaceHigh;
+  final Color outline;
+  final Color outlineSoft;
+  final Color onSurface;
+  final Color onSurfaceMuted;
+  final Color onSurfaceFaded;
+  final List<Color> userBubbleGradient;
+  final Color botBubbleColor;
+  final Color botBubbleBorder;
+  final Color botBubbleText;
+}
+
 class AiQueryScreen extends StatefulWidget {
   const AiQueryScreen({super.key});
 
@@ -25,13 +92,6 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
   bool _isListening = false;
   int? _speakingMessageIndex;
 
-  static const _forestGreen = AppColors.primaryGreen;
-  static const _emerald = AppColors.lightGreen;
-  static const _lightGreen = AppColors.paleGreen;
-  static const _midGreen = AppColors.mintGreen;
-  static const _surfaceGreen = AppColors.softSurfaceGreen;
-  static const _mintText = AppColors.lightGreen;
-
   @override
   void initState() {
     super.initState();
@@ -47,7 +107,6 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
     super.dispose();
   }
 
-  // --- UNCHANGED LOGIC ---
   void _handleSubmitted(String text) {
     if (text.trim().isEmpty) return;
     final l10n = AppLocalizations.of(context);
@@ -82,10 +141,11 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
   }
 
   void _showHistoryPanel(BuildContext context, AppLocalizations l10n) {
+    final palette = _AiPalette.of(context);
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      backgroundColor: AppColors.white,
+      backgroundColor: palette.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -107,13 +167,12 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   children: [
                     Text(
                       l10n.t('aiHistory'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: _forestGreen,
+                        color: palette.primary,
                       ),
                     ),
-                    // New chat pill button
                     GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
@@ -123,21 +182,21 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: _lightGreen,
+                          color: palette.primaryContainer,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.add,
-                                size: 14, color: _forestGreen),
+                            Icon(Icons.add,
+                                size: 14, color: palette.onPrimaryContainer),
                             const SizedBox(width: 4),
                             Text(
                               l10n.t('aiNewChat'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: _forestGreen,
+                                color: palette.onPrimaryContainer,
                               ),
                             ),
                           ],
@@ -147,7 +206,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   ],
                 ),
               ),
-              const Divider(color: _midGreen),
+              Divider(color: palette.outlineSoft, height: 1),
               Expanded(
                 child: ListView.builder(
                   itemCount: history.length,
@@ -155,23 +214,23 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                     return ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: _lightGreen,
+                        decoration: BoxDecoration(
+                          color: palette.primaryContainer,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.chat_bubble_outline,
                           size: 16,
-                          color: _forestGreen,
+                          color: palette.primary,
                         ),
                       ),
                       title: Text(
                         history[index],
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          color: _forestGreen,
+                          color: palette.onSurface,
                         ),
                       ),
                       onTap: () {
@@ -179,7 +238,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(l10n.t('aiHistoryLoaded')),
-                            backgroundColor: _forestGreen,
+                            backgroundColor: palette.primary,
                           ),
                         );
                       },
@@ -303,30 +362,29 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
       );
     }
   }
-  // -----------------------
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final palette = _AiPalette.of(context);
 
     return PakFasalScaffold(
       title: l10n.t('askAi'),
       showBack: true,
       actions: [
         IconButton(
-          icon: const Icon(Icons.history, color: _forestGreen),
+          icon: Icon(Icons.history, color: palette.primary),
           tooltip: l10n.t('aiHistory'),
           onPressed: () => _showHistoryPanel(context, l10n),
         ),
       ],
       child: Container(
-        color: _surfaceGreen,
+        color: palette.surface,
         child: Column(
           children: [
-            // ── Chat list / empty state ─────────────────────────────────
             Expanded(
               child: _messages.isEmpty
-                  ? _buildEmptyState(l10n)
+                  ? _buildEmptyState(l10n, palette)
                   : ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(16),
@@ -335,6 +393,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   return _ChatBubble(
                     message: _messages[index],
                     l10n: l10n,
+                    palette: palette,
                     isSpeaking: _speakingMessageIndex == index,
                     onSpeak: _messages[index].isUser
                         ? null
@@ -347,7 +406,6 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
               ),
             ),
 
-            // ── Typing indicator ────────────────────────────────────────
             if (_isTyping)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -356,83 +414,80 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: _lightGreen,
+                      decoration: BoxDecoration(
+                        color: palette.primaryContainer,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.smart_toy_rounded,
                         size: 14,
-                        color: _forestGreen,
+                        color: palette.primary,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const _TypingDots(),
+                    _TypingDots(color: palette.primary),
                   ],
                 ),
               ),
 
-            // ── Input area ──────────────────────────────────────────────
-            _buildInputArea(l10n),
+            _buildInputArea(l10n, palette),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState(AppLocalizations l10n) {
+  Widget _buildEmptyState(AppLocalizations l10n, _AiPalette palette) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Bot icon in green circle
             Container(
               padding: const EdgeInsets.all(22),
-              decoration: const BoxDecoration(
-                color: _lightGreen,
+              decoration: BoxDecoration(
+                color: palette.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.smart_toy_rounded,
                 size: 52,
-                color: _forestGreen,
+                color: palette.primary,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               l10n.t('aiNoMessagesTitle'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: _forestGreen,
+                color: palette.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               l10n.t('aiNoMessagesSubtitle'),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: _mintText,
+                color: palette.onSurfaceMuted,
                 height: 1.5,
               ),
             ),
             const SizedBox(height: 32),
-            // Suggestion chip — green themed
             GestureDetector(
               onTap: () => _handleSubmitted(l10n.t('aiSampleQuestion')),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: palette.surface,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: _midGreen),
+                  border: Border.all(color: palette.outlineSoft),
                   boxShadow: [
                     BoxShadow(
-                      color: _forestGreen.withValues(alpha: 0.07),
+                      color: palette.primary.withValues(alpha: 0.07),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -441,13 +496,13 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.lightbulb_outline,
-                        size: 16, color: _forestGreen),
+                    Icon(Icons.lightbulb_outline,
+                        size: 16, color: palette.primary),
                     const SizedBox(width: 6),
                     Text(
                       l10n.t('aiSampleQuestion'),
-                      style: const TextStyle(
-                        color: _forestGreen,
+                      style: TextStyle(
+                        color: palette.primary,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -462,25 +517,24 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
     );
   }
 
-  Widget _buildInputArea(AppLocalizations l10n) {
+  Widget _buildInputArea(AppLocalizations l10n, _AiPalette palette) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 16),
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        border: Border(top: BorderSide(color: _midGreen)),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        border: Border(top: BorderSide(color: palette.outlineSoft)),
       ),
       child: SafeArea(
         top: false,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // ── Text field ─────────────────────────────────────────────
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: _surfaceGreen,
+                  color: palette.surfaceMuted,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: _midGreen),
+                  border: Border.all(color: palette.outlineSoft),
                 ),
                 child: TextField(
                   controller: _textController,
@@ -488,11 +542,12 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   maxLines: 4,
                   textInputAction: TextInputAction.send,
                   onSubmitted: _handleSubmitted,
-                  style: const TextStyle(color: _forestGreen, fontSize: 15),
+                  style:
+                      TextStyle(color: palette.onSurface, fontSize: 15),
                   decoration: InputDecoration(
                     hintText: l10n.t('typeMessage'),
                     hintStyle: TextStyle(
-                      color: _mintText.withValues(alpha: 0.6),
+                      color: palette.onSurfaceFaded,
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -505,16 +560,16 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
             ),
             const SizedBox(width: 8),
 
-            // ── Mic button — red tint when listening ───────────────────
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               decoration: BoxDecoration(
                 color: _isListening
                     ? AppColors.error.withValues(alpha: 0.10)
-                    : _lightGreen,
+                    : palette.primaryContainer,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: _isListening ? AppColors.error : _midGreen,
+                  color:
+                      _isListening ? AppColors.error : palette.outlineSoft,
                 ),
               ),
               child: IconButton(
@@ -522,7 +577,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
                   _isListening
                       ? Icons.mic_off_rounded
                       : Icons.mic_rounded,
-                  color: _isListening ? AppColors.error : _forestGreen,
+                  color: _isListening ? AppColors.error : palette.primary,
                 ),
                 tooltip: _isListening
                     ? l10n.t('voiceListeningNow')
@@ -532,25 +587,24 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
             ),
             const SizedBox(width: 8),
 
-            // ── Send button ────────────────────────────────────────────
             Container(
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [_emerald, _forestGreen],
+                gradient: LinearGradient(
+                  colors: palette.userBubbleGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: _forestGreen.withValues(alpha: 0.30),
+                    color: palette.primary.withValues(alpha: 0.30),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: IconButton(
-                icon: const Icon(Icons.send_rounded, color: AppColors.white),
+                icon: Icon(Icons.send_rounded, color: palette.onPrimary),
                 onPressed: () => _handleSubmitted(_textController.text),
               ),
             ),
@@ -561,9 +615,10 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
   }
 }
 
-// ── Animated typing dots ───────────────────────────────────────────────────
 class _TypingDots extends StatefulWidget {
-  const _TypingDots();
+  const _TypingDots({required this.color});
+
+  final Color color;
 
   @override
   State<_TypingDots> createState() => _TypingDotsState();
@@ -605,7 +660,7 @@ class _TypingDotsState extends State<_TypingDots>
               height: 7,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.lightGreen.withValues(alpha: opacity),
+                color: widget.color.withValues(alpha: opacity),
               ),
             );
           }),
@@ -615,7 +670,6 @@ class _TypingDotsState extends State<_TypingDots>
   }
 }
 
-// ── Chat message model — unchanged ─────────────────────────────────────────
 class _ChatMessage {
   final String text;
   final bool isUser;
@@ -623,24 +677,20 @@ class _ChatMessage {
   _ChatMessage({required this.text, required this.isUser});
 }
 
-// ── Chat bubble ────────────────────────────────────────────────────────────
 class _ChatBubble extends StatelessWidget {
   const _ChatBubble({
     required this.message,
     required this.l10n,
+    required this.palette,
     required this.isSpeaking,
     required this.onSpeak,
   });
 
   final _ChatMessage message;
   final AppLocalizations l10n;
+  final _AiPalette palette;
   final bool isSpeaking;
   final VoidCallback? onSpeak;
-
-  static const _forestGreen = AppColors.primaryGreen;
-  static const _emerald = AppColors.lightGreen;
-  static const _lightGreen = AppColors.paleGreen;
-  static const _mintText = AppColors.lightGreen;
 
   @override
   Widget build(BuildContext context) {
@@ -652,19 +702,18 @@ class _ChatBubble extends StatelessWidget {
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         children: [
-          // ── Bot avatar ─────────────────────────────────────────────
           if (!message.isUser)
             Container(
               margin: const EdgeInsets.only(right: 10, top: 2),
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: _lightGreen,
+              decoration: BoxDecoration(
+                color: palette.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.smart_toy_rounded,
                 size: 18,
-                color: _forestGreen,
+                color: palette.primary,
               ),
             ),
 
@@ -674,7 +723,6 @@ class _ChatBubble extends StatelessWidget {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                // Sender label
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
@@ -684,26 +732,26 @@ class _ChatBubble extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: message.isUser ? _forestGreen : _mintText,
+                      color: message.isUser
+                          ? palette.primary
+                          : palette.onSurfaceMuted,
                       letterSpacing: 0.3,
                     ),
                   ),
                 ),
 
-                // Bubble
                 Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    // User: green gradient · Bot: white with green border
                     gradient: message.isUser
-                        ? const LinearGradient(
-                      colors: [_emerald, _forestGreen],
+                        ? LinearGradient(
+                      colors: palette.userBubbleGradient,
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
                         : null,
-                    color: message.isUser ? null : AppColors.white,
+                    color: message.isUser ? null : palette.botBubbleColor,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -716,10 +764,10 @@ class _ChatBubble extends StatelessWidget {
                     ),
                     border: message.isUser
                         ? null
-                        : Border.all(color: AppColors.paleGreen),
+                        : Border.all(color: palette.botBubbleBorder),
                     boxShadow: [
                       BoxShadow(
-                        color: _forestGreen.withValues(
+                        color: palette.primary.withValues(
                             alpha: message.isUser ? 0.18 : 0.06),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
@@ -730,15 +778,14 @@ class _ChatBubble extends StatelessWidget {
                     message.text,
                     style: TextStyle(
                       color: message.isUser
-                          ? AppColors.white
-                          : _forestGreen,
+                          ? palette.onPrimary
+                          : palette.botBubbleText,
                       fontSize: 15,
                       height: 1.45,
                     ),
                   ),
                 ),
 
-                // Speak button for bot messages
                 if (!message.isUser && onSpeak != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 5),
@@ -752,14 +799,14 @@ class _ChatBubble extends StatelessWidget {
                                 ? Icons.stop_circle_outlined
                                 : Icons.volume_up_rounded,
                             size: 15,
-                            color: _mintText,
+                            color: palette.onSurfaceMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             l10n.t('voice'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: _mintText,
+                              color: palette.onSurfaceMuted,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

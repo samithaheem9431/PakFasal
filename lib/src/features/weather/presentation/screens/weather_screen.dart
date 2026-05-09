@@ -160,10 +160,13 @@ class _OfflineHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor =
+        isDark ? const Color(0xFFFFD180) : const Color(0xFF8C5500);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.10),
+        color: AppColors.warning.withValues(alpha: isDark ? 0.18 : 0.10),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: AppColors.warning.withValues(alpha: 0.35),
@@ -180,8 +183,8 @@ class _OfflineHint extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: Color(0xFF8C5500),
+              style: TextStyle(
+                color: textColor,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),

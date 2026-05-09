@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 
 /// Compact card highlighting the best sowing window for the active plan
@@ -29,7 +28,7 @@ class SowingPlanCard extends StatelessWidget {
         color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primaryGreen.withValues(alpha: 0.15),
+          color: scheme.primary.withValues(alpha: 0.18),
         ),
       ),
       child: Row(
@@ -38,12 +37,12 @@ class SowingPlanCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.paleGreen,
+              color: scheme.primaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.event_available_rounded,
-              color: AppColors.primaryGreen,
+              color: scheme.primary,
               size: 22,
             ),
           ),
@@ -56,7 +55,7 @@ class SowingPlanCard extends StatelessWidget {
                   l10n.t('cropCalSowingWindow'),
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w800,
-                        color: AppColors.darkGreen,
+                        color: scheme.primary,
                       ),
                 ),
                 const SizedBox(height: 4),

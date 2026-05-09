@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 import '../utils/crop_calendar_visuals.dart';
 
@@ -37,17 +36,17 @@ class SeasonProgressCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.softSurfaceGreen,
+            scheme.primaryContainer.withValues(alpha: 0.45),
             scheme.surface,
           ],
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppColors.primaryGreen.withValues(alpha: 0.18),
+          color: scheme.primary.withValues(alpha: 0.18),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: scheme.shadow.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -61,12 +60,12 @@ class SeasonProgressCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                  color: scheme.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   CropCalendarVisuals.iconForCrop(plan.crop),
-                  color: AppColors.primaryGreen,
+                  color: scheme.primary,
                   size: 20,
                 ),
               ),
@@ -89,7 +88,7 @@ class SeasonProgressCard extends StatelessWidget {
                       '${l10n.t(CropCalendarVisuals.areaLabelKey(plan.area))}',
                       style:
                           Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: AppColors.primaryGreen,
+                                color: scheme.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                     ),
@@ -103,8 +102,8 @@ class SeasonProgressCard extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: inSeason
-                      ? AppColors.primaryGreen
-                      : AppColors.mutedText,
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -114,8 +113,8 @@ class SeasonProgressCard extends StatelessWidget {
                           params: {'percent': percent},
                         )
                       : l10n.t('cropCalOffSeason'),
-                  style: const TextStyle(
-                    color: AppColors.white,
+                  style: TextStyle(
+                    color: inSeason ? scheme.onPrimary : scheme.surface,
                     fontWeight: FontWeight.w800,
                     fontSize: 11,
                   ),
@@ -129,9 +128,8 @@ class SeasonProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: inSeason ? seasonProgress : 0,
               minHeight: 8,
-              backgroundColor: AppColors.paleGreen,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
+              backgroundColor: scheme.primaryContainer,
+              valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
             ),
           ),
           const SizedBox(height: 14),

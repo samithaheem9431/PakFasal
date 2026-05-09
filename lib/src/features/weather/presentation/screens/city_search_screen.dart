@@ -163,8 +163,12 @@ class _UseGpsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accent = isDark ? scheme.primary : AppColors.primaryGreen;
+    final accentText = isDark ? scheme.onPrimaryContainer : AppColors.primaryGreen;
     return Material(
-      color: AppColors.primaryGreen.withValues(alpha: 0.08),
+      color: accent.withValues(alpha: isDark ? 0.16 : 0.08),
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -177,12 +181,12 @@ class _UseGpsTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen,
+                  color: accent,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.my_location_rounded,
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                   size: 18,
                 ),
               ),
@@ -190,16 +194,16 @@ class _UseGpsTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   l10n.t('weatherUseCurrentLocation'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primaryGreen,
+                    color: accentText,
                     fontSize: 13.5,
                   ),
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.primaryGreen,
+                color: accentText,
               ),
             ],
           ),
@@ -292,10 +296,10 @@ class _SearchBody extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Text(
             l10n.t('weatherSavedLocations'),
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 12.5,
-              color: AppColors.darkGreen,
+              color: Theme.of(context).colorScheme.primary,
               letterSpacing: 0.4,
             ),
           ),
@@ -326,8 +330,9 @@ class _LocationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: scheme.surface,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -337,7 +342,7 @@ class _LocationTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.primaryGreen.withValues(alpha: 0.10),
+              color: scheme.primary.withValues(alpha: 0.18),
             ),
           ),
           child: Row(
@@ -346,12 +351,12 @@ class _LocationTile extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.10),
+                  color: scheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.location_city_rounded,
-                  color: AppColors.primaryGreen,
+                  color: scheme.primary,
                   size: 18,
                 ),
               ),
@@ -361,9 +366,10 @@ class _LocationTile extends StatelessWidget {
                   location.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13.5,
+                    color: scheme.onSurface,
                   ),
                 ),
               ),
@@ -373,9 +379,9 @@ class _LocationTile extends StatelessWidget {
                   onPressed: onRemove,
                   tooltip: 'Remove',
                 ),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.primaryGreen,
+                color: scheme.primary,
               ),
             ],
           ),
