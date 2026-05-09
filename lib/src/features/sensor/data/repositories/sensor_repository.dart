@@ -73,21 +73,66 @@ class SensorRepository {
     }
   }
 
-  Future<SensorRuleConfig> fetchRuleConfig() async {
+  /// Reads the rule-set document at `sensor_config/rules`.
+  ///
+  /// Expected document shape (any missing field falls back to the default):
+  /// ```
+  /// {
+  ///   "default": { "moistureLowThreshold": 45, "moistureHighThreshold": 75,
+  ///                "phLowThreshold": 5.5, "phHighThreshold": 7.5,
+  ///                "rainChanceThreshold": 50 },
+  ///   "Wheat":  { ... per-crop overrides ... },
+  ///   "Rice":   { ... },
+  ///   "Cotton": { ... }
+  /// }
+  /// ```
+  ///
+  /// When a crop key is missing the [SensorRuleSet.forCrop] lookup falls back
+  /// to the `default` entry, and when the whole document is missing
+  /// [SensorRuleSet.fallback] is returned with agronomy-based defaults for
+  /// Pakistani crops.
+  Future<SensorRuleSet> fetchRuleSet() async {
     final doc = await _firestore.collection('sensor_config').doc('rules').get();
     final data = doc.data();
     if (data == null) {
-      return const SensorRuleConfig();
+      return SensorRuleSet.fallback();
     }
 
+    final fallback = SensorRuleSet.fallback();
+    final defaultConfig = _parseConfig(
+      data['default'] as Map<String, dynamic>?,
+      fallback.defaultConfig,
+    );
+    final perCrop = <String, SensorRuleConfig>{};
+    for (final crop in const ['Wheat', 'Rice', 'Cotton']) {
+      final cropFallback = fallback.perCrop[crop] ?? defaultConfig;
+      perCrop[crop] = _parseConfig(
+        data[crop] as Map<String, dynamic>?,
+        cropFallback,
+      );
+    }
+    return SensorRuleSet(defaultConfig: defaultConfig, perCrop: perCrop);
+  }
+
+  SensorRuleConfig _parseConfig(
+    Map<String, dynamic>? data,
+    SensorRuleConfig fallback,
+  ) {
+    if (data == null) return fallback;
     return SensorRuleConfig(
       moistureLowThreshold:
-          ((data['moistureLowThreshold'] as num?) ?? 45).toDouble(),
+          ((data['moistureLowThreshold'] as num?) ?? fallback.moistureLowThreshold)
+              .toDouble(),
       moistureHighThreshold:
-          ((data['moistureHighThreshold'] as num?) ?? 75).toDouble(),
-      phLowThreshold: ((data['phLowThreshold'] as num?) ?? 5.5).toDouble(),
-      phHighThreshold: ((data['phHighThreshold'] as num?) ?? 7.5).toDouble(),
-      rainChanceThreshold: ((data['rainChanceThreshold'] as num?) ?? 50).toInt(),
+          ((data['moistureHighThreshold'] as num?) ?? fallback.moistureHighThreshold)
+              .toDouble(),
+      phLowThreshold:
+          ((data['phLowThreshold'] as num?) ?? fallback.phLowThreshold).toDouble(),
+      phHighThreshold:
+          ((data['phHighThreshold'] as num?) ?? fallback.phHighThreshold).toDouble(),
+      rainChanceThreshold:
+          ((data['rainChanceThreshold'] as num?) ?? fallback.rainChanceThreshold)
+              .toInt(),
     );
   }
 }
@@ -106,4 +151,58 @@ class SensorRuleConfig {
   final double phLowThreshold;
   final double phHighThreshold;
   final int rainChanceThreshold;
+}
+
+/// A bundle of [SensorRuleConfig]s indexed by crop, plus a `default` config
+/// used for any crop without an explicit override.
+///
+/// Per-crop defaults are tuned for Pakistani agronomy:
+///  * Wheat   – moderate water need, neutral pH (40–70%, pH 6.0–7.5).
+///  * Rice    – paddy crop, very high moisture, slightly acidic soil
+///              (70–95%, pH 5.5–7.0). Higher rain threshold because
+///              rice tolerates standing water.
+///  * Cotton  – drought tolerant, tolerates alkaline soils
+///              (35–65%, pH 6.0–8.0).
+class SensorRuleSet {
+  const SensorRuleSet({
+    required this.defaultConfig,
+    required this.perCrop,
+  });
+
+  factory SensorRuleSet.fallback() {
+    const defaultConfig = SensorRuleConfig();
+    return const SensorRuleSet(
+      defaultConfig: defaultConfig,
+      perCrop: {
+        'Wheat': SensorRuleConfig(
+          moistureLowThreshold: 40,
+          moistureHighThreshold: 70,
+          phLowThreshold: 6.0,
+          phHighThreshold: 7.5,
+          rainChanceThreshold: 50,
+        ),
+        'Rice': SensorRuleConfig(
+          moistureLowThreshold: 70,
+          moistureHighThreshold: 95,
+          phLowThreshold: 5.5,
+          phHighThreshold: 7.0,
+          rainChanceThreshold: 60,
+        ),
+        'Cotton': SensorRuleConfig(
+          moistureLowThreshold: 35,
+          moistureHighThreshold: 65,
+          phLowThreshold: 6.0,
+          phHighThreshold: 8.0,
+          rainChanceThreshold: 45,
+        ),
+      },
+    );
+  }
+
+  final SensorRuleConfig defaultConfig;
+  final Map<String, SensorRuleConfig> perCrop;
+
+  /// Returns the per-crop override if present, otherwise the default config.
+  SensorRuleConfig forCrop(String crop) =>
+      perCrop[crop] ?? defaultConfig;
 }

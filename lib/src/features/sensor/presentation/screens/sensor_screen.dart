@@ -23,6 +23,7 @@ class _SensorScreenState extends State<SensorScreen>
     with WidgetsBindingObserver {
   final TextEditingController _moistureController = TextEditingController();
   final TextEditingController _phController = TextEditingController();
+  final GlobalKey<FormState> _manualFormKey = GlobalKey<FormState>();
   final SensorRepository _sensorRepository = SensorRepository();
   final WeatherRepository _weatherRepository = WeatherRepository();
   final FlutterTts _flutterTts = FlutterTts();
@@ -37,11 +38,11 @@ class _SensorScreenState extends State<SensorScreen>
   bool _isResettingGraphs = false;
   bool _isWeatherLoading = true;
   bool _isSpeakingRecommendation = false;
+  bool _isInputValid = false;
   String? _speakingRecommendationSection;
   String? _expandedRecommendationSection;
   DateTime? _lastWeatherSyncAt;
-  SensorRuleConfig _ruleConfig = const SensorRuleConfig();
-  final List<String> _savedSessions = [];
+  SensorRuleSet _ruleSet = SensorRuleSet.fallback();
   Timer? _weatherAutoRefreshTimer;
 
   @override
@@ -51,6 +52,8 @@ class _SensorScreenState extends State<SensorScreen>
     _configureTts();
     _loadRuleConfig();
     _loadCurrentRainChance();
+    _moistureController.addListener(_recomputeInputValidity);
+    _phController.addListener(_recomputeInputValidity);
     _weatherAutoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
       if (!mounted) return;
       _loadCurrentRainChance();
@@ -67,13 +70,46 @@ class _SensorScreenState extends State<SensorScreen>
     );
   }
 
+  void _recomputeInputValidity() {
+    final moisture = double.tryParse(_moistureController.text.trim());
+    final ph = double.tryParse(_phController.text.trim());
+    final isValid =
+        moisture != null &&
+        moisture >= 0 &&
+        moisture <= 100 &&
+        ph != null &&
+        ph >= 0 &&
+        ph <= 14;
+    if (isValid != _isInputValid) {
+      setState(() => _isInputValid = isValid);
+    }
+  }
+
+  String? _validateMoisture(String? value, AppLocalizations l10n) {
+    final raw = (value ?? '').trim();
+    if (raw.isEmpty) return l10n.t('sensorMoistureRequired');
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return l10n.t('sensorInvalidNumber');
+    if (parsed < 0 || parsed > 100) return l10n.t('sensorMoistureRange');
+    return null;
+  }
+
+  String? _validatePh(String? value, AppLocalizations l10n) {
+    final raw = (value ?? '').trim();
+    if (raw.isEmpty) return l10n.t('sensorPhRequired');
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return l10n.t('sensorInvalidNumber');
+    if (parsed < 0 || parsed > 14) return l10n.t('sensorPhRange');
+    return null;
+  }
+
   Future<void> _loadRuleConfig() async {
     try {
-      final config = await _sensorRepository.fetchRuleConfig();
+      final ruleSet = await _sensorRepository.fetchRuleSet();
       if (!mounted) return;
-      setState(() => _ruleConfig = config);
+      setState(() => _ruleSet = ruleSet);
     } catch (_) {
-      // Keep defaults when config is unavailable.
+      // Keep fallback defaults when config is unavailable.
     }
   }
 
@@ -121,6 +157,8 @@ class _SensorScreenState extends State<SensorScreen>
     _weatherAutoRefreshTimer?.cancel();
     _sensorSubscription?.cancel();
     _flutterTts.stop();
+    _moistureController.removeListener(_recomputeInputValidity);
+    _phController.removeListener(_recomputeInputValidity);
     _moistureController.dispose();
     _phController.dispose();
     super.dispose();
@@ -246,7 +284,7 @@ class _SensorScreenState extends State<SensorScreen>
             ph: latest.phLevel,
             crop: latest.crop ?? _selectedCrop,
             rainChancePercent: latest.rainChancePercent ?? (_rainChancePercent ?? 0),
-            config: _ruleConfig,
+            config: _ruleSet.forCrop(latest.crop ?? _selectedCrop),
           );
 
     return PakFasalScaffold(
@@ -255,6 +293,7 @@ class _SensorScreenState extends State<SensorScreen>
         padding: const EdgeInsets.all(16),
         children: [
           _ManualInputCard(
+            formKey: _manualFormKey,
             cropValue: _selectedCrop,
             rainChancePercent: _rainChancePercent,
             isWeatherLoading: _isWeatherLoading,
@@ -263,8 +302,12 @@ class _SensorScreenState extends State<SensorScreen>
                 : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(_lastWeatherSyncAt!).format(context)}',
             moistureController: _moistureController,
             phController: _phController,
+            moistureValidator: (value) => _validateMoisture(value, l10n),
+            phValidator: (value) => _validatePh(value, l10n),
             onCropChanged: (value) => setState(() => _selectedCrop = value),
-            onSubmit: _isSubmitting ? null : _handleManualSubmit,
+            onSubmit: (_isSubmitting || !_isInputValid)
+                ? null
+                : _handleManualSubmit,
             onRefreshWeather: _isWeatherLoading ? null : _loadCurrentRainChance,
           ),
           const SizedBox(height: 12),
@@ -453,24 +496,13 @@ class _SensorScreenState extends State<SensorScreen>
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _saveSession,
-                  icon: const Icon(Icons.save_alt),
-                  label: Text(l10n.t('sensorSaveSession')),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _exportReadings,
-                  icon: const Icon(Icons.ios_share),
-                  label: Text(l10n.t('sensorExportReadings')),
-                ),
-              ),
-            ],
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _exportReadings,
+              icon: const Icon(Icons.ios_share),
+              label: Text(l10n.t('sensorExportReadings')),
+            ),
           ),
         ],
       ),
@@ -557,6 +589,8 @@ class _SensorScreenState extends State<SensorScreen>
   void _handleManualSubmit() {
     if (_isSubmitting) return;
     final l10n = AppLocalizations.of(context);
+    final formState = _manualFormKey.currentState;
+    if (formState == null || !formState.validate()) return;
     final moisture = double.tryParse(_moistureController.text.trim());
     final ph = double.tryParse(_phController.text.trim());
     if (moisture == null || ph == null) return;
@@ -566,7 +600,7 @@ class _SensorScreenState extends State<SensorScreen>
       ph: ph,
       crop: _selectedCrop,
       rainChancePercent: rainChance,
-      config: _ruleConfig,
+      config: _ruleSet.forCrop(_selectedCrop),
     );
 
     setState(() => _isSubmitting = true);
@@ -891,24 +925,6 @@ class _SensorScreenState extends State<SensorScreen>
     return 'LOW';
   }
 
-  void _saveSession() {
-    final l10n = AppLocalizations.of(context);
-    if (_history.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('No sensor readings yet.')));
-      return;
-    }
-    final selectedCropLabel = _localizedCropName(l10n, _selectedCrop);
-    final latest = _history.last;
-    final entry =
-        '${latest.timestamp.toIso8601String()} | crop=$selectedCropLabel | moisture=${latest.soilMoisture.toStringAsFixed(1)} | ph=${latest.phLevel.toStringAsFixed(1)}';
-    setState(() => _savedSessions.add(entry));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.t('sensorSessionSaved'))));
-  }
-
   Future<void> _resetGraphData() async {
     final l10n = AppLocalizations.of(context);
     final shouldReset = await showDialog<bool>(
@@ -1033,23 +1049,29 @@ class _SensorScreenState extends State<SensorScreen>
 
 class _ManualInputCard extends StatelessWidget {
   const _ManualInputCard({
+    required this.formKey,
     required this.cropValue,
     required this.rainChancePercent,
     required this.isWeatherLoading,
     required this.lastWeatherSyncLabel,
     required this.moistureController,
     required this.phController,
+    required this.moistureValidator,
+    required this.phValidator,
     required this.onCropChanged,
     required this.onSubmit,
     required this.onRefreshWeather,
   });
 
+  final GlobalKey<FormState> formKey;
   final String cropValue;
   final int? rainChancePercent;
   final bool isWeatherLoading;
   final String? lastWeatherSyncLabel;
   final TextEditingController moistureController;
   final TextEditingController phController;
+  final FormFieldValidator<String> moistureValidator;
+  final FormFieldValidator<String> phValidator;
   final ValueChanged<String> onCropChanged;
   final VoidCallback? onSubmit;
   final VoidCallback? onRefreshWeather;
@@ -1060,79 +1082,96 @@ class _ManualInputCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.t('sensorManualInputTitle'),
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              value: cropValue,
-              decoration: InputDecoration(labelText: l10n.t('sensorCropLabel')),
-              items: const [
-                'Wheat',
-                'Rice',
-                'Cotton',
-              ]
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        switch (e) {
-                          'Wheat' => l10n.t('cropWheat'),
-                          'Rice' => l10n.t('cropRice'),
-                          'Cotton' => l10n.t('cropCotton'),
-                          _ => e,
-                        },
+        child: Form(
+          key: formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.t('sensorManualInputTitle'),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: cropValue,
+                decoration: InputDecoration(
+                  labelText: l10n.t('sensorCropLabel'),
+                ),
+                items: const ['Wheat', 'Rice', 'Cotton']
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          switch (e) {
+                            'Wheat' => l10n.t('cropWheat'),
+                            'Rice' => l10n.t('cropRice'),
+                            'Cotton' => l10n.t('cropCotton'),
+                            _ => e,
+                          },
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) onCropChanged(value);
-              },
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: moistureController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: l10n.t('sensorMoistureInput'),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) onCropChanged(value);
+                },
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: phController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: moistureController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                decoration: InputDecoration(
+                  labelText: l10n.t('sensorMoistureInput'),
+                  suffixText: '%',
+                  helperText: '0 - 100',
+                ),
+                validator: moistureValidator,
               ),
-              decoration: InputDecoration(labelText: l10n.t('sensorPhInput')),
-            ),
-            const SizedBox(height: 6),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.t('sensorRainExpected')),
-              subtitle: Text(
-                isWeatherLoading
-                    ? 'Fetching current weather...'
-                    : rainChancePercent == null
-                    ? 'Unavailable'
-                    : '$rainChancePercent% chance of rain${lastWeatherSyncLabel == null ? '' : '\n$lastWeatherSyncLabel'}',
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: phController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
+                decoration: InputDecoration(
+                  labelText: l10n.t('sensorPhInput'),
+                  helperText: '0 - 14',
+                ),
+                validator: phValidator,
               ),
-              trailing: IconButton(
-                onPressed: onRefreshWeather,
-                icon: const Icon(Icons.refresh),
-                tooltip: 'Refresh weather',
+              const SizedBox(height: 6),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.t('sensorRainExpected')),
+                subtitle: Text(
+                  isWeatherLoading
+                      ? 'Fetching current weather...'
+                      : rainChancePercent == null
+                      ? 'Unavailable'
+                      : '$rainChancePercent% chance of rain${lastWeatherSyncLabel == null ? '' : '\n$lastWeatherSyncLabel'}',
+                ),
+                trailing: IconButton(
+                  onPressed: onRefreshWeather,
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh weather',
+                ),
               ),
-            ),
-            ElevatedButton.icon(
-              onPressed: onSubmit,
-              icon: const Icon(Icons.analytics_outlined),
-              label: Text(l10n.t('sensorGenerateDss')),
-            ),
-          ],
+              ElevatedButton.icon(
+                onPressed: onSubmit,
+                icon: const Icon(Icons.analytics_outlined),
+                label: Text(l10n.t('sensorGenerateDss')),
+              ),
+            ],
+          ),
         ),
       ),
     );
