@@ -326,7 +326,6 @@ class _LocationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     return Material(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(12),
@@ -372,7 +371,7 @@ class _LocationTile extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close_rounded, size: 18),
                   onPressed: onRemove,
-                  tooltip: l10n.t('weatherRemove'),
+                  tooltip: 'Remove',
                 ),
               const Icon(
                 Icons.chevron_right_rounded,

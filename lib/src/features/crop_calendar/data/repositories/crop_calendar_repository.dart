@@ -1,75 +1,34 @@
-import 'dart:convert';
-
-import 'package:hive/hive.dart';
+// Repository layer for the crop calendar feature.
+//
+// Today the calendar is fully offline (static catalog), so this repository
+// is a thin facade. Keeping it separate from [CropCalendarCatalog] means a
+// future swap to a server-driven catalog (Firestore, REST, etc.) is a
+// drop-in change without touching the presentation layer.
 
 import '../../domain/entities/crop_calendar_models.dart';
+import '../crop_calendar_catalog.dart';
 
-/// Persists per-user crop calendar preferences in the existing
-/// `app_preferences` Hive box (already opened in `main.dart`).
-///
-/// Layout:
-///   * `crop_plan_<cropId>`    → JSON-encoded [UserCropPlan] (per crop)
-///   * `crop_selected_id`      → last-selected crop id (String)
-///   * `crop_region`           → enum name of [CropRegion]
 class CropCalendarRepository {
-  CropCalendarRepository({Box? box})
-      : _box = box ?? Hive.box(_boxName);
+  const CropCalendarRepository();
 
-  static const _boxName = 'app_preferences';
-  static const _planKeyPrefix = 'crop_plan_';
-  static const _selectedKey = 'crop_selected_id';
-  static const _regionKey = 'crop_region';
+  /// All crops this repository can plan for.
+  List<CropType> get supportedCrops => CropCalendarCatalog.supportedCrops;
 
-  final Box _box;
+  /// All areas this repository can plan for.
+  List<CropArea> get supportedAreas => CropCalendarCatalog.supportedAreas;
 
-  // ── Selected crop ───────────────────────────────────────────────────────
-
-  String loadSelectedCropId({required String fallback}) {
-    final raw = _box.get(_selectedKey) as String?;
-    return (raw == null || raw.isEmpty) ? fallback : raw;
-  }
-
-  Future<void> saveSelectedCropId(String cropId) async {
-    await _box.put(_selectedKey, cropId);
-  }
-
-  // ── Region ─────────────────────────────────────────────────────────────
-
-  CropRegion loadRegion() {
-    final raw = _box.get(_regionKey) as String?;
-    if (raw == null) return CropRegion.lahore;
-    return CropRegion.values.firstWhere(
-      (r) => r.name == raw,
-      orElse: () => CropRegion.lahore,
-    );
-  }
-
-  Future<void> saveRegion(CropRegion region) async {
-    await _box.put(_regionKey, region.name);
-  }
-
-  // ── Per-crop plan ──────────────────────────────────────────────────────
-
-  UserCropPlan? loadPlan(String cropId) {
-    final raw = _box.get('$_planKeyPrefix$cropId') as String?;
-    if (raw == null || raw.isEmpty) return null;
-    try {
-      return UserCropPlan.fromJson(
-        jsonDecode(raw) as Map<String, dynamic>,
-      );
-    } catch (_) {
-      return null;
+  /// Loads the plan for [crop] at [area], falling back to the default
+  /// area for [crop] if the requested combination has no entry.
+  CropCalendarPlan? loadPlan({
+    required CropType crop,
+    required CropArea area,
+  }) {
+    final exact = CropCalendarCatalog.planFor(crop, area);
+    if (exact != null) return exact;
+    for (final fallbackArea in supportedAreas) {
+      final plan = CropCalendarCatalog.planFor(crop, fallbackArea);
+      if (plan != null) return plan;
     }
-  }
-
-  Future<void> savePlan(UserCropPlan plan) async {
-    await _box.put(
-      '$_planKeyPrefix${plan.cropId}',
-      jsonEncode(plan.toJson()),
-    );
-  }
-
-  Future<void> clearPlan(String cropId) async {
-    await _box.delete('$_planKeyPrefix$cropId');
+    return null;
   }
 }

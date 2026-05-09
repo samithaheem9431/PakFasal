@@ -1,221 +1,133 @@
-import 'package:flutter/material.dart';
+// Domain entities for the crop calendar feature.
+//
+// Plain immutable Dart classes (no codegen) to keep the FYP project
+// approachable and free of build-runner overhead. Each model is UI-agnostic;
+// presentation concerns (icons / colours) live next to the screen, and any
+// human-readable strings are referenced by localization key only.
 
-import '../../../../core/theme/app_colors.dart';
+/// The major crops modelled by the catalog. Extend by adding a new value
+/// and providing a corresponding entry in [CropCalendarCatalog].
+enum CropType { wheat, rice, cotton }
 
-/// Coarse category used to derive the icon/color for a stage and to group
-/// stages in the UI. Specific stage names are localized via [CropStage.nameKey].
-enum CropStageKind {
-  prep,
-  nursery,
-  sowing,
-  transplanting,
-  irrigation,
-  fertilizer,
-  weeding,
-  earthingUp,
-  tying,
-  pestControl,
-  harvest,
-  picking,
-}
+/// Punjab regions covered by the catalog. Each crop has area-specific
+/// month windows reflecting climate differences between south (Multan)
+/// and central (Lahore) Punjab.
+enum CropArea { multan, lahore }
 
-/// Where in the season a stage currently sits relative to today.
-enum CropStageStatus { past, current, upcoming }
+/// Lifecycle stages of a crop in field order. Used both for ordering and
+/// for choosing icons / colours in the timeline.
+enum CropStage { sowing, irrigation, fertilizer, pestControl, harvest }
 
-/// Punjab agro-climatic zone. Currently used to display a contextual note
-/// next to the sowing-date picker. Stage offsets are still relative to the
-/// user's actual sowing date so the timeline stays personalised — the area
-/// only changes the recommended sowing-window guidance.
-///
-/// We deliberately scope the app to Punjab only for now (Lahore = Central
-/// Punjab, Multan = South Punjab) since these two zones cover the vast
-/// majority of farmers we are targeting and have noticeably different
-/// optimal sowing windows.
-enum CropRegion { lahore, multan }
+/// Inclusive month range, 1-12. Supports ranges that wrap the calendar
+/// year (e.g. wheat is sown in Oct and harvested in Apr; `MonthRange(10, 4)`).
+class MonthRange {
+  const MonthRange(this.startMonth, this.endMonth)
+      : assert(startMonth >= 1 && startMonth <= 12),
+        assert(endMonth >= 1 && endMonth <= 12);
 
-/// One actionable stage in a crop's season (e.g. "First Irrigation").
-///
-/// All human-readable strings live in [AppLocalizations] under the keys
-/// referenced here, so the catalog can be defined once and rendered in
-/// English or Urdu without duplication.
-@immutable
-class CropStage {
-  const CropStage({
-    required this.id,
-    required this.kind,
-    required this.nameKey,
-    required this.descKey,
-    required this.dayOffset,
-    required this.durationDays,
-    this.dosageKey,
-  });
+  final int startMonth;
+  final int endMonth;
 
-  /// Stable id used for reminder scheduling, e.g. `"wheat_irrigation_1"`.
-  final String id;
-  final CropStageKind kind;
-  final String nameKey;
-  final String descKey;
+  /// Whether [month] (1-12) falls inside this range, accounting for wrap.
+  bool contains(int month) {
+    if (startMonth <= endMonth) {
+      return month >= startMonth && month <= endMonth;
+    }
+    return month >= startMonth || month <= endMonth;
+  }
 
-  /// Days from the user's sowing date when this stage starts. Can be
-  /// negative for pre-sowing prep (land prep, nursery).
-  final int dayOffset;
-
-  /// Window length in days. The stage is considered "current" while
-  /// `today ∈ [start, start + durationDays)`.
-  final int durationDays;
-
-  /// Optional localization key for dosage / quantity hints.
-  final String? dosageKey;
-
-  IconData get icon => switch (kind) {
-        CropStageKind.prep => Icons.terrain_rounded,
-        CropStageKind.nursery => Icons.yard_rounded,
-        CropStageKind.sowing => Icons.spa_rounded,
-        CropStageKind.transplanting => Icons.move_down_rounded,
-        CropStageKind.irrigation => Icons.water_drop_rounded,
-        CropStageKind.fertilizer => Icons.eco_rounded,
-        CropStageKind.weeding => Icons.grass_rounded,
-        CropStageKind.earthingUp => Icons.landscape_rounded,
-        CropStageKind.tying => Icons.link_rounded,
-        CropStageKind.pestControl => Icons.bug_report_rounded,
-        CropStageKind.harvest => Icons.agriculture_rounded,
-        CropStageKind.picking => Icons.shopping_basket_rounded,
-      };
-
-  Color get color => switch (kind) {
-        CropStageKind.prep => AppColors.soilBrown,
-        CropStageKind.nursery => AppColors.lightGreen,
-        CropStageKind.sowing => AppColors.primaryGreen,
-        CropStageKind.transplanting => AppColors.primaryGreen,
-        CropStageKind.irrigation => AppColors.weatherBlue,
-        CropStageKind.fertilizer => AppColors.success,
-        CropStageKind.weeding => AppColors.lightGreen,
-        CropStageKind.earthingUp => AppColors.soilBrown,
-        CropStageKind.tying => AppColors.darkGreen,
-        CropStageKind.pestControl => AppColors.error,
-        CropStageKind.harvest => AppColors.warning,
-        CropStageKind.picking => AppColors.cropYellow,
-      };
-
-  DateTime startDate(DateTime sowing) =>
-      _dateOnly(sowing).add(Duration(days: dayOffset));
-
-  DateTime endDate(DateTime sowing) =>
-      _dateOnly(sowing).add(Duration(days: dayOffset + durationDays));
-
-  /// Resolve the stage status for [today] given the user's [sowing] date.
-  CropStageStatus statusOn(DateTime today, DateTime sowing) {
-    final t = _dateOnly(today);
-    final s = startDate(sowing);
-    final e = endDate(sowing);
-    if (t.isBefore(s)) return CropStageStatus.upcoming;
-    if (!t.isBefore(e)) return CropStageStatus.past;
-    return CropStageStatus.current;
+  /// Length of the range in months (inclusive).
+  int get spanMonths {
+    if (startMonth <= endMonth) return endMonth - startMonth + 1;
+    return (12 - startMonth) + endMonth + 1;
   }
 }
 
-/// A whole crop's seasonal plan — the catalog binds one [CropCalendar]
-/// per crop id (`wheat`, `rice`, ...).
-@immutable
-class CropCalendar {
-  const CropCalendar({
-    required this.id,
-    required this.nameKey,
-    required this.icon,
-    required this.totalDays,
-    required this.recommendedSowingMonths,
-    required this.regionalNoteKeys,
-    required this.stages,
+/// One scheduled activity in a crop's season (sowing, irrigation, etc.).
+///
+/// Localization keys are stored instead of literal text so the same
+/// activity renders correctly in English and Urdu.
+class CropActivity {
+  const CropActivity({
+    required this.stage,
+    required this.months,
+    required this.descriptionKey,
   });
 
-  /// Stable lower-case id (`"wheat"`).
-  final String id;
+  final CropStage stage;
+  final MonthRange months;
+  final String descriptionKey;
+}
 
-  /// Localization key for the crop name (`"cropWheat"`).
-  final String nameKey;
+/// Concrete plan for a (crop, area) pair: the ordered list of activities
+/// plus a free-form area note (e.g. "South Punjab — sow earlier").
+class CropCalendarPlan {
+  const CropCalendarPlan({
+    required this.crop,
+    required this.area,
+    required this.activities,
+    required this.areaNoteKey,
+  });
 
-  final IconData icon;
+  final CropType crop;
+  final CropArea area;
+  final List<CropActivity> activities;
+  final String areaNoteKey;
 
-  /// Approximate season length used for the progress bar.
-  final int totalDays;
+  /// The sowing window for this plan, or `null` if no sowing activity is
+  /// defined (shouldn't happen for catalog-backed plans).
+  MonthRange? get sowingWindow => activities
+      .cast<CropActivity?>()
+      .firstWhere(
+        (a) => a?.stage == CropStage.sowing,
+        orElse: () => null,
+      )
+      ?.months;
 
-  /// 1-indexed months when sowing is recommended (e.g. `[10, 11]` for wheat).
-  final List<int> recommendedSowingMonths;
+  /// The harvest window for this plan, or `null` if missing.
+  MonthRange? get harvestWindow => activities
+      .cast<CropActivity?>()
+      .firstWhere(
+        (a) => a?.stage == CropStage.harvest,
+        orElse: () => null,
+      )
+      ?.months;
 
-  /// Per-area localization keys for the regional note shown below the
-  /// sowing-date picker. The note text differs between Lahore (cooler,
-  /// Central Punjab) and Multan (hotter, South Punjab).
-  final Map<CropRegion, String> regionalNoteKeys;
-
-  final List<CropStage> stages;
-
-  /// Resolves the regional-note l10n key for [region], with a safe fallback
-  /// to whichever entry is defined first in the catalog.
-  String regionalNoteKeyFor(CropRegion region) =>
-      regionalNoteKeys[region] ?? regionalNoteKeys.values.first;
-
-  DateTime harvestDate(DateTime sowing) =>
-      _dateOnly(sowing).add(Duration(days: totalDays));
-
-  /// `0.0..1.0` season progress for [today] given [sowing].
-  double progressOn(DateTime today, DateTime sowing) {
-    final days = _dateOnly(today).difference(_dateOnly(sowing)).inDays;
-    if (days <= 0) return 0;
-    if (days >= totalDays) return 1;
-    return days / totalDays;
+  /// Index of the activity covering [now]'s month, or `-1` if [now] falls
+  /// outside the season entirely (off-season).
+  int currentStageIndex(DateTime now) {
+    for (var i = 0; i < activities.length; i++) {
+      if (activities[i].months.contains(now.month)) return i;
+    }
+    return -1;
   }
 
-  /// First currently-active stage, or `null` if today is before sowing or
-  /// after harvest.
-  CropStage? currentStageOn(DateTime today, DateTime sowing) {
-    for (final stage in stages) {
-      if (stage.statusOn(today, sowing) == CropStageStatus.current) {
-        return stage;
+  /// Fractional progress through the season from sowing start to harvest end,
+  /// clamped to `[0.0, 1.0]`. Returns `0` when off-season.
+  double seasonProgress(DateTime now) {
+    final sowing = sowingWindow;
+    final harvest = harvestWindow;
+    if (sowing == null || harvest == null) return 0;
+
+    final start = sowing.startMonth;
+    final end = harvest.endMonth;
+
+    final span = end >= start ? (end - start + 1) : (12 - start + end + 1);
+    int position;
+    if (end >= start) {
+      if (now.month < start) return 0;
+      if (now.month > end) return 1;
+      position = now.month - start + 1;
+    } else {
+      if (now.month >= start) {
+        position = now.month - start + 1;
+      } else if (now.month <= end) {
+        position = (12 - start) + now.month + 1;
+      } else {
+        return 0;
       }
     }
-    return null;
+    final monthFraction = (now.day - 1) / 30.0;
+    return ((position - 1 + monthFraction) / span).clamp(0.0, 1.0);
   }
 }
-
-/// User's saved sowing plan for a specific crop. Persisted in Hive.
-@immutable
-class UserCropPlan {
-  const UserCropPlan({
-    required this.cropId,
-    required this.sowingDate,
-    this.remindersEnabled = true,
-  });
-
-  final String cropId;
-  final DateTime sowingDate;
-  final bool remindersEnabled;
-
-  UserCropPlan copyWith({
-    DateTime? sowingDate,
-    bool? remindersEnabled,
-  }) {
-    return UserCropPlan(
-      cropId: cropId,
-      sowingDate: sowingDate ?? this.sowingDate,
-      remindersEnabled: remindersEnabled ?? this.remindersEnabled,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'cropId': cropId,
-        'sowingDate': sowingDate.millisecondsSinceEpoch,
-        'remindersEnabled': remindersEnabled,
-      };
-
-  factory UserCropPlan.fromJson(Map<String, dynamic> json) {
-    return UserCropPlan(
-      cropId: (json['cropId'] as String?) ?? 'wheat',
-      sowingDate: DateTime.fromMillisecondsSinceEpoch(
-        ((json['sowingDate'] as num?) ?? 0).toInt(),
-      ),
-      remindersEnabled: (json['remindersEnabled'] as bool?) ?? true,
-    );
-  }
-}
-
-DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);

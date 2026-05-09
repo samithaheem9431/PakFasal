@@ -1,442 +1,205 @@
-import 'package:flutter/material.dart';
+// In-memory catalog of crop calendar plans for Pakistani Punjab.
+//
+// Month windows reflect typical extension-service guidance:
+//   * Multan (south Punjab) — warmer, drier; sowing/harvest shifts earlier.
+//   * Lahore (central Punjab) — milder; standard windows.
+//
+// Description keys point into [AppLocalizations] so the data layer never
+// owns user-facing text. Adding a new crop or area is a pure data change:
+// extend [CropType]/[CropArea] in domain, then add the entry below and the
+// matching localization keys.
 
 import '../domain/entities/crop_calendar_models.dart';
 
-/// Static, build-time catalog of the supported crops and their season
-/// plans. Stage offsets are based on standard Pakistani agronomy guidance
-/// (PARC / NARC / Punjab Agriculture Department recommendations) and are
-/// intentionally generous — the user's actual sowing date drives every
-/// computed start/end via [CropStage.startDate].
+/// Static catalog of crop plans keyed by (crop, area).
 class CropCalendarCatalog {
-  CropCalendarCatalog._();
+  const CropCalendarCatalog._();
 
-  static const List<CropCalendar> _crops = [
-    _wheat,
-    _rice,
-    _cotton,
-    _sugarcane,
-    _maize,
-  ];
+  static const Map<CropType, Map<CropArea, CropCalendarPlan>> _plans = {
+    // ── Wheat (Rabi) ────────────────────────────────────────────────────
+    CropType.wheat: {
+      CropArea.multan: CropCalendarPlan(
+        crop: CropType.wheat,
+        area: CropArea.multan,
+        areaNoteKey: 'cropCalNoteWheatMultan',
+        activities: [
+          CropActivity(
+            stage: CropStage.sowing,
+            months: MonthRange(10, 11),
+            descriptionKey: 'cropCalWheatSowingDesc',
+          ),
+          CropActivity(
+            stage: CropStage.irrigation,
+            months: MonthRange(11, 1),
+            descriptionKey: 'cropCalWheatIrrigationDesc',
+          ),
+          CropActivity(
+            stage: CropStage.fertilizer,
+            months: MonthRange(1, 2),
+            descriptionKey: 'cropCalWheatFertilizerDesc',
+          ),
+          CropActivity(
+            stage: CropStage.harvest,
+            months: MonthRange(3, 4),
+            descriptionKey: 'cropCalWheatHarvestDesc',
+          ),
+        ],
+      ),
+      CropArea.lahore: CropCalendarPlan(
+        crop: CropType.wheat,
+        area: CropArea.lahore,
+        areaNoteKey: 'cropCalNoteWheatLahore',
+        activities: [
+          CropActivity(
+            stage: CropStage.sowing,
+            months: MonthRange(10, 11),
+            descriptionKey: 'cropCalWheatSowingDesc',
+          ),
+          CropActivity(
+            stage: CropStage.irrigation,
+            months: MonthRange(12, 1),
+            descriptionKey: 'cropCalWheatIrrigationDesc',
+          ),
+          CropActivity(
+            stage: CropStage.fertilizer,
+            months: MonthRange(2, 2),
+            descriptionKey: 'cropCalWheatFertilizerDesc',
+          ),
+          CropActivity(
+            stage: CropStage.harvest,
+            months: MonthRange(4, 5),
+            descriptionKey: 'cropCalWheatHarvestDesc',
+          ),
+        ],
+      ),
+    },
 
-  static List<CropCalendar> get all => _crops;
+    // ── Rice (Kharif) ───────────────────────────────────────────────────
+    CropType.rice: {
+      CropArea.multan: CropCalendarPlan(
+        crop: CropType.rice,
+        area: CropArea.multan,
+        areaNoteKey: 'cropCalNoteRiceMultan',
+        activities: [
+          CropActivity(
+            stage: CropStage.sowing,
+            months: MonthRange(5, 6),
+            descriptionKey: 'cropCalRiceSowingDesc',
+          ),
+          CropActivity(
+            stage: CropStage.irrigation,
+            months: MonthRange(6, 8),
+            descriptionKey: 'cropCalRiceIrrigationDesc',
+          ),
+          CropActivity(
+            stage: CropStage.pestControl,
+            months: MonthRange(7, 8),
+            descriptionKey: 'cropCalRicePestControlDesc',
+          ),
+          CropActivity(
+            stage: CropStage.harvest,
+            months: MonthRange(9, 10),
+            descriptionKey: 'cropCalRiceHarvestDesc',
+          ),
+        ],
+      ),
+      CropArea.lahore: CropCalendarPlan(
+        crop: CropType.rice,
+        area: CropArea.lahore,
+        areaNoteKey: 'cropCalNoteRiceLahore',
+        activities: [
+          CropActivity(
+            stage: CropStage.sowing,
+            months: MonthRange(6, 7),
+            descriptionKey: 'cropCalRiceSowingDesc',
+          ),
+          CropActivity(
+            stage: CropStage.irrigation,
+            months: MonthRange(7, 9),
+            descriptionKey: 'cropCalRiceIrrigationDesc',
+          ),
+          CropActivity(
+            stage: CropStage.pestControl,
+            months: MonthRange(8, 9),
+            descriptionKey: 'cropCalRicePestControlDesc',
+          ),
+          CropActivity(
+            stage: CropStage.harvest,
+            months: MonthRange(10, 11),
+            descriptionKey: 'cropCalRiceHarvestDesc',
+          ),
+        ],
+      ),
+    },
 
-  static List<String> get cropIds => _crops.map((c) => c.id).toList();
+    // ── Cotton (Kharif) ─────────────────────────────────────────────────
+    CropType.cotton: {
+      CropArea.multan: CropCalendarPlan(
+        crop: CropType.cotton,
+        area: CropArea.multan,
+        areaNoteKey: 'cropCalNoteCottonMultan',
+        activities: [
+          CropActivity(
+            stage: CropStage.sowing,
+            months: MonthRange(3, 4),
+            descriptionKey: 'cropCalCottonSowingDesc',
+          ),
+          CropActivity(
+            stage: CropStage.irrigation,
+            months: MonthRange(5, 7),
+            descriptionKey: 'cropCalCottonIrrigationDesc',
+          ),
+          CropActivity(
+            stage: CropStage.pestControl,
+            months: MonthRange(6, 8),
+            descriptionKey: 'cropCalCottonPestControlDesc',
+          ),
+          CropActivity(
+            stage: CropStage.harvest,
+            months: MonthRange(8, 10),
+            descriptionKey: 'cropCalCottonHarvestDesc',
+          ),
+        ],
+      ),
+      CropArea.lahore: CropCalendarPlan(
+        crop: CropType.cotton,
+        area: CropArea.lahore,
+        areaNoteKey: 'cropCalNoteCottonLahore',
+        activities: [
+          CropActivity(
+            stage: CropStage.sowing,
+            months: MonthRange(4, 5),
+            descriptionKey: 'cropCalCottonSowingDesc',
+          ),
+          CropActivity(
+            stage: CropStage.irrigation,
+            months: MonthRange(6, 8),
+            descriptionKey: 'cropCalCottonIrrigationDesc',
+          ),
+          CropActivity(
+            stage: CropStage.pestControl,
+            months: MonthRange(7, 9),
+            descriptionKey: 'cropCalCottonPestControlDesc',
+          ),
+          CropActivity(
+            stage: CropStage.harvest,
+            months: MonthRange(9, 11),
+            descriptionKey: 'cropCalCottonHarvestDesc',
+          ),
+        ],
+      ),
+    },
+  };
 
-  static CropCalendar byId(String id) {
-    return _crops.firstWhere(
-      (c) => c.id == id,
-      orElse: () => _crops.first,
-    );
+  /// All crops the catalog can serve.
+  static List<CropType> get supportedCrops => _plans.keys.toList(growable: false);
+
+  /// All areas the catalog can serve.
+  static List<CropArea> get supportedAreas =>
+      const [CropArea.multan, CropArea.lahore];
+
+  /// Returns the plan for [crop] at [area], or `null` if no entry exists.
+  static CropCalendarPlan? planFor(CropType crop, CropArea area) {
+    return _plans[crop]?[area];
   }
-
-  // ── Wheat (Rabi, ~150 days) ────────────────────────────────────────────
-  static const _wheat = CropCalendar(
-    id: 'wheat',
-    nameKey: 'cropWheat',
-    icon: Icons.grass_rounded,
-    totalDays: 155,
-    recommendedSowingMonths: [10, 11],
-    regionalNoteKeys: {
-      CropRegion.lahore: 'wheatLahoreNote',
-      CropRegion.multan: 'wheatMultanNote',
-    },
-    stages: [
-      CropStage(
-        id: 'wheat_land_prep',
-        kind: CropStageKind.prep,
-        nameKey: 'stageLandPrep',
-        descKey: 'wheatLandPrepDesc',
-        dayOffset: -10,
-        durationDays: 10,
-      ),
-      CropStage(
-        id: 'wheat_sowing',
-        kind: CropStageKind.sowing,
-        nameKey: 'stageSowing',
-        descKey: 'wheatSowingDesc',
-        dayOffset: 0,
-        durationDays: 14,
-      ),
-      CropStage(
-        id: 'wheat_irrigation_1',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation1',
-        descKey: 'wheatIrrigation1Desc',
-        dayOffset: 22,
-        durationDays: 6,
-      ),
-      CropStage(
-        id: 'wheat_fertilizer_1',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer1',
-        descKey: 'wheatFertilizer1Desc',
-        dayOffset: 32,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'wheat_irrigation_2',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation2',
-        descKey: 'wheatIrrigation2Desc',
-        dayOffset: 60,
-        durationDays: 6,
-      ),
-      CropStage(
-        id: 'wheat_irrigation_3',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation3',
-        descKey: 'wheatIrrigation3Desc',
-        dayOffset: 100,
-        durationDays: 6,
-      ),
-      CropStage(
-        id: 'wheat_harvest',
-        kind: CropStageKind.harvest,
-        nameKey: 'stageHarvest',
-        descKey: 'wheatHarvestDesc',
-        dayOffset: 145,
-        durationDays: 14,
-      ),
-    ],
-  );
-
-  // ── Rice (Kharif, ~155 days end-to-end) ────────────────────────────────
-  static const _rice = CropCalendar(
-    id: 'rice',
-    nameKey: 'cropRice',
-    icon: Icons.rice_bowl_rounded,
-    totalDays: 155,
-    recommendedSowingMonths: [5, 6, 7],
-    regionalNoteKeys: {
-      CropRegion.lahore: 'riceLahoreNote',
-      CropRegion.multan: 'riceMultanNote',
-    },
-    stages: [
-      CropStage(
-        id: 'rice_nursery',
-        kind: CropStageKind.nursery,
-        nameKey: 'stageNursery',
-        descKey: 'riceNurseryDesc',
-        dayOffset: -25,
-        durationDays: 25,
-      ),
-      CropStage(
-        id: 'rice_land_prep',
-        kind: CropStageKind.prep,
-        nameKey: 'stageLandPrep',
-        descKey: 'riceLandPrepDesc',
-        dayOffset: -5,
-        durationDays: 5,
-      ),
-      CropStage(
-        id: 'rice_transplanting',
-        kind: CropStageKind.transplanting,
-        nameKey: 'stageTransplanting',
-        descKey: 'riceTransplantingDesc',
-        dayOffset: 0,
-        durationDays: 7,
-      ),
-      CropStage(
-        id: 'rice_fertilizer_1',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer1',
-        descKey: 'riceFertilizer1Desc',
-        dayOffset: 7,
-        durationDays: 3,
-      ),
-      CropStage(
-        id: 'rice_irrigation_1',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation1',
-        descKey: 'riceIrrigation1Desc',
-        dayOffset: 7,
-        durationDays: 70,
-      ),
-      CropStage(
-        id: 'rice_fertilizer_2',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer2',
-        descKey: 'riceFertilizer2Desc',
-        dayOffset: 45,
-        durationDays: 3,
-      ),
-      CropStage(
-        id: 'rice_pest_control',
-        kind: CropStageKind.pestControl,
-        nameKey: 'stagePestControl',
-        descKey: 'ricePestControlDesc',
-        dayOffset: 60,
-        durationDays: 21,
-      ),
-      CropStage(
-        id: 'rice_harvest',
-        kind: CropStageKind.harvest,
-        nameKey: 'stageHarvest',
-        descKey: 'riceHarvestDesc',
-        dayOffset: 130,
-        durationDays: 14,
-      ),
-    ],
-  );
-
-  // ── Cotton (Kharif, ~180 days) ─────────────────────────────────────────
-  static const _cotton = CropCalendar(
-    id: 'cotton',
-    nameKey: 'cropCotton',
-    icon: Icons.filter_vintage_rounded,
-    totalDays: 180,
-    recommendedSowingMonths: [4, 5],
-    regionalNoteKeys: {
-      CropRegion.lahore: 'cottonLahoreNote',
-      CropRegion.multan: 'cottonMultanNote',
-    },
-    stages: [
-      CropStage(
-        id: 'cotton_land_prep',
-        kind: CropStageKind.prep,
-        nameKey: 'stageLandPrep',
-        descKey: 'cottonLandPrepDesc',
-        dayOffset: -10,
-        durationDays: 10,
-      ),
-      CropStage(
-        id: 'cotton_sowing',
-        kind: CropStageKind.sowing,
-        nameKey: 'stageSowing',
-        descKey: 'cottonSowingDesc',
-        dayOffset: 0,
-        durationDays: 14,
-      ),
-      CropStage(
-        id: 'cotton_irrigation_1',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation1',
-        descKey: 'cottonIrrigation1Desc',
-        dayOffset: 25,
-        durationDays: 6,
-      ),
-      CropStage(
-        id: 'cotton_weeding',
-        kind: CropStageKind.weeding,
-        nameKey: 'stageWeeding',
-        descKey: 'cottonWeedingDesc',
-        dayOffset: 30,
-        durationDays: 10,
-      ),
-      CropStage(
-        id: 'cotton_fertilizer_1',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer1',
-        descKey: 'cottonFertilizer1Desc',
-        dayOffset: 35,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'cotton_pest_control',
-        kind: CropStageKind.pestControl,
-        nameKey: 'stagePestControl',
-        descKey: 'cottonPestControlDesc',
-        dayOffset: 55,
-        durationDays: 70,
-      ),
-      CropStage(
-        id: 'cotton_fertilizer_2',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer2',
-        descKey: 'cottonFertilizer2Desc',
-        dayOffset: 70,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'cotton_picking_1',
-        kind: CropStageKind.picking,
-        nameKey: 'stagePicking1',
-        descKey: 'cottonPicking1Desc',
-        dayOffset: 130,
-        durationDays: 14,
-      ),
-      CropStage(
-        id: 'cotton_picking_2',
-        kind: CropStageKind.picking,
-        nameKey: 'stagePicking2',
-        descKey: 'cottonPicking2Desc',
-        dayOffset: 160,
-        durationDays: 21,
-      ),
-    ],
-  );
-
-  // ── Sugarcane (~330 days) ──────────────────────────────────────────────
-  static const _sugarcane = CropCalendar(
-    id: 'sugarcane',
-    nameKey: 'cropSugarcane',
-    icon: Icons.eco_rounded,
-    totalDays: 335,
-    recommendedSowingMonths: [2, 3, 9, 10],
-    regionalNoteKeys: {
-      CropRegion.lahore: 'sugarcaneLahoreNote',
-      CropRegion.multan: 'sugarcaneMultanNote',
-    },
-    stages: [
-      CropStage(
-        id: 'sugarcane_land_prep',
-        kind: CropStageKind.prep,
-        nameKey: 'stageLandPrep',
-        descKey: 'sugarcaneLandPrepDesc',
-        dayOffset: -15,
-        durationDays: 15,
-      ),
-      CropStage(
-        id: 'sugarcane_sowing',
-        kind: CropStageKind.sowing,
-        nameKey: 'stageSowing',
-        descKey: 'sugarcaneSowingDesc',
-        dayOffset: 0,
-        durationDays: 21,
-      ),
-      CropStage(
-        id: 'sugarcane_irrigation_1',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation1',
-        descKey: 'sugarcaneIrrigation1Desc',
-        dayOffset: 18,
-        durationDays: 5,
-      ),
-      CropStage(
-        id: 'sugarcane_fertilizer_1',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer1',
-        descKey: 'sugarcaneFertilizer1Desc',
-        dayOffset: 30,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'sugarcane_weeding',
-        kind: CropStageKind.weeding,
-        nameKey: 'stageWeeding',
-        descKey: 'sugarcaneWeedingDesc',
-        dayOffset: 60,
-        durationDays: 21,
-      ),
-      CropStage(
-        id: 'sugarcane_fertilizer_2',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer2',
-        descKey: 'sugarcaneFertilizer2Desc',
-        dayOffset: 90,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'sugarcane_earthing_up',
-        kind: CropStageKind.earthingUp,
-        nameKey: 'stageEarthingUp',
-        descKey: 'sugarcaneEarthingUpDesc',
-        dayOffset: 120,
-        durationDays: 10,
-      ),
-      CropStage(
-        id: 'sugarcane_tying',
-        kind: CropStageKind.tying,
-        nameKey: 'stageTying',
-        descKey: 'sugarcaneTyingDesc',
-        dayOffset: 180,
-        durationDays: 10,
-      ),
-      CropStage(
-        id: 'sugarcane_harvest',
-        kind: CropStageKind.harvest,
-        nameKey: 'stageHarvest',
-        descKey: 'sugarcaneHarvestDesc',
-        dayOffset: 320,
-        durationDays: 30,
-      ),
-    ],
-  );
-
-  // ── Maize (~110 days) ──────────────────────────────────────────────────
-  static const _maize = CropCalendar(
-    id: 'maize',
-    nameKey: 'cropMaize',
-    icon: Icons.local_florist_rounded,
-    totalDays: 115,
-    recommendedSowingMonths: [2, 3, 7, 8],
-    regionalNoteKeys: {
-      CropRegion.lahore: 'maizeLahoreNote',
-      CropRegion.multan: 'maizeMultanNote',
-    },
-    stages: [
-      CropStage(
-        id: 'maize_land_prep',
-        kind: CropStageKind.prep,
-        nameKey: 'stageLandPrep',
-        descKey: 'maizeLandPrepDesc',
-        dayOffset: -7,
-        durationDays: 7,
-      ),
-      CropStage(
-        id: 'maize_sowing',
-        kind: CropStageKind.sowing,
-        nameKey: 'stageSowing',
-        descKey: 'maizeSowingDesc',
-        dayOffset: 0,
-        durationDays: 7,
-      ),
-      CropStage(
-        id: 'maize_irrigation_1',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation1',
-        descKey: 'maizeIrrigation1Desc',
-        dayOffset: 14,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'maize_weeding',
-        kind: CropStageKind.weeding,
-        nameKey: 'stageWeeding',
-        descKey: 'maizeWeedingDesc',
-        dayOffset: 22,
-        durationDays: 7,
-      ),
-      CropStage(
-        id: 'maize_fertilizer_1',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer1',
-        descKey: 'maizeFertilizer1Desc',
-        dayOffset: 30,
-        durationDays: 3,
-      ),
-      CropStage(
-        id: 'maize_irrigation_2',
-        kind: CropStageKind.irrigation,
-        nameKey: 'stageIrrigation2',
-        descKey: 'maizeIrrigation2Desc',
-        dayOffset: 45,
-        durationDays: 4,
-      ),
-      CropStage(
-        id: 'maize_pest_control',
-        kind: CropStageKind.pestControl,
-        nameKey: 'stagePestControl',
-        descKey: 'maizePestControlDesc',
-        dayOffset: 50,
-        durationDays: 14,
-      ),
-      CropStage(
-        id: 'maize_fertilizer_2',
-        kind: CropStageKind.fertilizer,
-        nameKey: 'stageFertilizer2',
-        descKey: 'maizeFertilizer2Desc',
-        dayOffset: 60,
-        durationDays: 3,
-      ),
-      CropStage(
-        id: 'maize_harvest',
-        kind: CropStageKind.harvest,
-        nameKey: 'stageHarvest',
-        descKey: 'maizeHarvestDesc',
-        dayOffset: 105,
-        durationDays: 14,
-      ),
-    ],
-  );
 }

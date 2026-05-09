@@ -1,93 +1,83 @@
 import 'package:flutter/foundation.dart';
 
-import '../../data/crop_calendar_catalog.dart';
 import '../../data/repositories/crop_calendar_repository.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 
-/// Drives the Crop Calendar screen: which crop is selected, the user's
-/// sowing plan for that crop, and the active region.
+/// State holder for the crop calendar screen.
 ///
-/// Persistence is delegated to [CropCalendarRepository] (Hive-backed).
-/// All reads on Hive are synchronous, so the provider hydrates immediately
-/// in [ensureLoaded] without flashing a loading state.
+/// Owns the user's current selections (crop + area) and exposes the
+/// resolved [CropCalendarPlan] plus derived values (current stage index,
+/// season progress) so widgets can stay simple.
+///
+/// Designed for reuse: the home dashboard or a future "season summary"
+/// card can read the same provider via Provider.of without re-loading.
 class CropCalendarProvider extends ChangeNotifier {
-  CropCalendarProvider({CropCalendarRepository? repository})
-      : _repository = repository ?? CropCalendarRepository();
+  CropCalendarProvider({
+    CropCalendarRepository? repository,
+    DateTime Function()? clock,
+    CropType initialCrop = CropType.wheat,
+    CropArea initialArea = CropArea.multan,
+  })  : _repository = repository ?? const CropCalendarRepository(),
+        _clock = clock ?? DateTime.now,
+        _selectedCrop = initialCrop,
+        _selectedArea = initialArea {
+    _refreshPlan();
+  }
 
   final CropCalendarRepository _repository;
+  final DateTime Function() _clock;
 
-  String _selectedCropId = CropCalendarCatalog.cropIds.first;
-  UserCropPlan? _activePlan;
-  CropRegion _region = CropRegion.lahore;
-  bool _hydrated = false;
+  CropType _selectedCrop;
+  CropArea _selectedArea;
+  CropCalendarPlan? _activePlan;
 
-  // ── Public state ───────────────────────────────────────────────────────
+  // ── Read-only state ────────────────────────────────────────────────────
 
-  String get selectedCropId => _selectedCropId;
-  CropCalendar get selectedCalendar =>
-      CropCalendarCatalog.byId(_selectedCropId);
-  UserCropPlan? get activePlan => _activePlan;
-  CropRegion get region => _region;
-  bool get hasPlan => _activePlan != null;
+  CropType get selectedCrop => _selectedCrop;
+  CropArea get selectedArea => _selectedArea;
+  CropCalendarPlan? get activePlan => _activePlan;
 
-  /// True once initial Hive read has completed. Renders are safe before
-  /// this flips because defaults are sane.
-  bool get isHydrated => _hydrated;
+  List<CropType> get supportedCrops => _repository.supportedCrops;
+  List<CropArea> get supportedAreas => _repository.supportedAreas;
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────
-
-  /// Idempotent — call from `initState` of the screen.
-  void ensureLoaded() {
-    if (_hydrated) return;
-    _selectedCropId = _repository.loadSelectedCropId(
-      fallback: CropCalendarCatalog.cropIds.first,
-    );
-    _region = _repository.loadRegion();
-    _activePlan = _repository.loadPlan(_selectedCropId);
-    _hydrated = true;
-    notifyListeners();
+  /// Current stage index in [activePlan]. `-1` means off-season.
+  int get currentStageIndex {
+    final plan = _activePlan;
+    if (plan == null) return -1;
+    return plan.currentStageIndex(_clock());
   }
+
+  /// Season progress from sowing start to harvest end, clamped `[0, 1]`.
+  double get seasonProgress {
+    final plan = _activePlan;
+    if (plan == null) return 0;
+    return plan.seasonProgress(_clock());
+  }
+
+  /// Whether the active plan is in-season for "today".
+  bool get isInSeason => currentStageIndex >= 0;
 
   // ── Mutations ──────────────────────────────────────────────────────────
 
-  Future<void> selectCrop(String cropId) async {
-    if (cropId == _selectedCropId) return;
-    _selectedCropId = cropId;
-    _activePlan = _repository.loadPlan(cropId);
-    await _repository.saveSelectedCropId(cropId);
-    notifyListeners();
+  void selectCrop(CropType crop) {
+    if (_selectedCrop == crop) return;
+    _selectedCrop = crop;
+    _refreshPlan();
   }
 
-  Future<void> setSowingDate(DateTime date) async {
-    final existing = _activePlan;
-    final next = existing == null
-        ? UserCropPlan(cropId: _selectedCropId, sowingDate: date)
-        : existing.copyWith(sowingDate: date);
-    _activePlan = next;
-    await _repository.savePlan(next);
-    notifyListeners();
+  void selectArea(CropArea area) {
+    if (_selectedArea == area) return;
+    _selectedArea = area;
+    _refreshPlan();
   }
 
-  Future<void> setRemindersEnabled(bool enabled) async {
-    final existing = _activePlan;
-    if (existing == null) return;
-    final next = existing.copyWith(remindersEnabled: enabled);
-    _activePlan = next;
-    await _repository.savePlan(next);
-    notifyListeners();
-  }
+  // ── Internal ───────────────────────────────────────────────────────────
 
-  Future<void> setRegion(CropRegion region) async {
-    if (region == _region) return;
-    _region = region;
-    await _repository.saveRegion(region);
-    notifyListeners();
-  }
-
-  Future<void> clearPlan() async {
-    final cropId = _selectedCropId;
-    _activePlan = null;
-    await _repository.clearPlan(cropId);
+  void _refreshPlan() {
+    _activePlan = _repository.loadPlan(
+      crop: _selectedCrop,
+      area: _selectedArea,
+    );
     notifyListeners();
   }
 }
