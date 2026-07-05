@@ -41,7 +41,7 @@ class WeatherConstants {
   static const Duration currentCacheTtl = Duration(minutes: 10);
   static const Duration hourlyCacheTtl = Duration(minutes: 30);
   static const Duration forecastCacheTtl = Duration(hours: 3);
-  static const Duration autoRefreshInterval = Duration(minutes: 15);
+  static const Duration autoRefreshInterval = Duration(minutes: 10);
   static const Duration httpTimeout = Duration(seconds: 12);
 
   // ── UI tuning ──────────────────────────────────────────────────────────

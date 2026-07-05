@@ -49,5 +49,9 @@
 	<string>Microphone access is needed for voice-to-text in AI chat.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Speech recognition is needed to convert your voice into text.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PakFasal uses your location to show accurate weather and farming advisories for your area.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PakFasal uses your location to show accurate weather and farming advisories for your area.</string>
 </dict>
 </plist>

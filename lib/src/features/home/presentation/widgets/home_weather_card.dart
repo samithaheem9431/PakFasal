@@ -12,6 +12,7 @@ class HomeWeatherCard extends StatelessWidget {
     required this.humidityLabel,
     required this.rainChanceLabel,
     this.lastSyncedLabel,
+    this.isOffline = false,
   });
 
   final CurrentWeather weather;
@@ -19,6 +20,7 @@ class HomeWeatherCard extends StatelessWidget {
   final String humidityLabel;
   final String rainChanceLabel;
   final String? lastSyncedLabel;
+  final bool isOffline;
 
   // ── Green palette ────────────────────────────────────────────────────────
   static const _cardBg = Color(0xFF1B5E20); // deep forest green
@@ -86,25 +88,70 @@ class HomeWeatherCard extends StatelessWidget {
                       // ── Location row ──────────────────────────────
                       Row(
                         children: [
-                          // Live dot
+                          // Live/Offline indicator dot
                           Container(
                             width: 7,
                             height: 7,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _accentGreen,
+                              color: isOffline
+                                  ? const Color(0xFFFFB74D)
+                                  : _accentGreen,
                             ),
                           ),
                           const SizedBox(width: 6),
                           Expanded(
-                            child: Text(
-                              weather.locationLabel,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: _softWhite,
-                                letterSpacing: 0.3,
-                              ),
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    weather.locationLabel,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: _softWhite,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                if (isOffline) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFB74D)
+                                          .withValues(alpha: 0.25),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: const Color(0xFFFFB74D)
+                                            .withValues(alpha: 0.4),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.cloud_off_rounded,
+                                          size: 10,
+                                          color: const Color(0xFFFFB74D),
+                                        ),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          l10n.t('offline'),
+                                          style: const TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFFFFB74D),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                           Container(

@@ -617,7 +617,7 @@ class _SensorScreenState extends State<SensorScreen>
         .then((_) {
           if (!mounted) return;
           setState(() {
-            _sessionLatestReading = SensorReading(
+            final newReading = SensorReading(
               soilMoisture: moisture,
               phLevel: ph,
               timestamp: DateTime.now(),
@@ -627,6 +627,13 @@ class _SensorScreenState extends State<SensorScreen>
               recommendationDetails: result.details,
               recommendationPriority: result.priority,
             );
+            _sessionLatestReading = newReading;
+            // Update the chart optimistically instead of waiting for the
+            // Firestore snapshot round-trip (which can lag behind when the
+            // new document's serverTimestamp hasn't resolved yet). The
+            // live listener will reconcile `_history` with the authoritative
+            // list as soon as its next snapshot arrives.
+            _history.add(newReading);
             _moistureController.clear();
             _phController.clear();
             _isSubmitting = false;

@@ -546,6 +546,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                           }
                           final data = weather.current!;
                           final lastSyncAt = weather.lastSyncAt;
+                          // Only show offline when data is stale (old), not just cached
+                          final isOfflineMode = weather.isStale;
                           return _FadeSlideIn(
                             delayMs: 40,
                             animate: _animateContentIn,
@@ -554,6 +556,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                               temperatureLabel: l10n.t('temperature'),
                               humidityLabel: l10n.t('humidity'),
                               rainChanceLabel: l10n.t('rainChance'),
+                              isOffline: isOfflineMode,
                               lastSyncedLabel: lastSyncAt == null
                                   ? null
                                   : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',

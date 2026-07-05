@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/error/error_logger.dart';
 import '../../constants/weather_constants.dart';
 import '../../domain/entities/weather_models.dart';
 import '../services/location_service.dart';
@@ -98,6 +99,13 @@ class WeatherRepository {
       await _persistSelectedLocation(location);
       return location;
     }
+
+    // GPS failed — log *why* so this is diagnosable from Crashlytics/console
+    // instead of silently always showing the Lahore fallback below.
+    ErrorLogger.instance.log(
+      'weather_repository: GPS resolution failed (${gps.error?.name ?? 'no position'}), '
+      'falling back to cache/default location',
+    );
 
     // Fall back to whatever we cached last time.
     final cachedSnapshot = _readSnapshotCache(_lastUsedLocationKey(prefs));
