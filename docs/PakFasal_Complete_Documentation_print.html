@@ -1,0 +1,1166 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>PakFasal Documentation</title>
+<style>
+body { font-family: Helvetica, Arial, sans-serif; margin: 24px; font-size: 10pt; line-height: 1.35; color: #222; }
+h1 { color: #1b5e20; font-size: 18pt; }
+h2 { color: #2e7d32; font-size: 14pt; margin-top: 14pt; }
+h3 { font-size: 12pt; margin-top: 10pt; }
+pre, code { font-family: Courier; font-size: 8pt; background: #f4f4f4; }
+pre { padding: 8px; border: 1px solid #ddd; white-space: pre-wrap; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+th, td { border: 1px solid #999; padding: 4px; font-size: 9pt; vertical-align: top; }
+</style></head><body><h1 id="pakfasal-complete-technical-documentation">PakFasal — Complete Technical Documentation</h1>
+<p><strong>Version:</strong> 1.0.0+1 (from <code>pubspec.yaml</code>)<br />
+<strong>Platform:</strong> Flutter (Dart SDK ^3.8.1)<br />
+<strong>Document date:</strong> 2026-05-09  </p>
+<hr />
+<h2 id="important-what-this-repository-actually-contains">Important: What This Repository Actually Contains</h2>
+<p>This documentation is based on <strong>reading the full <code>lib/</code> tree</strong> (77 Dart files). Some items you asked about exist only as <strong>design ideas or thesis text</strong>, not as implemented features in code:</p>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>In this codebase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MySQL</strong></td>
+<td><strong>Not used.</strong> There is no SQL database layer.</td>
+</tr>
+<tr>
+<td><strong>Dedicated Admin Panel (app screen)</strong></td>
+<td><strong>Not present.</strong> Remote tuning of DSS rules is done via <strong>Firebase Console → Firestore</strong> document <code>sensor_config/rules</code>.</td>
+</tr>
+<tr>
+<td><strong>Push notifications (FCM)</strong></td>
+<td><strong>Not implemented</strong> (<code>firebase_messaging</code> is not in <code>pubspec.yaml</code>). The home screen shows a <strong>static demo</strong> notification list in a bottom sheet.</td>
+</tr>
+<tr>
+<td><strong>Marketplace product upload / backend</strong></td>
+<td><strong>Not implemented.</strong> Products come from an <strong>in-memory mock list</strong>; <code>MarketplaceProvider.isOffline</code> is hard-coded <code>true</code>.</td>
+</tr>
+<tr>
+<td><strong>AI Q&amp;A backend</strong></td>
+<td><strong>Not implemented.</strong> <code>AiQueryScreen</code> shows a <strong>placeholder bot reply</strong> after a fixed delay; no LLM or REST API.</td>
+</tr>
+<tr>
+<td><strong>Crop calendar “recommendations”</strong></td>
+<td><strong>Rule-based static catalog</strong> (month windows + localization keys), not ML and not from an API.</td>
+</tr>
+</tbody>
+</table>
+<p>Everything below reflects <strong>actual code behaviour</strong>.</p>
+<hr />
+<h2 id="1-project-purpose-beginner-summary">1. Project Purpose (Beginner Summary)</h2>
+<p><strong>PakFasal</strong> is a smart-farming companion app aimed at Pakistani farmers. It combines:</p>
+<ul>
+<li><strong>Account access</strong> (Firebase email/password, optional guest mode).</li>
+<li><strong>Weather</strong> from external HTTP APIs with local caching.</li>
+<li><strong>Learning</strong> videos via YouTube Data API when a key is configured, else demo data.</li>
+<li><strong>Crop calendar</strong> timelines from a <strong>static Punjab-focused catalog</strong>.</li>
+<li><strong>Marketplace</strong> browsing of <strong>demo products</strong> (filter/search/favourites only).</li>
+<li><strong>Sensors + DSS</strong>: manual entry of soil moisture and pH; rules combine <strong>Firestore thresholds</strong>, <strong>weather rain chance</strong>, and <strong>client-side logic</strong> to produce irrigation/soil/risk/monitoring text; history syncs to <strong>Firestore</strong>.</li>
+<li><strong>AI chat UI</strong> as a <strong>prototype</strong> (voice input works; answers are stubbed).</li>
+</ul>
+<hr />
+<h2 id="2-high-level-architecture">2. High-Level Architecture</h2>
+<p><strong>Pattern:</strong> Feature-first <strong>layered architecture</strong> (not strict MVC). Each feature uses:</p>
+<ul>
+<li><code>domain/</code> — plain Dart entities.</li>
+<li><code>data/</code> — repositories, services, catalog/mock JSON-like data.</li>
+<li><code>presentation/</code> — screens, widgets, <code>ChangeNotifier</code> providers.</li>
+</ul>
+<p><strong>Global state:</strong> <code>provider</code> package — <code>MultiProvider</code> in <code>main.dart</code>.</p>
+<hr />
+<h2 id="3-folder-structure">3. Folder Structure</h2>
+<pre><code>lib/
+  main.dart                 # Firebase + Hive init, providers, runApp
+  firebase_options.dart     # FlutterFire-generated Firebase config
+src/
+  app.dart                  # MaterialApp, routes, theme/locale
+  core/
+    config/app_config.dart  # Secrets &amp; URLs (dart-define + JSON asset)
+    error/error_logger.dart # Crashlytics facade
+    localization/           # EN/UR strings + controller
+    routing/app_routes.dart # Named routes + AuthGate wrapping
+    theme/                  # Colors, light/dark themes, ThemeController
+    widgets/                # AuthGate, scaffolds, shared UI
+  features/
+    ai_query/               # Chat UI (stub responses)
+    auth/                   # Login, signup, forgot password, session
+    crop_calendar/          # Static catalog + timeline UI
+    home/                   # Dashboard + bottom nav shell
+    learning/               # YouTube + disease catalog
+    marketplace/            # Mock products
+    onboarding/
+    profile/
+    sensor/                 # Firestore + DSS rules + charts
+    splash/
+    weather/                # Full weather stack
+</code></pre>
+<hr />
+<h2 id="4-runtime-initialization-maindart">4. Runtime Initialization (<code>main.dart</code>)</h2>
+<p><strong>Order of operations:</strong></p>
+<ol>
+<li><code>WidgetsFlutterBinding.ensureInitialized()</code></li>
+<li><code>AppConfig.init()</code> — loads <code>config/app_config.json</code> asset (optional overrides).</li>
+<li><code>Firebase.initializeApp</code> with <code>DefaultFirebaseOptions</code>.</li>
+<li><code>ErrorLogger.instance.init()</code> — Crashlytics hooks (<code>FlutterError</code>, <code>PlatformDispatcher</code>).</li>
+<li><code>Hive.initFlutter()</code> and open boxes:</li>
+<li><code>weather_cache</code></li>
+<li><code>learning_cache</code></li>
+<li><code>app_preferences</code> (locale, theme, onboarding flag)</li>
+<li><code>AuthSessionController</code> — listens to <code>authStateChanges</code>; syncs user id to Crashlytics.</li>
+<li><code>MultiProvider</code> registers:</li>
+<li><code>AuthSessionController</code></li>
+<li><code>LocalizationController</code> (proxy from auth user id)</li>
+<li><code>ThemeController</code> (proxy from auth user id)</li>
+<li><code>WeatherProvider</code> with <code>startAutoRefresh()</code> (periodic refresh)</li>
+<li><code>CropCalendarProvider</code></li>
+<li><code>runZonedGuarded</code> sends uncaught async errors to <code>ErrorLogger</code>.</li>
+</ol>
+<hr />
+<h2 id="5-routing-authentication-gate">5. Routing &amp; Authentication Gate</h2>
+<p><strong>File:</strong> <code>lib/src/core/routing/app_routes.dart</code></p>
+<p><strong>Routes:</strong> <code>/</code>, <code>/login</code>, <code>/signup</code>, <code>/forgot-password</code>, <code>/onboarding</code>, <code>/home</code>, <code>/learning</code>, <code>/weather</code>, <code>/weather/city-search</code>, <code>/ai-query</code>, <code>/sensor</code>, <code>/profile</code>, <code>/marketplace</code>, <code>/crop-calendar</code>.</p>
+<p><strong>AuthGate</strong> (<code>lib/src/core/widgets/auth_gate.dart</code>):</p>
+<ul>
+<li>Watches <code>AuthSessionController</code>.</li>
+<li>If <code>isSignedIn</code> → shows protected child (e.g. <code>HomeDashboardScreen</code>).</li>
+<li>Else → embeds <code>LoginScreen</code> <strong>inline</strong> (no redirect route).</li>
+</ul>
+<p><strong>Who counts as signed in:</strong> Firebase user <strong>or</strong> guest (<code>continueAsGuest()</code> sets <code>_isGuestUser</code>).</p>
+<hr />
+<h2 id="6-module-reference">6. Module Reference</h2>
+<h3 id="61-authentication">6.1 Authentication</h3>
+<p><strong>Purpose:</strong> Email/password sign-in and registration via <strong>Firebase Authentication</strong>; password reset email; optional <strong>Continue as guest</strong>; profile display name updates.</p>
+<p><strong>Frontend flow:</strong></p>
+<ol>
+<li><strong>Splash</strong> (<code>splash_screen.dart</code>): After ~5s, reads Hive <code>app_preferences</code> → <code>onboarding_seen</code>. If false → onboarding. Else if <code>AuthSessionController.isSignedIn</code> → home, else login.</li>
+<li><strong>Login / Signup / Forgot password</strong> screens use forms and call controller methods.</li>
+<li>After success, navigation typically <code>pushNamedAndRemoveUntil</code> → <code>/home</code>.</li>
+</ol>
+<p><strong>Backend flow:</strong> All auth operations go through <strong>Firebase Auth SDK</strong> (<code>FirebaseAuth.instance</code>). No custom REST “auth API” in this repo.</p>
+<p><strong>Database:</strong> Firebase Auth stores users <strong>in Firebase’s identity backend</strong> (not Firestore collections for credentials). The app does <strong>not</strong> mirror user profiles to Firestore in code.</p>
+<p><strong>State:</strong> <code>AuthSessionController</code> (<code>ChangeNotifier</code>): <code>_auth.authStateChanges()</code>, loading/error mapping via <code>_mapAuthError</code>, guest flag.</p>
+<p><strong>Validation:</strong> Form validators on screens (email format, password length/strength patterns where implemented — see <code>auth_form_provider.dart</code> if used).</p>
+<p><strong>Error handling:</strong> Exceptions mapped to localization keys (<code>invalidEmail</code>, <code>wrongPassword</code>, etc.).</p>
+<hr />
+<h3 id="62-weather-module">6.2 Weather Module</h3>
+<p><strong>Purpose:</strong> Show current conditions, hourly slider, daily forecast, alerts (when API provides them), farmer advisory hints, city search, saved cities.</p>
+<p><strong>Workflow (step by step):</strong></p>
+<ol>
+<li><code>WeatherProvider.ensureLoaded()</code> or <code>refreshAll()</code> runs.</li>
+<li><code>WeatherRepository.resolveActiveLocation()</code>:</li>
+<li>If user previously picked a city (SharedPreferences <code>weather.selected_location</code>) and it is not “current GPS”, use it.</li>
+<li>Else try GPS via <code>LocationService</code> → reverse geocode label via API.</li>
+<li>Else use last cached snapshot location.</li>
+<li>Else default <strong>Lahore, Pakistan</strong>.</li>
+<li><code>WeatherRepository.fetchSnapshot()</code> checks <strong>Hive</strong> cache key <code>snapshot_{lat_lon}</code>:</li>
+<li>If fresh (&lt; <strong>10 minutes</strong> TTL for snapshot — see repository <code>_isFresh</code>) and not forcing refresh → return cached.</li>
+<li>Else <code>WeatherApiService.fetchSnapshot()</code> calls external HTTP:</li>
+<li>If <code>OPENWEATHER_USE_ONECALL_V3=true</code> <strong>and</strong> API key → OpenWeather <strong>One Call 3.0</strong>.</li>
+<li>Else if OpenWeather API key → <strong>2.5</strong> current + 5-day/3-hour + air pollution.</li>
+<li>Else → <strong>Open-Meteo</strong> (no key) + Open-Meteo air quality helper.</li>
+<li>On success, snapshot JSON serialized to Hive; prefs updated.</li>
+<li>On failure, <strong>stale cache</strong> served if available (<code>fromCache</code>, <code>isStale</code> flags).</li>
+</ol>
+<p><strong>Frontend:</strong> <code>WeatherScreen</code>, <code>CitySearchScreen</code>, <code>HomeWeatherCard</code> consume <code>WeatherProvider</code> via <code>Consumer</code>/<code>context.watch</code>.</p>
+<p><strong>Caching:</strong></p>
+<ul>
+<li><strong>Hive</strong> <code>weather_cache</code> box: keys <code>snapshot_{lat_lon}</code> — full <code>WeatherSnapshot</code> JSON.</li>
+<li><strong>SharedPreferences:</strong> selected location, saved locations list (max 5), last sync millis.</li>
+</ul>
+<p><strong>API endpoints (representative):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Example endpoint pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open-Meteo forecast</td>
+<td><code>GET {WEATHER_API_BASE_URL}/forecast?latitude=&amp;longitude=&amp;current=...&amp;hourly=...&amp;daily=...</code></td>
+</tr>
+<tr>
+<td>Open-Meteo geocode</td>
+<td><code>GET https://geocoding-api.open-meteo.com/v1/search?name=</code></td>
+</tr>
+<tr>
+<td>Open-Meteo reverse</td>
+<td><code>GET .../reverse?latitude=&amp;longitude=</code></td>
+</tr>
+<tr>
+<td>OpenWeather current</td>
+<td><code>GET /data/2.5/weather?lat=&amp;lon=&amp;appid=</code></td>
+</tr>
+<tr>
+<td>OpenWeather forecast</td>
+<td><code>GET /data/2.5/forecast?...</code></td>
+</tr>
+<tr>
+<td>OpenWeather One Call</td>
+<td><code>GET /data/3.0/onecall?...</code></td>
+</tr>
+<tr>
+<td>OpenWeather geo</td>
+<td><code>GET /geo/1.0/direct</code> and <code>/reverse</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Request/response:</strong> Standard HTTP GET + JSON. Parsed into domain entities (<code>CurrentWeather</code>, <code>DailyForecast</code>, etc.).</p>
+<p><strong>Farmer advisory:</strong> <code>farmer_advisor.dart</code> + <code>WeatherConstants</code> thresholds (rain %, wind km/h, heat/frost/UV) applied to current snapshot for banners/text.</p>
+<p><strong>Auto-refresh:</strong> <code>WeatherProvider.startAutoRefresh()</code> uses <code>WeatherConstants.autoRefreshInterval</code> (<strong>15 minutes</strong>).</p>
+<hr />
+<h3 id="63-crop-calendar">6.3 Crop Calendar</h3>
+<p><strong>Purpose:</strong> Display <strong>season timeline</strong> (sowing → irrigation → fertilizer → harvest, etc.) for crops <strong>Wheat, Rice, Cotton</strong> across areas <strong>Multan / Lahore</strong> (Punjab-oriented month ranges).</p>
+<p><strong>How “recommendations” are generated:</strong> <strong>Not AI.</strong> <code>CropCalendarCatalog</code> holds static <code>CropCalendarPlan</code> objects with <code>MonthRange</code> windows. <code>CropCalendarRepository.loadPlan()</code> picks exact (crop, area) or falls back to another area. <code>CropCalendarProvider</code> computes <code>currentStageIndex</code> and <code>seasonProgress</code> from <strong>today’s date</strong> vs those month ranges.</p>
+<p><strong>Database:</strong> None — all in Dart constants.</p>
+<p><strong>APIs:</strong> None.</p>
+<hr />
+<h3 id="64-marketplace">6.4 Marketplace</h3>
+<p><strong>Purpose:</strong> Browse agricultural products (demo), filter by category/company, search, favourites.</p>
+<p><strong>Data source:</strong> <code>mock_products.dart</code> — compile-time list of <code>Product</code> entities.</p>
+<p><strong>Provider:</strong> <code>MarketplaceProvider</code> — filters <code>mockProducts</code>, toggles favourites in memory only.</p>
+<p><strong>Upload / fetch from server:</strong> <strong>Not implemented.</strong></p>
+<hr />
+<h3 id="65-sensor-integration-dss-decision-support">6.5 Sensor Integration &amp; DSS (Decision Support)</h3>
+<p><strong>Purpose:</strong> Capture <strong>manual</strong> soil moisture (0–100%) and pH (0–14); show trends; combine <strong>rain probability</strong> from weather module; apply <strong>threshold rules</strong> (defaults + optional Firestore overrides); persist readings and show structured DSS cards (irrigation, soil, risk, monitoring).</p>
+<p><strong>How sensors “send data” in this app:</strong></p>
+<ul>
+<li>There is <strong>no Bluetooth/Wi-Fi sensor driver</strong> in code. The user types values in a form.</li>
+<li>On submit, <code>SensorRepository.addReading()</code> writes to Firestore collection <strong><code>sensor_readings</code></strong> with <code>FieldValue.serverTimestamp()</code>.</li>
+<li><code>watchRecentReadings()</code> listens to the <strong>latest 20</strong> documents ordered by <code>timestamp</code>, maps to <code>SensorReading</code>.</li>
+</ul>
+<p><strong>Firestore collections:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Collection</th>
+<th>Document</th>
+<th>Fields used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sensor_readings</code></td>
+<td>auto-id</td>
+<td><code>soilMoisture</code>, <code>phLevel</code>, <code>crop</code>, <code>rainChancePercent</code>, <code>recommendationSummary</code>, <code>recommendationDetails</code>, <code>recommendationPriority</code>, <code>timestamp</code></td>
+</tr>
+<tr>
+<td><code>sensor_config</code></td>
+<td><code>rules</code></td>
+<td>Nested maps: <code>default</code>, <code>Wheat</code>, <code>Rice</code>, <code>Cotton</code> with threshold doubles/ints (see <code>SensorRepository.fetchRuleSet</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Admin / control:</strong> An administrator updates <strong><code>sensor_config/rules</code></strong> in Firebase Console (acts as remote config for thresholds). If missing, <code>SensorRuleSet.fallback()</code> supplies agronomy-style defaults.</p>
+<p><strong>DSS logic:</strong> Implemented in <code>sensor_screen.dart</code> (<code>_buildRuleBasedRecommendation</code>) — rule IDs like M1–M4 (moisture/rain), P1–P3 (pH). Priority scored in <code>_calculatePriority</code> → <code>HIGH</code> / <code>MEDIUM</code> / <code>LOW</code>.</p>
+<p><strong>Weather coupling:</strong> <code>_loadCurrentRainChance()</code> uses <code>WeatherRepository.fetchCurrentWeather()</code> so rain chance aligns with the same weather pipeline as the rest of the app.</p>
+<hr />
+<h3 id="66-learning-articles-videos">6.6 Learning Articles / Videos</h3>
+<p><strong>Purpose:</strong> Educational videos per crop category; optional <strong>crop diseases</strong> catalog for browsing.</p>
+<p><strong>YouTube:</strong> <code>YouTubeLearningRepository</code> calls:</p>
+<p><code>GET {youtubeApiBaseUrl}/search?part=snippet&amp;type=video&amp;q=Pakistan+farming+{category}&amp;key=...</code></p>
+<p>If <strong>no API key</strong>, demo videos are returned and cached in Hive <code>learning_cache</code> as JSON (<code>source: demo</code> vs <code>live</code>).</p>
+<p><strong>Catalog:</strong> <code>crop_diseases_catalog.dart</code> — static disease entries for navigation/detail screens.</p>
+<hr />
+<h3 id="67-ai-query-ask-ai">6.7 AI Query (“Ask AI”)</h3>
+<p><strong>Purpose:</strong> Chat-style UI with <strong>speech-to-text</strong> input and <strong>text-to-speech</strong> readback.</p>
+<p><strong>Behaviour:</strong> On send, after <strong>2 seconds</strong> a bot message is appended using localized string <code>aiPendingResponse</code> — <strong>no external AI API</strong>.</p>
+<hr />
+<h3 id="68-profile">6.8 Profile</h3>
+<p><strong>Purpose:</strong> View/edit display name, biometric toggle placeholders, sign-out. Uses <code>AuthSessionController</code> and secure storage/local auth packages from <code>pubspec.yaml</code> as wired in that screen.</p>
+<hr />
+<h3 id="69-notifications">6.9 Notifications</h3>
+<p><strong>Purpose (UI only):</strong> Home app bar opens a bottom sheet listing <strong>three hard-coded strings</strong> (irrigation reminder, weather alert, marketplace offer). Badge shows <strong>“3”</strong> statically.</p>
+<p><strong>No FCM, no local notification scheduler</strong> in dependencies for messaging.</p>
+<hr />
+<h3 id="610-onboarding">6.10 Onboarding</h3>
+<p><strong>Purpose:</strong> First-run experience; sets <code>onboarding_seen</code> in Hive <code>app_preferences</code>.</p>
+<hr />
+<h2 id="7-state-management-summary">7. State Management Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AuthSessionController</code></td>
+<td>Firebase session + guest</td>
+</tr>
+<tr>
+<td><code>LocalizationController</code></td>
+<td>EN/UR per user scope in Hive</td>
+</tr>
+<tr>
+<td><code>ThemeController</code></td>
+<td>Light/dark per user scope</td>
+</tr>
+<tr>
+<td><code>WeatherProvider</code></td>
+<td>Weather snapshot, search, saved cities, auto-refresh</td>
+</tr>
+<tr>
+<td><code>CropCalendarProvider</code></td>
+<td>Selected crop/area + resolved plan</td>
+</tr>
+<tr>
+<td><code>MarketplaceProvider</code></td>
+<td>Filters/favourites for mock products</td>
+</tr>
+<tr>
+<td>Feature-local <code>ChangeNotifier</code></td>
+<td><code>AuthFormProvider</code> where used</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-local-cloud-data-stores">8. Local &amp; Cloud Data Stores</h2>
+<h3 id="81-hive-boxes">8.1 Hive boxes</h3>
+<table>
+<thead>
+<tr>
+<th>Box</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_cache</code></td>
+<td>Serialized <code>WeatherSnapshot</code> per location key</td>
+</tr>
+<tr>
+<td><code>learning_cache</code></td>
+<td>YouTube search cache JSON per category</td>
+</tr>
+<tr>
+<td><code>app_preferences</code></td>
+<td>Onboarding flag, <code>locale_{scope}</code>, <code>theme_mode_{scope}</code>, legacy keys</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-sharedpreferences-via-shared_preferences">8.2 SharedPreferences (via <code>shared_preferences</code>)</h3>
+<p>Weather selected location JSON, saved cities JSON list, last sync millis.</p>
+<h3 id="83-firebase">8.3 Firebase</h3>
+<ul>
+<li><strong>Authentication:</strong> user records (managed by Firebase).</li>
+<li><strong>Firestore:</strong> <code>sensor_readings</code>, <code>sensor_config/rules</code>.</li>
+</ul>
+<p><strong>MySQL:</strong> <strong>N/A.</strong></p>
+<hr />
+<h2 id="9-api-catalogue-implemented">9. API Catalogue (Implemented)</h2>
+<p><strong>Authentication:</strong> Firebase SDK methods (not REST URLs in app code).</p>
+<p><strong>Weather:</strong> Open-Meteo and/or OpenWeather HTTP GET URLs constructed in <code>weather_api_service.dart</code>.</p>
+<p><strong>YouTube:</strong> <code>https://www.googleapis.com/youtube/v3/search</code> (configurable base).</p>
+<p><strong>Sensor “API”:</strong> Firestore SDK (<code>collection().add</code>, <code>.snapshots()</code>, <code>.doc().get()</code>).</p>
+<hr />
+<h2 id="10-sequence-examples">10. Sequence Examples</h2>
+<h3 id="101-login-sequence">10.1 Login sequence</h3>
+<h3 id="102-weather-refresh-sequence">10.2 Weather refresh sequence</h3>
+<hr />
+<h2 id="11-file-by-file-inventory-lib">11. File-by-File Inventory (<code>lib/</code>)</h2>
+<p>Below, <strong>every Dart file</strong> under <code>lib/</code> is listed with a one-line purpose and primary links.</p>
+<h3 id="root">Root</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main.dart</code></td>
+<td>App entry: Firebase, Hive boxes, providers, <code>PakFasalApp</code>.</td>
+</tr>
+<tr>
+<td><code>firebase_options.dart</code></td>
+<td>Generated Firebase project keys per platform.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcappdart"><code>src/app.dart</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app.dart</code></td>
+<td><code>MaterialApp</code>: themes, locale, <code>AppRoutes.onGenerateRoute</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srccoreconfig"><code>src/core/config</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_config.dart</code></td>
+<td>Resolves API keys and base URLs (<code>dart-define</code> &gt; JSON asset &gt; defaults).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srccoreerror"><code>src/core/error</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>error_logger.dart</code></td>
+<td>Crashlytics init, non-fatal logging, user id for reports.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srccorelocalization"><code>src/core/localization</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_localizations.dart</code></td>
+<td>EN/UR string tables and <code>AppLocalizations.delegate</code>.</td>
+</tr>
+<tr>
+<td><code>localization_controller.dart</code></td>
+<td>Hive-backed locale per user scope.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srccorerouting"><code>src/core/routing</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_routes.dart</code></td>
+<td>Route names and <code>AuthGate</code> wrappers for protected routes.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srccoretheme"><code>src/core/theme</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_colors.dart</code></td>
+<td>Brand palette constants.</td>
+</tr>
+<tr>
+<td><code>app_theme.dart</code></td>
+<td>Light/dark <code>ThemeData</code>.</td>
+</tr>
+<tr>
+<td><code>theme_controller.dart</code></td>
+<td>Hive-backed theme mode per user scope.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srccorewidgets"><code>src/core/widgets</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth_gate.dart</code></td>
+<td>Route guard: login vs child.</td>
+</tr>
+<tr>
+<td><code>common_states.dart</code></td>
+<td>Shared loading/error UI helpers.</td>
+</tr>
+<tr>
+<td><code>language_toggle_button.dart</code></td>
+<td>Language switch UI widget.</td>
+</tr>
+<tr>
+<td><code>offline_badge.dart</code></td>
+<td>Offline indicator widget.</td>
+</tr>
+<tr>
+<td><code>pakfasal_scaffold.dart</code></td>
+<td>Common scaffold with optional navigation helpers.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesai_querypresentationscreens"><code>src/features/ai_query/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ai_query_screen.dart</code></td>
+<td>Chat UI; stub bot reply; STT/TTS integration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesauthpresentationproviders"><code>src/features/auth/presentation/providers</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth_session_controller.dart</code></td>
+<td>Firebase auth orchestration + guest mode.</td>
+</tr>
+<tr>
+<td><code>auth_form_provider.dart</code></td>
+<td>Form state for auth screens (if used by signup/login).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesauthpresentationscreens"><code>src/features/auth/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>login_screen.dart</code></td>
+<td>Email login, guest, navigation to signup/forgot.</td>
+</tr>
+<tr>
+<td><code>signup_screen.dart</code></td>
+<td>Registration + display name.</td>
+</tr>
+<tr>
+<td><code>forgot_password_screen.dart</code></td>
+<td>Password reset email.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturescrop_calendardata"><code>src/features/crop_calendar/data</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_calendar_catalog.dart</code></td>
+<td>Static plans for crops × Punjab areas.</td>
+</tr>
+<tr>
+<td><code>repositories/crop_calendar_repository.dart</code></td>
+<td>Loads plans from catalog with fallback.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturescrop_calendardomainentities"><code>src/features/crop_calendar/domain/entities</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_calendar_models.dart</code></td>
+<td><code>CropType</code>, <code>CropArea</code>, <code>CropCalendarPlan</code>, stages, month ranges.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturescrop_calendarpresentationproviders"><code>src/features/crop_calendar/presentation/providers</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_calendar_provider.dart</code></td>
+<td>Selected crop/area + derived progress indices.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturescrop_calendarpresentationscreens"><code>src/features/crop_calendar/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_calendar_screen.dart</code></td>
+<td>UI for calendar timeline and selectors.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturescrop_calendarpresentationwidgets"><code>src/features/crop_calendar/presentation/widgets</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>area_chip_selector.dart</code></td>
+<td>Region chips.</td>
+</tr>
+<tr>
+<td><code>crop_chip_selector.dart</code></td>
+<td>Crop chips.</td>
+</tr>
+<tr>
+<td><code>season_progress_card.dart</code></td>
+<td>Progress visualization.</td>
+</tr>
+<tr>
+<td><code>sowing_plan_card.dart</code></td>
+<td>Sowing info card.</td>
+</tr>
+<tr>
+<td><code>timeline_stage_tile.dart</code></td>
+<td>Stage row UI.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturescrop_calendarpresentationutils"><code>src/features/crop_calendar/presentation/utils</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_calendar_visuals.dart</code></td>
+<td>Helpers/colors for calendar visuals.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeatureshomepresentationscreens"><code>src/features/home/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>home_dashboard_screen.dart</code></td>
+<td>Main dashboard: weather card, quick tiles, drawer, bottom nav, notification sheet.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeatureshomepresentationwidgets"><code>src/features/home/presentation/widgets</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dashboard_tile.dart</code></td>
+<td>Grid tile for module shortcuts.</td>
+</tr>
+<tr>
+<td><code>home_weather_card.dart</code></td>
+<td>Compact weather summary widget.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeatureslearningdata"><code>src/features/learning/data</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_diseases_catalog.dart</code></td>
+<td>Static disease content catalog.</td>
+</tr>
+<tr>
+<td><code>repositories/youtube_learning_repository.dart</code></td>
+<td>YouTube search + Hive cache + demo fallback.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeatureslearningdomainentities"><code>src/features/learning/domain/entities</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>learning_video.dart</code></td>
+<td>Video metadata entity.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeatureslearningpresentationscreens"><code>src/features/learning/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>learning_dashboard_screen.dart</code></td>
+<td>Learning hub navigation.</td>
+</tr>
+<tr>
+<td><code>learning_screen.dart</code></td>
+<td>Video list UI for a category.</td>
+</tr>
+<tr>
+<td><code>crop_selection_screen.dart</code></td>
+<td>Pick crop for learning path.</td>
+</tr>
+<tr>
+<td><code>crop_disease_detail_screen.dart</code></td>
+<td>Disease detail view.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesmarketplacedatamock"><code>src/features/marketplace/data/mock</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mock_products.dart</code></td>
+<td>Demo <code>Product</code> list.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesmarketplacedomainentities"><code>src/features/marketplace/domain/entities</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>product.dart</code></td>
+<td>Product model.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesmarketplacepresentationproviders"><code>src/features/marketplace/presentation/providers</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>marketplace_provider.dart</code></td>
+<td>Filters + favourites over mock data.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesmarketplacepresentationscreens"><code>src/features/marketplace/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>marketplace_screen.dart</code></td>
+<td>Product grid/list + search UI.</td>
+</tr>
+<tr>
+<td><code>product_detail_screen.dart</code></td>
+<td>Detail + contact actions.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesmarketplacepresentationwidgets"><code>src/features/marketplace/presentation/widgets</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>product_card.dart</code></td>
+<td>Card UI for a product.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesonboardingpresentationscreens"><code>src/features/onboarding/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>onboarding_screen.dart</code></td>
+<td>First-run slides + saves onboarding flag.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesprofilepresentationscreens"><code>src/features/profile/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>profile_screen.dart</code></td>
+<td>User profile and settings actions.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturessensordatarepositories"><code>src/features/sensor/data/repositories</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sensor_repository.dart</code></td>
+<td>Firestore CRUD/watch + rule document parsing + <code>SensorRuleSet</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturessensordomainentities"><code>src/features/sensor/domain/entities</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sensor_reading.dart</code></td>
+<td>One sensor sample model.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturessensorpresentationscreens"><code>src/features/sensor/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sensor_screen.dart</code></td>
+<td>Manual entry, charts, DSS output, TTS, Firestore sync.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturessplashpresentationscreens"><code>src/features/splash/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>splash_screen.dart</code></td>
+<td>Branded splash animation + route to onboarding/login/home.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherconstants"><code>src/features/weather/constants</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_constants.dart</code></td>
+<td>Endpoints paths, TTLs, Hive key names, advisory thresholds.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherdomainentities"><code>src/features/weather/domain/entities</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_models.dart</code></td>
+<td>Locations, snapshots, forecasts, alerts.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherdatarepositories"><code>src/features/weather/data/repositories</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_repository.dart</code></td>
+<td>Location resolution, caching, saved cities, API orchestration.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherdataservices"><code>src/features/weather/data/services</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_api_service.dart</code></td>
+<td>HTTP integrations (OWM + Open-Meteo).</td>
+</tr>
+<tr>
+<td><code>location_service.dart</code></td>
+<td>Geolocator wrapper with structured errors.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherpresentationproviders"><code>src/features/weather/presentation/providers</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_provider.dart</code></td>
+<td>UI state machine for weather + city search + auto refresh.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherpresentationscreens"><code>src/features/weather/presentation/screens</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weather_screen.dart</code></td>
+<td>Full weather experience.</td>
+</tr>
+<tr>
+<td><code>city_search_screen.dart</code></td>
+<td>Search + pick saved cities.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherpresentationwidgets"><code>src/features/weather/presentation/widgets</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crop_alert_banner.dart</code></td>
+<td>Weather alert strip.</td>
+</tr>
+<tr>
+<td><code>daily_forecast_list.dart</code></td>
+<td>Daily rows.</td>
+</tr>
+<tr>
+<td><code>farmer_advisory_section.dart</code></td>
+<td>Advisory blocks.</td>
+</tr>
+<tr>
+<td><code>hourly_forecast_slider.dart</code></td>
+<td>Hourly carousel.</td>
+</tr>
+<tr>
+<td><code>section_card.dart</code></td>
+<td>Styled section container.</td>
+</tr>
+<tr>
+<td><code>sunrise_sunset_card.dart</code></td>
+<td>Sun times card.</td>
+</tr>
+<tr>
+<td><code>temperature_hero_card.dart</code></td>
+<td>Large temperature display.</td>
+</tr>
+<tr>
+<td><code>weather_app_bar.dart</code></td>
+<td>Weather screen app bar.</td>
+</tr>
+<tr>
+<td><code>weather_error_view.dart</code></td>
+<td>Error UI.</td>
+</tr>
+<tr>
+<td><code>weather_highlights_grid.dart</code></td>
+<td>Metrics grid.</td>
+</tr>
+<tr>
+<td><code>weather_skeleton.dart</code></td>
+<td>Loading placeholders.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="srcfeaturesweatherpresentationutils"><code>src/features/weather/presentation/utils</code></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>farmer_advisor.dart</code></td>
+<td>Advisory text from thresholds + weather state.</td>
+</tr>
+<tr>
+<td><code>weather_gradients.dart</code></td>
+<td>Background gradients by condition.</td>
+</tr>
+<tr>
+<td><code>weather_view_mapper.dart</code></td>
+<td>Maps condition codes to UI/iconography.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-system-architecture-summary">12. System Architecture Summary</h2>
+<ul>
+<li><strong>Single Flutter client</strong> talking to <strong>Firebase Auth</strong>, <strong>Firestore</strong> (sensors + remote DSS config), and <strong>public HTTP APIs</strong> (weather, YouTube).</li>
+<li><strong>Heavy client-side logic</strong> for DSS when manual readings submitted.</li>
+<li><strong>Offline-first weather</strong> via Hive + stale indicators.</li>
+</ul>
+<hr />
+<h2 id="13-data-flow-summary">13. Data Flow Summary</h2>
+<ol>
+<li><strong>Weather:</strong> GPS/prefs → Repository → (cache hit OR HTTP) → <code>WeatherProvider</code> → widgets.</li>
+<li><strong>Learning:</strong> Repository → (Hive OR YouTube OR demo) → screens.</li>
+<li><strong>Sensors:</strong> Form → rule engine + weather rain → Firestore write → stream updates charts.</li>
+<li><strong>Auth:</strong> UI → Firebase Auth → <code>AuthSessionController</code> listeners → gated routes.</li>
+</ol>
+<hr />
+<h2 id="14-developer-documentation-operations">14. Developer Documentation — Operations</h2>
+<p><strong>Run (see README):</strong></p>
+<pre><code class="language-bash">flutter pub get
+cp config/app_config.json config/dev.json   # then edit keys
+flutter run --dart-define-from-file=config/dev.json
+</code></pre>
+<p><strong>Secrets:</strong> Never commit real keys; use <code>config/dev.json</code> (gitignored) or CI <code>dart-define</code>.</p>
+<p><strong>Firestore indexes:</strong> For <code>sensor_readings</code> ordered by <code>timestamp</code>, create a <strong>composite index</strong> in Firebase Console if queries require it (the code uses <code>orderBy('timestamp')</code>).</p>
+<hr />
+<h2 id="15-future-improvements-concrete">15. Future Improvements (Concrete)</h2>
+<ol>
+<li><strong>Backend marketplace:</strong> REST API + Firestore/Cloud Storage for real listings and image uploads; replace <code>mock_products.dart</code>.</li>
+<li><strong>Real AI:</strong> Integrate Gemini/OpenAI/self-hosted endpoint; replace stub in <code>AiQueryScreen</code>.</li>
+<li><strong>Push notifications:</strong> Add <code>firebase_messaging</code>, store FCM tokens, Cloud Functions for triggers.</li>
+<li><strong>Admin app or Role:</strong> Secure admin UI to edit <code>sensor_config/rules</code> without Firebase Console.</li>
+<li><strong>Hardware sensors:</strong> BLE/MQTT client or ingest from gateway; map to same <code>SensorReading</code> pipeline.</li>
+<li><strong>Tests:</strong> Unit tests for <code>WeatherRepository</code> caching and DSS rule scoring.</li>
+<li><strong>Optional MySQL:</strong> Only if you introduce a dedicated backend; currently unnecessary for this client-centric design.</li>
+</ol>
+<hr />
+<h2 id="16-diagram-end-to-end-user-journey">16. Diagram — End-to-End User Journey</h2>
+<hr />
+<p><em>End of PakFasal Complete Documentation.</em></p></body></html>
