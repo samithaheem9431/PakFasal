@@ -19,8 +19,10 @@ class WeatherApiResult<T> {
   bool get isSuccess => data != null && error == null;
 }
 
-/// Fetches weather data from OpenWeatherMap with a transparent fallback to
-/// the keyless Open-Meteo API when [AppConfig.openWeatherApiKey] is empty.
+/// Fetches weather data from the keyless Open-Meteo API (primary — blended
+/// forecast-model data that matches consumer apps like Google/AccuWeather
+/// more closely) with a transparent fallback to OpenWeatherMap when
+/// [AppConfig.openWeatherApiKey] is set and Open-Meteo's request fails.
 ///
 /// The service exposes three high-level methods that the repository
 /// composes:
@@ -40,30 +42,19 @@ class WeatherApiService {
   bool get _useOneCallV3 => AppConfig.useOneCallV3 && _hasOwmKey;
 
   /// Fetches a complete [WeatherSnapshot] for the given coordinates.
+  ///
+  /// Open-Meteo (blended forecast-model data) is the primary source: it
+  /// tracks much closer to what users see in Google/AccuWeather than
+  /// OpenWeatherMap's free-tier `/weather` endpoint, which reports raw
+  /// nearest-station readings that can run several degrees hot in places
+  /// like Multan during peak summer heat. OpenWeatherMap is kept only as
+  /// an automatic fallback if Open-Meteo's request fails.
   Future<WeatherApiResult<WeatherSnapshot>> fetchSnapshot({
     required double latitude,
     required double longitude,
     required String locationLabel,
   }) async {
     try {
-      if (_useOneCallV3) {
-        return WeatherApiResult.success(
-          await _fetchSnapshotOwmV3(
-            latitude: latitude,
-            longitude: longitude,
-            locationLabel: locationLabel,
-          ),
-        );
-      }
-      if (_hasOwmKey) {
-        return WeatherApiResult.success(
-          await _fetchSnapshotOwmV25(
-            latitude: latitude,
-            longitude: longitude,
-            locationLabel: locationLabel,
-          ),
-        );
-      }
       return WeatherApiResult.success(
         await _fetchSnapshotOpenMeteo(
           latitude: latitude,
@@ -71,8 +62,30 @@ class WeatherApiService {
           locationLabel: locationLabel,
         ),
       );
-    } catch (error) {
-      return WeatherApiResult.failure(error);
+    } catch (primaryError) {
+      if (_useOneCallV3) {
+        try {
+          return WeatherApiResult.success(
+            await _fetchSnapshotOwmV3(
+              latitude: latitude,
+              longitude: longitude,
+              locationLabel: locationLabel,
+            ),
+          );
+        } catch (_) {/* fall through to v2.5 / failure below */}
+      }
+      if (_hasOwmKey) {
+        try {
+          return WeatherApiResult.success(
+            await _fetchSnapshotOwmV25(
+              latitude: latitude,
+              longitude: longitude,
+              locationLabel: locationLabel,
+            ),
+          );
+        } catch (_) {/* fall through to failure below */}
+      }
+      return WeatherApiResult.failure(primaryError);
     }
   }
 

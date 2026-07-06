@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// Firestore Security Rules for PakFasal.
+//
+// `cloud_firestore` is used by the Sensor module and the Learning module in
+// this app — every other feature uses local/mock data. Guest sessions in
+// the mobile app are a purely local flag (see
+// AuthSessionController.continueAsGuest) and do NOT create a real Firebase
+// Auth session, so `request.auth` is null for guests. Collections that
+// guests must be able to read (like Learning content) therefore use public
+// read rules instead of `request.auth != null`.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Shared live sensor feed. Any signed-in user (registered; guests do
+    // not have a real Firebase session) can read the stream, add new
+    // readings from the manual input form, and clear history (matches
+    // SensorRepository.clearAllReadings). Readings are never edited in
+    // place, only created/deleted.
+    match /sensor_readings/{readingId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if false;
+      allow delete: if request.auth != null;
+    }
+
+    // DSS rule thresholds. Read-only from the app; edit via the Firebase
+    // console only.
+    match /sensor_config/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Learning module content (YouTube video metadata aside, these four
+    // collections back "Keera aur Bimariyan" and "Learning Articles").
+    // Managed by the separate admin website, so writes require a signed-in
+    // admin account there; reads are public so guests and signed-out users
+    // browsing the app can see the content too.
+    match /learning_crops/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /learning_crop_diseases/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /learning_articles/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /learning_article_sections/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

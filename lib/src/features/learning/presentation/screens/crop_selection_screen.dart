@@ -1,79 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/localization/localization_controller.dart';
+import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
-import '../../data/crop_diseases_catalog.dart';
+import '../../data/repositories/crop_diseases_repository.dart';
+import '../../domain/entities/crop_disease_models.dart';
+import '../widgets/learning_widgets.dart';
 import 'crop_disease_detail_screen.dart';
 
 /// Grid of crops for "Keera aur Bimariyaan" — tap a crop to see diseases.
-class CropSelectionScreen extends StatelessWidget {
+/// Content is fetched live from Firestore (managed by the admin website).
+/// Both languages are fetched once; switching the app's language re-renders
+/// instantly without a re-fetch.
+class CropSelectionScreen extends StatefulWidget {
   const CropSelectionScreen({super.key});
+
+  @override
+  State<CropSelectionScreen> createState() => _CropSelectionScreenState();
+}
+
+class _CropSelectionScreenState extends State<CropSelectionScreen> {
+  final CropDiseasesRepository _repository = CropDiseasesRepository();
+  late Future<List<ResolvedCropWithDiseases>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _repository.fetchCropDiseases();
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {
+      _future = _repository.fetchCropDiseases(forceRefresh: true);
+    });
+    await _future;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final languageCode =
+        context.watch<LocalizationController>().locale.languageCode;
 
     return PakFasalScaffold(
       title: l10n.t('learningOptionPests'),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.t('cropDiseasePickCrop'),
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              l10n.t('cropDiseasePickCropHint'),
-              style: textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurfaceVariant,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 20),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 0.92,
-              ),
-              itemCount: CropDiseasesCatalog.crops.length,
-                itemBuilder: (context, index) {
-                final crop = CropDiseasesCatalog.crops[index];
-                return _CropCard(
-                  l10n: l10n,
-                  crop: crop,
-                  onTap: () {
-                    Navigator.push<void>(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            CropDiseaseDetailScreen(crop: crop),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.t('cropDiseaseMoreCropsSoon'),
-              textAlign: TextAlign.center,
-              style: textTheme.labelSmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+      child: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: FutureBuilder<List<ResolvedCropWithDiseases>>(
+          future: _future,
+          builder: (context, snapshot) {
+            final isLoading = snapshot.connectionState == ConnectionState.waiting;
+            final crops = snapshot.data ?? const <ResolvedCropWithDiseases>[];
+
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              children: [
+                LearningIntro(
+                  title: l10n.t('cropDiseasePickCrop'),
+                  hint: l10n.t('cropDiseasePickCropHint'),
+                ),
+                const SizedBox(height: 20),
+                if (isLoading)
+                  const LearningGridSkeleton()
+                else if (snapshot.hasError)
+                  ErrorStateCard(onRetry: _onRefresh)
+                else if (crops.isEmpty)
+                  LearningEmptyCard(message: l10n.t('cropDiseaseEmpty'))
+                else ...[
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 14,
+                      crossAxisSpacing: 14,
+                      childAspectRatio: 0.92,
+                    ),
+                    itemCount: crops.length,
+                    itemBuilder: (context, index) {
+                      final crop = crops[index];
+                      return _CropCard(
+                        l10n: l10n,
+                        crop: crop,
+                        languageCode: languageCode,
+                        onTap: () {
+                          Navigator.push<void>(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (_) => CropDiseaseDetailScreen(crop: crop),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.t('cropDiseaseMoreCropsSoon'),
+                    textAlign: TextAlign.center,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -84,11 +122,13 @@ class _CropCard extends StatelessWidget {
   const _CropCard({
     required this.l10n,
     required this.crop,
+    required this.languageCode,
     required this.onTap,
   });
 
   final AppLocalizations l10n;
-  final CropWithDiseases crop;
+  final ResolvedCropWithDiseases crop;
+  final String languageCode;
   final VoidCallback onTap;
 
   @override
@@ -143,7 +183,7 @@ class _CropCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  l10n.t(crop.nameKey),
+                  crop.name(languageCode),
                   style: textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: scheme.primary,

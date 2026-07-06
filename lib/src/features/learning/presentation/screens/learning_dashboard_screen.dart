@@ -4,6 +4,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import 'crop_selection_screen.dart';
+import 'learning_articles_screen.dart';
 import 'learning_screen.dart';
 
 /// Entry hub for all learning content. Opens dedicated flows per topic.
@@ -21,7 +22,7 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
   late final AnimationController _headerCtrl;
   late final List<AnimationController> _cardCtrls;
 
-  static const _cardCount = 4;
+  static const _cardCount = 3;
 
   @override
   void initState() {
@@ -56,15 +57,6 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
     super.dispose();
   }
 
-  // --- UNCHANGED LOGIC ---
-  void _showComingSoon(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.t('comingSoon'))),
-    );
-  }
-  // -----------------------
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -94,7 +86,15 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
         descKey: 'learningOptionArticlesDesc',
         accentBg: const Color(0xFFE1F5FE),
         accentFg: AppColors.weatherBlue,
-        onTap: () => _showComingSoon(context),
+        isActive: true,
+        onTap: () {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => const LearningArticlesScreen(),
+            ),
+          );
+        },
       ),
       _LearningOption(
         icon: Icons.bug_report_outlined,
@@ -111,14 +111,6 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
             ),
           );
         },
-      ),
-      _LearningOption(
-        icon: Icons.eco_outlined,
-        titleKey: 'learningOptionCropStages',
-        descKey: 'learningOptionCropStagesDesc',
-        accentBg: scheme.primaryContainer,
-        accentFg: AppColors.darkGreen,
-        onTap: () => _showComingSoon(context),
       ),
     ];
 
