@@ -65,4 +65,5 @@ flutter:
 
   assets:
     - assets/icons/PakFASAL.png
+    - assets/ml/dss_model.json
     - config/app_config.json

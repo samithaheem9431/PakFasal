@@ -10,6 +10,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../data/repositories/sensor_repository.dart';
 import '../../domain/entities/sensor_reading.dart';
+import '../../domain/services/ml_dss_engine.dart';
+import '../../domain/services/moisture_forecast.dart';
 import '../../../weather/data/repositories/weather_repository.dart';
 
 class SensorScreen extends StatefulWidget {
@@ -43,6 +45,7 @@ class _SensorScreenState extends State<SensorScreen>
   String? _expandedRecommendationSection;
   DateTime? _lastWeatherSyncAt;
   SensorRuleSet _ruleSet = SensorRuleSet.fallback();
+  MlDssEngine? _mlEngine;
   Timer? _weatherAutoRefreshTimer;
 
   @override
@@ -51,6 +54,7 @@ class _SensorScreenState extends State<SensorScreen>
     WidgetsBinding.instance.addObserver(this);
     _configureTts();
     _loadRuleConfig();
+    _loadMlEngine();
     _loadCurrentRainChance();
     _moistureController.addListener(_recomputeInputValidity);
     _phController.addListener(_recomputeInputValidity);
@@ -110,6 +114,18 @@ class _SensorScreenState extends State<SensorScreen>
       setState(() => _ruleSet = ruleSet);
     } catch (_) {
       // Keep fallback defaults when config is unavailable.
+    }
+  }
+
+  /// Loads the trained Random Forest DSS model. If it fails (asset missing or
+  /// malformed), the screen silently falls back to the rule-based engine.
+  Future<void> _loadMlEngine() async {
+    try {
+      final engine = await MlDssEngine.load();
+      if (!mounted) return;
+      setState(() => _mlEngine = engine);
+    } catch (_) {
+      // Rule-based fallback stays active when the ML model is unavailable.
     }
   }
 
@@ -277,6 +293,9 @@ class _SensorScreenState extends State<SensorScreen>
     final latest = _sessionLatestReading;
     final moistureSeries = _history.map((e) => e.soilMoisture).toList();
     final phSeries = _history.map((e) => e.phLevel).toList();
+    final moistureForecast = MoistureForecaster.forecast(moistureSeries);
+    final forecastCrop = latest?.crop ?? _selectedCrop;
+    final forecastConfig = _ruleSet.forCrop(forecastCrop);
     final latestRecommendationResult = latest == null
         ? null
         : _buildRuleBasedRecommendation(
@@ -331,6 +350,16 @@ class _SensorScreenState extends State<SensorScreen>
             unitSuffix: '%',
             points: moistureSeries,
           ),
+          if (moistureForecast != null) ...[
+            const SizedBox(height: 12),
+            _MoistureForecastCard(
+              forecast: moistureForecast,
+              cropName: _localizedCropName(l10n, forecastCrop),
+              moistureLow: forecastConfig.moistureLowThreshold,
+              moistureHigh: forecastConfig.moistureHighThreshold,
+              isUrdu: l10n.locale.languageCode == 'ur',
+            ),
+          ],
           const SizedBox(height: 12),
           _ChartCard(
             title: l10n.t('phTrend'),
@@ -364,9 +393,21 @@ class _SensorScreenState extends State<SensorScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.t('dssRecommendation'),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.t('dssRecommendation'),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      if (latestRecommendationResult != null)
+                        _EngineBadge(
+                          usedMl: latestRecommendationResult.usedMl,
+                          confidence: latestRecommendationResult.mlConfidence,
+                          isUrdu: l10n.locale.languageCode == 'ur',
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   if ((latest?.recommendationPriority ?? '').isNotEmpty) ...[
@@ -664,13 +705,40 @@ class _SensorScreenState extends State<SensorScreen>
     final monitoringPlan = <String>[];
     final rainExpected = rainChancePercent >= config.rainChanceThreshold;
     final cropName = _localizedCropName(l10n, crop);
+
+    // Run the trained Random Forest model when it is available. On any error
+    // (or before it finishes loading) we fall back to the rule-based logic.
+    MlDssPrediction? ml;
+    final engine = _mlEngine;
+    if (engine != null) {
+      try {
+        ml = engine.predict(
+          moisture: moisture,
+          ph: ph,
+          rainChancePercent: rainChancePercent,
+          crop: crop,
+        );
+      } catch (_) {
+        ml = null;
+      }
+    }
+    final usingMl = ml != null;
+
+    // The decision class either comes from the ML model or from the rules.
+    final irrigationAction = ml?.irrigationAction ??
+        _deriveIrrigationAction(
+          moisture: moisture,
+          rainExpected: rainExpected,
+          config: config,
+        );
+    final soilAction = ml?.soilAction ?? _deriveSoilAction(ph: ph, config: config);
     var irrigationCardText = isUrdu ? 'آبپاشی شیڈول چیک کریں۔' : 'Check irrigation schedule.';
     var soilCardText = isUrdu
         ? 'مٹی کی حالت کے مطابق کھاد دیں۔'
         : 'Apply fertilizer based on soil condition.';
 
-    // Moisture / irrigation rules.
-    if (moisture < config.moistureLowThreshold && !rainExpected) {
+    // Moisture / irrigation decision (ML-predicted class, rule-based fallback).
+    if (irrigationAction == 'irrigate_now') {
       summaryParts.add(l10n.t('sensorRecIrrigateSoon'));
       irrigationCardText = isUrdu
           ? 'نمی کم ہے، آج یا کل ہلکی آبپاشی کریں۔'
@@ -690,7 +758,7 @@ class _SensorScreenState extends State<SensorScreen>
             ? 'کم نمی کی وجہ سے فصل میں پانی کے دباؤ اور پیداوار میں کمی کا خطرہ ہے۔'
             : 'Low moisture may cause crop water stress and reduce yield.',
       );
-    } else if (moisture < config.moistureLowThreshold && rainExpected) {
+    } else if (irrigationAction == 'hold_for_rain') {
       summaryParts.add(l10n.t('sensorRecWaitRain'));
       irrigationCardText = isUrdu
           ? 'بارش متوقع ہے، ابھی آبپاشی روکیں اور دوبارہ چیک کریں۔'
@@ -710,7 +778,7 @@ class _SensorScreenState extends State<SensorScreen>
             ? 'غلط وقت پر پانی دینے سے پانی اور لاگت دونوں ضائع ہو سکتے ہیں۔'
             : 'Irrigating before expected rain can waste water and increase cost.',
       );
-    } else if (moisture > config.moistureHighThreshold) {
+    } else if (irrigationAction == 'reduce_irrigation') {
       summaryParts.add(l10n.t('sensorRecReduceIrrigation'));
       irrigationCardText = isUrdu
           ? 'نمی زیادہ ہے، اگلی آبپاشی دیر سے کریں۔'
@@ -742,8 +810,8 @@ class _SensorScreenState extends State<SensorScreen>
       );
     }
 
-    // pH / fertilizer and soil amendment rules.
-    if (ph < config.phLowThreshold) {
+    // pH / fertilizer decision (ML-predicted class, rule-based fallback).
+    if (soilAction == 'apply_lime') {
       summaryParts.add(l10n.t('sensorRecAcidic'));
       soilCardText = isUrdu
           ? 'پی ایچ کم ہے، چونا اور متوازن کھاد دیں۔'
@@ -763,7 +831,7 @@ class _SensorScreenState extends State<SensorScreen>
             ? 'تیزابی مٹی میں غذائی اجزاء کی دستیابی متاثر ہو سکتی ہے۔'
             : 'Acidic soil can reduce nutrient availability to the crop.',
       );
-    } else if (ph > config.phHighThreshold) {
+    } else if (soilAction == 'apply_gypsum') {
       summaryParts.add(l10n.t('sensorRecAlkaline'));
       soilCardText = isUrdu
           ? 'پی ایچ زیادہ ہے، جپسم اور نامیاتی مادہ شامل کریں۔'
@@ -811,12 +879,13 @@ class _SensorScreenState extends State<SensorScreen>
           : 'If the next two readings do not improve, adjust irrigation/fertilizer plan again.',
     );
 
-    final priority = _calculatePriority(
-      moisture: moisture,
-      ph: ph,
-      rainChancePercent: rainChancePercent,
-      config: config,
-    );
+    final priority = ml?.priority ??
+        _calculatePriority(
+          moisture: moisture,
+          ph: ph,
+          rainChancePercent: rainChancePercent,
+          config: config,
+        );
     final priorityLabel = isUrdu
         ? switch (priority) {
             'HIGH' => 'زیادہ',
@@ -829,8 +898,23 @@ class _SensorScreenState extends State<SensorScreen>
             _ => 'Low',
           };
 
+    final engineLabel = isUrdu
+        ? (usingMl
+              ? 'فیصلہ انجن: مشین لرننگ (Random Forest)'
+              : 'فیصلہ انجن: رول بیسڈ (بیک اپ)')
+        : (usingMl
+              ? 'Decision engine: Machine Learning (Random Forest)'
+              : 'Decision engine: Rule-based (fallback)');
+    final mlConfidenceLine = usingMl
+        ? (isUrdu
+              ? 'ماڈل کانفیڈنس: آبپاشی ${(ml.irrigationConfidence * 100).toStringAsFixed(0)}٪، مٹی ${(ml.soilConfidence * 100).toStringAsFixed(0)}٪، ترجیح ${(ml.priorityConfidence * 100).toStringAsFixed(0)}٪۔\n'
+              : 'Model confidence: irrigation ${(ml.irrigationConfidence * 100).toStringAsFixed(0)}%, soil ${(ml.soilConfidence * 100).toStringAsFixed(0)}%, priority ${(ml.priorityConfidence * 100).toStringAsFixed(0)}%.\n')
+        : '';
+
     final details = isUrdu
-        ? 'ترجیحی سطح: $priorityLabel\n'
+        ? '$engineLabel\n'
+              '$mlConfidenceLine'
+              'ترجیحی سطح: $priorityLabel\n'
               'تشخیصی خلاصہ: ${summaryParts.join('، ')}۔\n'
               'ان پٹ ڈیٹا: نمی ${moisture.toStringAsFixed(1)}٪، پی ایچ ${ph.toStringAsFixed(1)}، بارش امکان $rainChancePercent٪، فصل $cropName۔\n'
               'لاگو تھریش ہولڈز: نمی کم < ${config.moistureLowThreshold}، نمی زیادہ > ${config.moistureHighThreshold}، پی ایچ کم < ${config.phLowThreshold}، پی ایچ زیادہ > ${config.phHighThreshold}، بارش حد >= ${config.rainChanceThreshold}٪۔\n'
@@ -838,7 +922,9 @@ class _SensorScreenState extends State<SensorScreen>
               'کھاد/مٹی اصلاح: ${fertilizerActions.join(' ')}\n'
               'رسک نوٹس: ${riskNotes.isEmpty ? 'کوئی بڑا فوری رسک نہیں۔' : riskNotes.join(' ')}\n'
               'مانیٹرنگ پلان: ${monitoringPlan.join(' ')}'
-        : 'Priority level: $priorityLabel\n'
+        : '$engineLabel\n'
+              '$mlConfidenceLine'
+              'Priority level: $priorityLabel\n'
               'Decision summary: ${summaryParts.join(', ')}.\n'
               'Input data: moisture ${moisture.toStringAsFixed(1)}%, pH ${ph.toStringAsFixed(1)}, rain chance $rainChancePercent%, crop $cropName.\n'
               'Applied thresholds: low moisture < ${config.moistureLowThreshold}, high moisture > ${config.moistureHighThreshold}, low pH < ${config.phLowThreshold}, high pH > ${config.phHighThreshold}, rain threshold >= ${config.rainChanceThreshold}%.\n'
@@ -887,6 +973,13 @@ class _SensorScreenState extends State<SensorScreen>
       monitoringPreview: _ultraShortPreview(monitoringPlanText),
       irrigationCardText: _ultraShortPreview(irrigationCardText),
       soilCardText: _ultraShortPreview(soilCardText),
+      usedMl: usingMl,
+      mlConfidence: usingMl
+          ? (ml.irrigationConfidence +
+                    ml.soilConfidence +
+                    ml.priorityConfidence) /
+                3
+          : 0,
     );
   }
 
@@ -898,6 +991,37 @@ class _SensorScreenState extends State<SensorScreen>
         .replaceAll(RegExp(r'\s+'), ' ');
     if (sentence.length <= 60) return sentence;
     return '${sentence.substring(0, 57)}...';
+  }
+
+  /// Rule-based fallback for the irrigation decision class, mirroring the
+  /// labels the ML model predicts (irrigate_now / hold_for_rain /
+  /// reduce_irrigation / maintain). Used only when the ML model is unavailable.
+  String _deriveIrrigationAction({
+    required double moisture,
+    required bool rainExpected,
+    required SensorRuleConfig config,
+  }) {
+    if (moisture < config.moistureLowThreshold && rainExpected) {
+      return 'hold_for_rain';
+    }
+    if (moisture < config.moistureLowThreshold) {
+      return 'irrigate_now';
+    }
+    if (moisture > config.moistureHighThreshold) {
+      return 'reduce_irrigation';
+    }
+    return 'maintain';
+  }
+
+  /// Rule-based fallback for the soil decision class (apply_lime /
+  /// apply_gypsum / balanced).
+  String _deriveSoilAction({
+    required double ph,
+    required SensorRuleConfig config,
+  }) {
+    if (ph < config.phLowThreshold) return 'apply_lime';
+    if (ph > config.phHighThreshold) return 'apply_gypsum';
+    return 'balanced';
   }
 
   String _calculatePriority({
@@ -1348,6 +1472,8 @@ class _RecommendationResult {
     required this.monitoringPreview,
     required this.irrigationCardText,
     required this.soilCardText,
+    required this.usedMl,
+    required this.mlConfidence,
   });
 
   final String summary;
@@ -1363,6 +1489,13 @@ class _RecommendationResult {
   final String monitoringPreview;
   final String irrigationCardText;
   final String soilCardText;
+
+  /// Whether the trained Random Forest model produced this recommendation
+  /// (`false` means the rule-based fallback was used).
+  final bool usedMl;
+
+  /// Average model confidence (0-1) across the three classifiers.
+  final double mlConfidence;
 }
 
 class _RecommendationPlanCard extends StatelessWidget {
@@ -1459,6 +1592,185 @@ class _RecommendationPlaceholderCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MoistureForecastCard extends StatelessWidget {
+  const _MoistureForecastCard({
+    required this.forecast,
+    required this.cropName,
+    required this.moistureLow,
+    required this.moistureHigh,
+    required this.isUrdu,
+  });
+
+  final MoistureForecast forecast;
+  final String cropName;
+  final double moistureLow;
+  final double moistureHigh;
+  final bool isUrdu;
+
+  /// Builds farmer-friendly advice by comparing the predicted moisture against
+  /// the crop's ideal moisture range (and blending in the trend direction).
+  ({Color color, IconData icon, String text}) _adviceFor(double predicted) {
+    final falling = forecast.trend == 'falling';
+    final rising = forecast.trend == 'rising';
+
+    // Predicted moisture will be too LOW for this crop.
+    if (predicted < moistureLow) {
+      return (
+        color: AppColors.error,
+        icon: Icons.water_drop_outlined,
+        text: isUrdu
+            ? '$cropName کے لیے نمی کم ہو جائے گی۔ اگلے 1-2 دن میں آبپاشی کی تیاری رکھیں${falling ? '، نمی تیزی سے گر رہی ہے' : ''}۔'
+            : 'Moisture may drop below what $cropName needs. Get ready to irrigate in the next 1-2 days${falling ? ' — it is falling fast' : ''}.',
+      );
+    }
+
+    // Predicted moisture will be too HIGH for this crop.
+    if (predicted > moistureHigh) {
+      return (
+        color: AppColors.warning,
+        icon: Icons.grass_outlined,
+        text: isUrdu
+            ? '$cropName کے لیے نمی زیادہ ہو سکتی ہے۔ اضافی پانی نہ دیں اور کھیت کی نکاسی بہتر رکھیں${rising ? '، نمی بڑھ رہی ہے' : ''}۔'
+            : 'Moisture may go higher than $cropName needs. Avoid extra water and keep good field drainage${rising ? ' — it is rising' : ''}.',
+      );
+    }
+
+    // Predicted moisture stays in the healthy band, but warn if trending
+    // toward an edge so the farmer can plan ahead.
+    if (falling && predicted <= moistureLow + 5) {
+      return (
+        color: AppColors.warning,
+        icon: Icons.schedule,
+        text: isUrdu
+            ? '$cropName کے لیے نمی ابھی ٹھیک ہے مگر گر رہی ہے۔ جلد آبپاشی کی منصوبہ بندی کریں۔'
+            : 'Moisture is still fine for $cropName but dropping. Plan to irrigate soon.',
+      );
+    }
+    if (rising && predicted >= moistureHigh - 5) {
+      return (
+        color: AppColors.warning,
+        icon: Icons.schedule,
+        text: isUrdu
+            ? '$cropName کے لیے نمی ٹھیک ہے مگر بڑھ رہی ہے۔ اگلی آبپاشی میں احتیاط کریں۔'
+            : 'Moisture is fine for $cropName but rising. Be careful with the next watering.',
+      );
+    }
+    return (
+      color: AppColors.success,
+      icon: Icons.check_circle_outline,
+      text: isUrdu
+          ? '$cropName کے لیے نمی مناسب رہے گی۔ موجودہ آبپاشی شیڈول جاری رکھیں۔'
+          : 'Moisture will stay in the good range for $cropName. Keep your current watering schedule.',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final advice = _adviceFor(forecast.predictedNext);
+    final trendColor = advice.color;
+    final trendIcon = advice.icon;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isUrdu ? 'اگلی نمی کا اندازہ' : 'Next Moisture Estimate',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: trendColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(trendIcon, color: trendColor, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${forecast.predictedNext.toStringAsFixed(0)}%',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: trendColor,
+                            ),
+                      ),
+                      Text(
+                        advice.text,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EngineBadge extends StatelessWidget {
+  const _EngineBadge({
+    required this.usedMl,
+    required this.confidence,
+    required this.isUrdu,
+  });
+
+  final bool usedMl;
+  final double confidence;
+  final bool isUrdu;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = usedMl ? AppColors.primaryGreen : AppColors.mutedText;
+    final label = usedMl
+        ? (isUrdu
+              ? 'ML ماڈل • ${(confidence * 100).toStringAsFixed(0)}٪'
+              : 'ML model • ${(confidence * 100).toStringAsFixed(0)}%')
+        : (isUrdu ? 'رول بیسڈ' : 'Rule-based');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            usedMl ? Icons.auto_awesome : Icons.rule,
+            size: 13,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }

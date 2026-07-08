@@ -1,0 +1,67 @@
+PakFASAL DSS - Machine Learning training report
+================================================
+Algorithm: Random Forest (scikit-learn)
+Samples: 9000 | Features: ['moisture', 'ph', 'rainChance', 'crop_Wheat', 'crop_Rice', 'crop_Cotton']
+Label noise: 4%
+
+==== Irrigation action ====
+Test accuracy: 0.9744
+Classification report:
+                   precision    recall  f1-score   support
+
+    hold_for_rain       0.96      0.96      0.96       269
+     irrigate_now       0.98      0.98      0.98       463
+         maintain       0.97      0.98      0.98       699
+reduce_irrigation       0.98      0.96      0.97       369
+
+         accuracy                           0.97      1800
+        macro avg       0.97      0.97      0.97      1800
+     weighted avg       0.97      0.97      0.97      1800
+
+Confusion matrix:
+[[259   1   4   5]
+ [  3 454   6   0]
+ [  4   4 688   3]
+ [  3   4   9 353]]
+Feature importances:
+moisture=0.533, rainChance=0.237, crop_Rice=0.123, crop_Cotton=0.058, crop_Wheat=0.041, ph=0.008
+
+==== Soil action ====
+Test accuracy: 0.9994
+Classification report:
+              precision    recall  f1-score   support
+
+apply_gypsum       1.00      1.00      1.00       495
+  apply_lime       1.00      1.00      1.00       335
+    balanced       1.00      1.00      1.00       970
+
+    accuracy                           1.00      1800
+   macro avg       1.00      1.00      1.00      1800
+weighted avg       1.00      1.00      1.00      1800
+
+Confusion matrix:
+[[495   0   0]
+ [  0 334   1]
+ [  0   0 970]]
+Feature importances:
+ph=0.903, crop_Rice=0.045, crop_Cotton=0.023, crop_Wheat=0.016, moisture=0.007, rainChance=0.005
+
+==== Priority ====
+Test accuracy: 0.9194
+Classification report:
+              precision    recall  f1-score   support
+
+        HIGH       0.93      0.88      0.90       455
+         LOW       0.94      0.96      0.95       841
+      MEDIUM       0.87      0.89      0.88       504
+
+    accuracy                           0.92      1800
+   macro avg       0.91      0.91      0.91      1800
+weighted avg       0.92      0.92      0.92      1800
+
+Confusion matrix:
+[[399  12  44]
+ [  9 809  23]
+ [ 20  37 447]]
+Feature importances:
+moisture=0.535, ph=0.190, crop_Rice=0.145, rainChance=0.057, crop_Wheat=0.042, crop_Cotton=0.032
