@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +11,7 @@ import '../../domain/entities/crop_disease_models.dart';
 import '../widgets/learning_widgets.dart';
 import 'crop_disease_detail_screen.dart';
 
-/// Grid of crops for "Keera aur Bimariyaan" — tap a crop to see diseases.
+/// Grid of crops for "Pests & Diseases" — tap a crop to see diseases.
 /// Content is fetched live from Firestore (managed by the admin website).
 /// Both languages are fetched once; switching the app's language re-renders
 /// instantly without a re-fetch.
@@ -168,19 +169,7 @@ class _CropCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: scheme.surface.withValues(alpha: 0.95),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    crop.icon,
-                    size: 28,
-                    color: scheme.primary,
-                  ),
-                ),
+                _CropAvatar(crop: crop, scheme: scheme),
                 const Spacer(),
                 Text(
                   crop.name(languageCode),
@@ -199,6 +188,49 @@ class _CropCard extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CropAvatar extends StatelessWidget {
+  const _CropAvatar({
+    required this.crop,
+    required this.scheme,
+  });
+
+  final ResolvedCropWithDiseases crop;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: scheme.surface.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(
+        crop.icon,
+        size: 28,
+        color: scheme.primary,
+      ),
+    );
+
+    if (crop.imageUrl.isEmpty) return fallback;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: CachedNetworkImage(
+          imageUrl: crop.imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => fallback,
+          errorWidget: (_, __, ___) => fallback,
         ),
       ),
     );

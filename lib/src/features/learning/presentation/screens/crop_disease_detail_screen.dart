@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -52,6 +53,8 @@ class CropDiseaseDetailScreen extends StatelessWidget {
           }
 
           final disease = crop.diseases[index - 1];
+          final hasImage = disease.imageUrl.isNotEmpty;
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Card(
@@ -73,18 +76,9 @@ class CropDiseaseDetailScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 initiallyExpanded: index == 1,
-                leading: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: scheme.errorContainer.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.coronavirus_rounded,
-                    size: 20,
-                    color: scheme.error,
-                  ),
+                leading: _DiseaseLeading(
+                  imageUrl: disease.imageUrl,
+                  scheme: scheme,
                 ),
                 title: Text(
                   disease.name(languageCode),
@@ -103,6 +97,10 @@ class CropDiseaseDetailScreen extends StatelessWidget {
                   ),
                 ),
                 children: [
+                  if (hasImage) ...[
+                    _DiseaseHeroImage(imageUrl: disease.imageUrl),
+                    const SizedBox(height: 14),
+                  ],
                   _BulletSection(
                     icon: Icons.warning_amber_rounded,
                     title: l10n.t('cropDiseaseSymptoms'),
@@ -121,6 +119,89 @@ class CropDiseaseDetailScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _DiseaseLeading extends StatelessWidget {
+  const _DiseaseLeading({
+    required this.imageUrl,
+    required this.scheme,
+  });
+
+  final String imageUrl;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: scheme.errorContainer.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(
+        Icons.coronavirus_rounded,
+        size: 20,
+        color: scheme.error,
+      ),
+    );
+
+    if (imageUrl.isEmpty) return fallback;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: SizedBox(
+        width: 38,
+        height: 38,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => fallback,
+          errorWidget: (_, __, ___) => fallback,
+        ),
+      ),
+    );
+  }
+}
+
+class _DiseaseHeroImage extends StatelessWidget {
+  const _DiseaseHeroImage({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            color: scheme.surfaceContainerHighest,
+            alignment: Alignment.center,
+            child: const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          ),
+          errorWidget: (_, __, ___) => Container(
+            color: scheme.errorContainer.withValues(alpha: 0.45),
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.broken_image_outlined,
+              color: scheme.error,
+              size: 36,
+            ),
+          ),
+        ),
       ),
     );
   }

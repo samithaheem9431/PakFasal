@@ -6,13 +6,14 @@ import 'package:hive/hive.dart';
 import '../../domain/entities/crop_disease_models.dart'
     show CropDiseaseEntry, ResolvedCropWithDiseases, stringListOf;
 
-/// Loads the "Keera aur Bimariyan" (pests & diseases) content from Firestore.
+/// Loads the "Pests & Diseases" content from Firestore.
 ///
 /// Firestore shape (managed by the admin website):
 /// ```
 /// learning_crops/{cropId}
 ///   nameEn, nameUr: string
-///   icon: string (see LearningIcons.keys)
+///   icon: string (optional; see LearningIcons.keys; defaults to eco)
+///   imageUrl: string (optional public HTTPS URL)
 ///   order: number
 ///   showInPests: bool
 ///
@@ -21,6 +22,7 @@ import '../../domain/entities/crop_disease_models.dart'
 ///   order: number
 ///   nameEn, nameUr, descriptionEn, descriptionUr: string
 ///   symptomsEn, symptomsUr, solutionsEn, solutionsUr: array<string>
+///   imageUrl: string (optional public HTTPS URL)
 /// ```
 ///
 /// Both languages are kept on the resolved models (see
@@ -35,7 +37,7 @@ class CropDiseasesRepository {
 
   static const _cropsCollection = 'learning_crops';
   static const _diseasesCollection = 'learning_crop_diseases';
-  static const _cacheKey = 'crop_diseases_v2';
+  static const _cacheKey = 'crop_diseases_v4';
 
   Future<List<ResolvedCropWithDiseases>> fetchCropDiseases({
     bool forceRefresh = false,
@@ -80,6 +82,7 @@ class CropDiseasesRepository {
             nameEn: (cropData['nameEn'] as String?) ?? '',
             nameUr: (cropData['nameUr'] as String?) ?? '',
             iconKey: (cropData['icon'] as String?) ?? 'eco',
+            imageUrl: (cropData['imageUrl'] as String?)?.trim() ?? '',
             diseases: diseaseDocs.map((d) {
               final data = d.data();
               return CropDiseaseEntry(
@@ -91,6 +94,7 @@ class CropDiseasesRepository {
                 symptomsUr: stringListOf(data['symptomsUr']),
                 solutionsEn: stringListOf(data['solutionsEn']),
                 solutionsUr: stringListOf(data['solutionsUr']),
+                imageUrl: (data['imageUrl'] as String?)?.trim() ?? '',
               );
             }).toList(),
           ),

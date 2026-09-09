@@ -1,6 +1,6 @@
 # Learning Module — Firestore Schema & Admin Website Prompt
 
-The PakFasal app's **Learning module** (YouTube Videos, Keera aur Bimariyan,
+The PakFasal app's **Learning module** (YouTube Videos, Pests & Diseases,
 Learning Articles) now reads its content live from **Cloud Firestore**,
 project `pakfasalapp` — the same Firebase project the admin website already
 connects to. No new backend is needed.
@@ -22,16 +22,17 @@ to English if the Urdu field is empty.
 
 ### Collection: `learning_crops`
 
-One document per crop, used by the "Keera aur Bimariyan" module.
+One document per crop, used by the "Pests & Diseases" module.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | Document ID | string | yes | Lowercase slug, e.g. `wheat`, `rice`, `cotton`, `sugarcane`, `maize`. Used as a foreign key by other collections. Cannot be changed after creation without also updating referencing documents. |
 | `nameEn` | string | yes | e.g. `Wheat` |
 | `nameUr` | string | yes | e.g. `گندم` |
-| `icon` | string (enum) | yes | One of the icon keys below |
+| `icon` | string (enum) | no | One of the icon keys below. **Optional** — if omitted, the app defaults to `eco`. Prefer sending a default on save if your form no longer shows an icon dropdown. |
+| `imageUrl` | string | no | Public HTTPS URL of a crop photo (Firebase Storage / CDN). App shows it on the crop card; falls back to `icon` when empty |
 | `order` | number | yes | Controls display order (ascending) |
-| `showInPests` | boolean | yes | Show this crop in the "Keera aur Bimariyan" crop grid |
+| `showInPests` | boolean | yes | Show this crop in the "Pests & Diseases" crop grid |
 
 **Icon enum** (dropdown, fixed list — do not allow free text):
 `grass`, `rice_bowl`, `cotton`, `spa`, `grass_outlined`, `eco`, `terrain`,
@@ -51,6 +52,7 @@ One document per pest/disease.
 | `descriptionEn` / `descriptionUr` | string | yes | One short sentence |
 | `symptomsEn` / `symptomsUr` | array of strings | yes | Admin enters as a multi-line textarea, **one bullet per line**; the form should split on newline into an array before saving |
 | `solutionsEn` / `solutionsUr` | array of strings | yes | Same multi-line-textarea-to-array pattern |
+| `imageUrl` | string | no | Public HTTPS URL of a disease/pest photo (Firebase Storage download URL or CDN). App shows it on each disease card; omit or leave empty to keep the default icon |
 
 ### Collection: `learning_articles`
 
@@ -98,9 +100,14 @@ has Firebase/Firestore initialized against project `pakfasalapp`.
 > - Text input: Crop ID / slug (lowercase, no spaces — only editable when
 >   creating a new crop, disabled when editing an existing one)
 > - Text input: Name (English), Text input: Name (Urdu)
-> - Dropdown: Icon — options: grass, rice_bowl, cotton, spa, grass_outlined,
->   eco, terrain, science, water_drop, cloud, storefront, account_balance,
->   bug_report, agriculture, article
+> - Image upload (optional): Crop photo → Firebase Storage / CDN, save
+>   download URL as `imageUrl`
+> - Icon: **do not hard-require**. Either keep a hidden default
+>   (`icon: 'eco'` or `'agriculture'`) on every save, OR show an optional
+>   dropdown (grass, rice_bowl, cotton, spa, grass_outlined, eco, terrain,
+>   science, water_drop, cloud, storefront, account_balance, bug_report,
+>   agriculture, article). Never throw "A valid icon is required" when the
+>   form has no icon field — default the value instead.
 > - Number input: Display order
 > - Toggle: Show in "Pests & Diseases" module
 >
@@ -114,6 +121,8 @@ has Firebase/Firestore initialized against project `pakfasalapp`.
 > - Textarea: Symptoms (Urdu) — one symptom per line
 > - Textarea: Treatment/solutions (English) — one tip per line
 > - Textarea: Treatment/solutions (Urdu) — one tip per line
+> - Image upload: Disease/pest photo → store to Firebase Storage (or CDN),
+>   then save the public download URL as `imageUrl` on the Firestore doc
 > - On save: split every textarea on newlines into a trimmed array of
 >   non-empty strings before writing `symptomsEn`, `symptomsUr`,
 >   `solutionsEn`, `solutionsUr` to Firestore

@@ -59,7 +59,7 @@ class AppLocalizations {
       'learningYoutubeVideos': 'YouTube Learning Videos',
       'learningOptionYoutube': 'YouTube Learning Videos',
       'learningOptionArticles': 'Learning Articles',
-      'learningOptionPests': 'Keera (Pests) aur Bimariyaan',
+      'learningOptionPests': 'Pests & Diseases',
       'comingSoon': 'Coming soon',
       'cropDiseasePickCrop': 'Choose a crop',
       'cropDiseasePickCropHint':

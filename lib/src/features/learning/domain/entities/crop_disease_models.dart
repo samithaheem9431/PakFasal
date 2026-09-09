@@ -16,6 +16,7 @@ class CropDiseaseEntry {
     required this.symptomsUr,
     required this.solutionsEn,
     required this.solutionsUr,
+    this.imageUrl = '',
   });
 
   final String nameEn;
@@ -26,6 +27,9 @@ class CropDiseaseEntry {
   final List<String> symptomsUr;
   final List<String> solutionsEn;
   final List<String> solutionsUr;
+
+  /// Public HTTPS URL from Firestore (admin-uploaded). Empty when missing.
+  final String imageUrl;
 
   String name(String languageCode) => pickText(nameEn, nameUr, languageCode);
 
@@ -47,6 +51,7 @@ class CropDiseaseEntry {
     'symptomsUr': symptomsUr,
     'solutionsEn': solutionsEn,
     'solutionsUr': solutionsUr,
+    'imageUrl': imageUrl,
   };
 
   factory CropDiseaseEntry.fromJson(Map<String, dynamic> json) {
@@ -59,6 +64,7 @@ class CropDiseaseEntry {
       symptomsUr: stringListOf(json['symptomsUr']),
       solutionsEn: stringListOf(json['solutionsEn']),
       solutionsUr: stringListOf(json['solutionsUr']),
+      imageUrl: json['imageUrl'] as String? ?? '',
     );
   }
 }
@@ -72,6 +78,7 @@ class ResolvedCropWithDiseases {
     required this.nameUr,
     required this.iconKey,
     required this.diseases,
+    this.imageUrl = '',
   });
 
   final String id;
@@ -79,6 +86,9 @@ class ResolvedCropWithDiseases {
   final String nameUr;
   final String iconKey;
   final List<CropDiseaseEntry> diseases;
+
+  /// Public HTTPS URL from Firestore (admin-uploaded). Empty when missing.
+  final String imageUrl;
 
   String name(String languageCode) => pickText(nameEn, nameUr, languageCode);
 
@@ -89,6 +99,7 @@ class ResolvedCropWithDiseases {
     'nameEn': nameEn,
     'nameUr': nameUr,
     'iconKey': iconKey,
+    'imageUrl': imageUrl,
     'diseases': diseases.map((d) => d.toJson()).toList(),
   };
 
@@ -98,6 +109,7 @@ class ResolvedCropWithDiseases {
       nameEn: json['nameEn'] as String? ?? '',
       nameUr: json['nameUr'] as String? ?? '',
       iconKey: json['iconKey'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String? ?? '',
       diseases: (json['diseases'] as List<dynamic>? ?? [])
           .map((e) => CropDiseaseEntry.fromJson(e as Map<String, dynamic>))
           .toList(),

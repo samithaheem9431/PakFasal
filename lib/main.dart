@@ -14,9 +14,6 @@ import 'src/features/crop_calendar/presentation/providers/crop_calendar_provider
 import 'src/features/weather/presentation/providers/weather_provider.dart';
 
 Future<void> main() async {
-  // runZonedGuarded catches async errors that aren't caught by
-  // FlutterError.onError or PlatformDispatcher.onError (e.g. errors thrown
-  // from Future callbacks before any await).
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
