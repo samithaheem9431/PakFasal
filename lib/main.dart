@@ -17,9 +17,7 @@ Future<void> main() async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
-      // Load runtime config (config/app_config.json) before any feature reads
-      // from AppConfig. Compile-time --dart-define values still take priority
-      // for production / CI builds.
+
       await AppConfig.init();
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
