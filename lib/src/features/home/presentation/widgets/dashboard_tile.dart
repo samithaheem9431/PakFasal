@@ -22,8 +22,12 @@ class _DashboardTileState extends State<DashboardTile> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final baseSurface = scheme.surfaceContainerHighest;
-    final pressedSurface = scheme.surfaceContainerHigh;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Light green background for tiles in light mode
+    final baseSurface = isDark ? scheme.surfaceContainerHighest : const Color(0xFFF1F8F5);
+    final pressedSurface = isDark ? scheme.surfaceContainerHigh : const Color(0xFFE8F5E9);
+    
     return AnimatedScale(
       scale: _pressed ? 0.96 : 1.0,
       duration: const Duration(milliseconds: 120),
@@ -33,16 +37,16 @@ class _DashboardTileState extends State<DashboardTile> {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: _pressed ? pressedSurface : baseSurface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _pressed
                 ? scheme.primary.withValues(alpha: 0.35)
-                : scheme.outlineVariant,
+                : scheme.primary.withValues(alpha: 0.15),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: scheme.shadow.withValues(alpha: _pressed ? 0.06 : 0.12),
+              color: scheme.primary.withValues(alpha: _pressed ? 0.08 : 0.15),
               blurRadius: _pressed ? 4 : 10,
               offset: Offset(0, _pressed ? 1 : 4),
             ),
@@ -51,7 +55,7 @@ class _DashboardTileState extends State<DashboardTile> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             splashColor: scheme.primary.withValues(alpha: 0.12),
             highlightColor: scheme.primary.withValues(alpha: 0.16),
             onTap: widget.onTap,
@@ -59,33 +63,23 @@ class _DashboardTileState extends State<DashboardTile> {
             onTapCancel: () => setState(() => _pressed = false),
             onTapUp: (_) => setState(() => _pressed = false),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ── Icon bubble ──────────────────────────────────────
+                  // ── Icon bubble with green background ─────────────────
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.all(11),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: _pressed
-                            ? [
-                                scheme.primaryContainer,
-                                scheme.secondaryContainer,
-                              ]
-                            : [
-                                scheme.secondaryContainer,
-                                scheme.secondaryContainer,
-                              ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: _pressed
+                          ? scheme.primary.withValues(alpha: 0.25)
+                          : scheme.primary.withValues(alpha: 0.18),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: scheme.shadow.withValues(alpha: 0.15),
+                          color: scheme.primary.withValues(alpha: 0.15),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -93,7 +87,7 @@ class _DashboardTileState extends State<DashboardTile> {
                     ),
                     child: Icon(
                       widget.icon,
-                      size: 22,
+                      size: 24,
                       color: scheme.primary,
                     ),
                   ),
@@ -103,16 +97,14 @@ class _DashboardTileState extends State<DashboardTile> {
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
-                      maxLines: 3,
-                      overflow: TextOverflow.visible,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                         height: 1.15,
                         letterSpacing: 0.2,
-                        color: _pressed
-                            ? scheme.primary
-                            : scheme.onSurface,
+                        color: scheme.onSurface,
                       ),
                     ),
                   ),

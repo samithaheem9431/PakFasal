@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Primary greens
-  static const Color primaryGreen = Color(0xFF2E7D32);
+  // Primary greens - Deep forest green theme
+  static const Color primaryGreen = Color(0xFF1B5E20); // Main deep green
   static const Color lightGreen = Color(0xFF66BB6A);
-  static const Color darkGreen = Color(0xFF1B5E20);
+  static const Color darkGreen = Color(0xFF0F3818); // Even darker for gradients
   static const Color paleGreen = Color(0xFFE8F5E9);
   static const Color mintGreen = Color(0xFFC8E6C9);
   static const Color softSurfaceGreen = Color(0xFFF1FBF2);

@@ -365,75 +365,91 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         themeController: themeController,
         l10n: l10n,
       ),
-      // ── Bottom navigation bar ──────────────────────────────────────────
+      // ── Bottom navigation bar with deep green background ──────────
       bottomNavigationBar: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-          child: Container(
-            height: 76,
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: scheme.outlineVariant),
-              boxShadow: [
-                BoxShadow(
-                  color: scheme.shadow.withValues(alpha: 0.10),
-                  blurRadius: 16,
-                  offset: const Offset(0, 5),
-                ),
+        child: Container(
+          height: 72,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primaryGreen,
+                AppColors.darkGreen,
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _BottomTabItem(
-                  icon: Icons.home,
-                  label: l10n.t('home'),
-                  isActive: _selectedBottomIndex == 0,
-                  onTap: () => _onBottomNavTap(0),
-                ),
-                _BottomTabItem(
-                  icon: Icons.smart_toy_outlined,
-                  label: l10n.t('askAi'),
-                  isActive: _selectedBottomIndex == 1,
-                  onTap: () => _onBottomNavTap(1),
-                ),
-                _BottomTabItem(
-                  icon: Icons.sensors_outlined,
-                  label: l10n.t('sensorData'),
-                  isActive: _selectedBottomIndex == 2,
-                  onTap: () => _onBottomNavTap(2),
-                ),
-                _BottomTabItem(
-                  icon: Icons.person_outline,
-                  label: l10n.t('profile'),
-                  isActive: _selectedBottomIndex == 3,
-                  onTap: () => _onBottomNavTap(3),
-                ),
-              ],
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(24),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryGreen.withValues(alpha: 0.4),
+                blurRadius: 16,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _BottomTabItem(
+                icon: Icons.home,
+                label: l10n.t('home'),
+                isActive: _selectedBottomIndex == 0,
+                onTap: () => _onBottomNavTap(0),
+              ),
+              _BottomTabItem(
+                icon: Icons.smart_toy_outlined,
+                label: l10n.t('askAi'),
+                isActive: _selectedBottomIndex == 1,
+                onTap: () => _onBottomNavTap(1),
+              ),
+              _BottomTabItem(
+                icon: Icons.sensors_outlined,
+                label: l10n.t('sensorData'),
+                isActive: _selectedBottomIndex == 2,
+                onTap: () => _onBottomNavTap(2),
+              ),
+              _BottomTabItem(
+                icon: Icons.person_outline,
+                label: l10n.t('profile'),
+                isActive: _selectedBottomIndex == 3,
+                onTap: () => _onBottomNavTap(3),
+              ),
+            ],
           ),
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // ── App bar ──────────────────────────────────────────────────
+            // ── App bar with gradient green background ─────────────────────
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+              padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
               decoration: BoxDecoration(
-                color: scheme.surface,
-                border: Border(
-                  bottom: BorderSide(color: scheme.outlineVariant, width: 1),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.darkGreen,
+                    AppColors.primaryGreen,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    icon: Icon(Icons.menu, size: 24, color: scheme.primary),
+                    icon: const Icon(Icons.menu, size: 24, color: AppColors.white),
                   ),
                   Expanded(
                     child: Row(
@@ -442,13 +458,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         Container(
                           width: 36,
                           height: 36,
-                          decoration: BoxDecoration(
-                            color: scheme.primaryContainer,
+                          decoration: const BoxDecoration(
+                            color: AppColors.white,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.eco,
-                            color: scheme.primary,
+                            color: AppColors.primaryGreen,
                             size: 20,
                           ),
                         ),
@@ -457,18 +473,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'PakFasal',
                               style: TextStyle(
-                                color: scheme.primary,
+                                color: AppColors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             Text(
                               l10n.t('appTagline'),
-                              style: TextStyle(
-                                color: scheme.primary.withValues(alpha: 0.7),
+                              style: const TextStyle(
+                                color: AppColors.white,
                                 fontSize: 8.5,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -482,17 +498,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     children: [
                       IconButton(
                         onPressed: () => _openNotificationsPanel(l10n),
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.notifications_none,
-                          color: scheme.primary,
+                          color: AppColors.white,
+                          size: 24,
                         ),
                       ),
                       Positioned(
                         top: 6,
                         right: 8,
                         child: Container(
-                          width: 15,
-                          height: 15,
+                          width: 16,
+                          height: 16,
                           decoration: const BoxDecoration(
                             color: AppColors.error,
                             shape: BoxShape.circle,
@@ -502,7 +519,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                               '3',
                               style: TextStyle(
                                 color: AppColors.white,
-                                fontSize: 8,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -681,7 +698,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   }
 }
 
-// ── Bottom tab item ────────────────────────────────────────────────────────
+// ── Bottom tab item with white icons ──────────────────────────────────────
 class _BottomTabItem extends StatelessWidget {
   const _BottomTabItem({
     required this.icon,
@@ -697,48 +714,42 @@ class _BottomTabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.paleGreen : AppColors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutBack,
-                  scale: isActive ? 1.08 : 1.0,
-                  child: Icon(
-                    icon,
-                    size: 19,
-                    color: isActive ? scheme.primary : scheme.onSurfaceVariant,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 24,
+                color: isActive ? AppColors.white : AppColors.white.withValues(alpha: 0.6),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  color: isActive ? AppColors.white : AppColors.white.withValues(alpha: 0.6),
+                ),
+              ),
+              if (isActive)
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  width: 4,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: AppColors.white,
+                    shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(height: 2),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color: isActive ? scheme.primary : scheme.onSurfaceVariant,
-                  ),
-                  child: Text(label),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
