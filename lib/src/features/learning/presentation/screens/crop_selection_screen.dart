@@ -73,35 +73,32 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
                 else if (crops.isEmpty)
                   LearningEmptyCard(message: l10n.t('cropDiseaseEmpty'))
                 else ...[
-                  GridView.builder(
+                  // Modern large card grid for crops
+                  ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 14,
-                      crossAxisSpacing: 14,
-                      childAspectRatio: 0.92,
-                    ),
                     itemCount: crops.length,
                     itemBuilder: (context, index) {
                       final crop = crops[index];
-                      return _CropCard(
-                        l10n: l10n,
-                        crop: crop,
-                        languageCode: languageCode,
-                        onTap: () {
-                          Navigator.push<void>(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => CropDiseaseDetailScreen(crop: crop),
-                            ),
-                          );
-                        },
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _ModernCropCard(
+                          l10n: l10n,
+                          crop: crop,
+                          languageCode: languageCode,
+                          onTap: () {
+                            Navigator.push<void>(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => CropDiseaseDetailScreen(crop: crop),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   Text(
                     l10n.t('cropDiseaseMoreCropsSoon'),
                     textAlign: TextAlign.center,
@@ -113,6 +110,227 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _ModernCropCard extends StatefulWidget {
+  const _ModernCropCard({
+    required this.l10n,
+    required this.crop,
+    required this.languageCode,
+    required this.onTap,
+  });
+
+  final AppLocalizations l10n;
+  final ResolvedCropWithDiseases crop;
+  final String languageCode;
+  final VoidCallback onTap;
+
+  @override
+  State<_ModernCropCard> createState() => _ModernCropCardState();
+}
+
+class _ModernCropCardState extends State<_ModernCropCard> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return AnimatedScale(
+      scale: _isPressed ? 0.97 : 1.0,
+      duration: const Duration(milliseconds: 150),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onTap();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withValues(alpha: 0.15),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                // Background image (full width, semi-transparent)
+                Positioned.fill(
+                  child: widget.crop.imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: widget.crop.imageUrl,
+                          fit: BoxFit.cover,
+                          color: Colors.black.withValues(alpha: 0.3),
+                          colorBlendMode: BlendMode.darken,
+                          placeholder: (_, __) => _ImagePlaceholder(
+                            icon: widget.crop.icon,
+                            scheme: scheme,
+                          ),
+                          errorWidget: (_, __, ___) => _ImagePlaceholder(
+                            icon: widget.crop.icon,
+                            scheme: scheme,
+                          ),
+                        )
+                      : _ImagePlaceholder(
+                          icon: widget.crop.icon,
+                          scheme: scheme,
+                        ),
+                ),
+
+                // Gradient overlay for text readability
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.7),
+                        ],
+                        stops: const [0.3, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Content overlay
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Badge with disease count
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bug_report,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${widget.crop.diseases.length} ${widget.l10n.t('cropDiseaseTopicsShort')}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      // Crop name
+                      Text(
+                        widget.crop.name(widget.languageCode),
+                        style: textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // View details button
+                      Row(
+                        children: [
+                          Text(
+                            'View Details',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Image placeholder with gradient background
+class _ImagePlaceholder extends StatelessWidget {
+  const _ImagePlaceholder({
+    required this.icon,
+    required this.scheme,
+  });
+
+  final IconData icon;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            scheme.primaryContainer,
+            scheme.secondaryContainer,
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          icon,
+          size: 80,
+          color: scheme.primary.withValues(alpha: 0.5),
         ),
       ),
     );
