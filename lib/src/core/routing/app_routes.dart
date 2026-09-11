@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/auth_gate.dart';
+import '../../features/about/presentation/screens/about_pakfasal_screen.dart';
 import '../../features/ai_query/presentation/screens/ai_query_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const profile = '/profile';
   static const marketplace = '/marketplace';
   static const cropCalendar = '/crop-calendar';
+  static const about = '/about';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -68,6 +70,11 @@ class AppRoutes {
         return _materialRoute(const AuthGate(child: MarketplaceScreen()), settings);
       case cropCalendar:
         return _materialRoute(const AuthGate(child: CropCalendarScreen()), settings);
+      case about:
+        return _materialRoute(
+          const AuthGate(child: AboutPakFasalScreen()),
+          settings,
+        );
       default:
         return _materialRoute(const SplashScreen(), settings);
     }

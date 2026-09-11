@@ -71,10 +71,10 @@ class HomeWeatherCard extends StatelessWidget {
                 ),
               ),
               
-              // ── Sun/Cloud icon (large, top right) ─────────────────────
-              Positioned(
+              // ── Sun/Cloud icon (large, trailing / RTL-aware) ──────────
+              PositionedDirectional(
                 top: 16,
-                right: 16,
+                end: 16,
                 child: Container(
                   width: 80,
                   height: 80,

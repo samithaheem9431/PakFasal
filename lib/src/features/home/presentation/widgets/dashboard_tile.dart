@@ -73,9 +73,13 @@ class _DashboardTileState extends State<DashboardTile> {
                     duration: const Duration(milliseconds: 180),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _pressed
-                          ? scheme.primary.withValues(alpha: 0.25)
-                          : scheme.primary.withValues(alpha: 0.18),
+                      color: isDark
+                          ? (_pressed
+                              ? scheme.primary.withValues(alpha: 0.25)
+                              : scheme.primary.withValues(alpha: 0.18))
+                          : (_pressed
+                              ? scheme.primary.withValues(alpha: 0.9)
+                              : scheme.primary),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -88,7 +92,7 @@ class _DashboardTileState extends State<DashboardTile> {
                     child: Icon(
                       widget.icon,
                       size: 24,
-                      color: scheme.primary,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 10),

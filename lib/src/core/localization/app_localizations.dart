@@ -374,6 +374,10 @@ class AppLocalizations {
       'goodAfternoon': 'Good Afternoon!',
       'goodEvening': 'Good Evening!',
       'appTagline': 'Smart Farming, Better Tomorrow',
+      'exitAppTitle': 'Exit App',
+      'exitAppMessage': 'Do you want to exit the app?',
+      'yes': 'Yes',
+      'no': 'No',
       'notificationIrrigationReminder':
           'Irrigation reminder: Check soil moisture today.',
       'notificationWeatherAlert':
@@ -715,6 +719,63 @@ class AppLocalizations {
       'onboardingTitle3': 'Track your farm with confidence',
       'onboardingDesc3':
           'Use sensor trends and recommendations to plan irrigation and soil care on time.',
+
+      // ── About PakFasal hub ──
+      'aboutPakFasal': 'About PakFasal',
+      'aboutHelpSupport': 'Help & Support',
+      'aboutRateUs': 'Rate Us',
+      'aboutShareApp': 'Share App',
+      'aboutMissionTitle': 'Our mission',
+      'aboutMissionBody':
+          'PakFasal helps Pakistani farmers make better field decisions — weather, soil advice, learning, crop calendar, and marketplace — all in one app.',
+      'aboutFeaturesTitle': 'What you get',
+      'aboutFeatureWeatherDesc': 'Forecasts and farmer advisories for your location.',
+      'aboutFeatureSensorDesc': 'Soil readings and on-device DSS irrigation advice.',
+      'aboutFeatureAiDesc': 'Ask farming questions in your language.',
+      'aboutFeatureLearningDesc': 'Videos, articles, and pest guidance by crop.',
+      'aboutFeatureCalendarDesc': 'Sowing-to-harvest timelines for major crops.',
+      'aboutFeatureMarketDesc': 'Find seeds, fertilizers, and farm supplies.',
+      'aboutFeatureWeatherDetail':
+          'Weather shows temperature, rain chance, humidity, and a 7-day forecast for your area. You also get simple farmer tips for irrigation, spraying, and harvest timing so you can plan field work with confidence.',
+      'aboutFeatureSensorDetail':
+          'Sensor Data lets you enter soil moisture, pH, crop type, and rain chance. PakFasal then gives irrigation and soil-care advice using an on-device decision model — useful even when the internet is weak.',
+      'aboutFeatureAiDetail':
+          'Ask AI is your farming chat helper. Type or speak questions about crops, pests, fertilizer, or weather in English or Urdu, and get easy guidance to support everyday farm decisions.',
+      'aboutFeatureLearningDetail':
+          'Learning Hub shares practical farming knowledge through videos, articles, and pest/disease guides by crop. Use it to learn better practices and protect your yield.',
+      'aboutFeatureCalendarDetail':
+          'Crop Calendar shows sowing-to-harvest stages for major crops like wheat, rice, and cotton. Pick your crop and city to see when to plant, care, and harvest.',
+      'aboutFeatureMarketDetail':
+          'Marketplace helps you browse seeds, fertilizers, and farm supplies from sellers. Search by category and contact suppliers easily when you need inputs.',
+      'aboutGotIt': 'Got it',
+      'aboutFaqTitle': 'Help & FAQ',
+      'aboutFaqWeatherQ': 'How do I use Weather?',
+      'aboutFaqWeatherA':
+          'Open Weather from Home or Quick Access. Allow location for local forecasts, or search a city. Pull to refresh. Advisories suggest irrigation, spray, and harvest timing.',
+      'aboutFaqSensorQ': 'How does Sensor Data / DSS work?',
+      'aboutFaqSensorA':
+          'Enter moisture, pH, crop, and rain chance. PakFasal runs an on-device model to suggest irrigation and soil care priorities. History is saved when you are signed in.',
+      'aboutFaqLanguageQ': 'How do I switch language?',
+      'aboutFaqLanguageA':
+          'Use the language toggle in the app bar or drawer (EN / اردو). Your choice applies across the app.',
+      'aboutFaqOfflineQ': 'Does the app work offline?',
+      'aboutFaqOfflineA':
+          'Weather and some data can show cached results when the network is weak. An offline badge appears when data is stale — refresh when you are back online.',
+      'aboutFaqLoginQ': 'I cannot log in. What should I do?',
+      'aboutFaqLoginA':
+          'Check your email and password, or use Forgot Password on the login screen. Ensure you have internet. If the problem continues, contact support.',
+      'aboutContactTitle': 'Contact support',
+      'aboutContactEmail': 'support@pakfasal.app',
+      'aboutContactWhatsapp': '+923164945717',
+      'aboutAppInfoTitle': 'App info',
+      'aboutVersionLabel': 'Version {version}',
+      'aboutPrivacyNote':
+          'PakFasal uses your account and location only to personalize farming tools. We do not sell your personal data.',
+      'aboutShareMessage':
+          'Try PakFasal — smart farming for Pakistani farmers. Weather, soil advice, learning, and more.',
+      'aboutRateUnavailable': 'Store listing is not available yet.',
+      'aboutShareCopied': 'App link copied to clipboard.',
+      'aboutCouldNotOpenEmail': 'Could not open email app.',
     },
     'ur': {
       'appName': 'پاک فصل',
@@ -1062,6 +1123,10 @@ class AppLocalizations {
       'goodAfternoon': 'دوپہر بخیر!',
       'goodEvening': 'شام بخیر!',
       'appTagline': 'اسمارٹ فارمنگ، بہتر کل',
+      'exitAppTitle': 'ایپ بند کریں',
+      'exitAppMessage': 'کیا آپ ایپ بند کرنا چاہتے ہیں؟',
+      'yes': 'ہاں',
+      'no': 'نہیں',
       'notificationIrrigationReminder':
           'آبپاشی یاددہانی: آج مٹی کی نمی چیک کریں۔',
       'notificationWeatherAlert':
@@ -1406,6 +1471,63 @@ class AppLocalizations {
       'onboardingTitle3': 'اپنے کھیت کی نگرانی اعتماد سے کریں',
       'onboardingDesc3':
           'سینسر ٹرینڈز اور سفارشات سے آبپاشی اور مٹی کی دیکھ بھال بروقت پلان کریں۔',
+
+      // ── About PakFasal hub (Urdu) ──
+      'aboutPakFasal': 'پاک فصل کے بارے میں',
+      'aboutHelpSupport': 'مدد اور سپورٹ',
+      'aboutRateUs': 'ریٹ کریں',
+      'aboutShareApp': 'ایپ شیئر کریں',
+      'aboutMissionTitle': 'ہمارا مشن',
+      'aboutMissionBody':
+          'پاک فصل پاکستانی کسانوں کو بہتر فیصلے کرنے میں مدد دیتی ہے — موسم، مٹی کی مشورت، تعلیم، فصل کیلنڈر اور مارکیٹ پلیس — سب ایک ایپ میں۔',
+      'aboutFeaturesTitle': 'آپ کو کیا ملتا ہے',
+      'aboutFeatureWeatherDesc': 'آپ کے مقام کے مطابق پیشن گوئی اور زرعی مشورے۔',
+      'aboutFeatureSensorDesc': 'مٹی کی ریڈنگز اور آن ڈیوائس ڈی ایس ایس آبپاشی مشورہ۔',
+      'aboutFeatureAiDesc': 'اپنی زبان میں زرعی سوالات پوچھیں۔',
+      'aboutFeatureLearningDesc': 'ویڈیوز، مضامین اور فصل کے مطابق کیڑوں کی رہنمائی۔',
+      'aboutFeatureCalendarDesc': 'اہم فصلوں کے بوائی سے کٹائی تک کے ٹائم لائنز۔',
+      'aboutFeatureMarketDesc': 'بیج، کھاد اور زرعی سامان تلاش کریں۔',
+      'aboutFeatureWeatherDetail':
+          'موسم آپ کے علاقے کا درجہ حرارت، بارش کا امکان، نمی اور 7 دن کی پیشن گوئی دکھاتا ہے۔ ساتھ میں آبپاشی، اسپرے اور کٹائی کے آسان مشورے ملتے ہیں تاکہ آپ کھیت کا کام بہتر منصوبہ بنا سکیں۔',
+      'aboutFeatureSensorDetail':
+          'سینسر ڈیٹا میں مٹی کی نمی، پی ایچ، فصل اور بارش کا امکان درج کریں۔ پاک فصل آن ڈیوائس ماڈل سے آبپاشی اور مٹی کی دیکھ بھال کا مشورہ دیتی ہے — کمزور انٹرنیٹ پر بھی فائدہ مند۔',
+      'aboutFeatureAiDetail':
+          'اے آئی سے پوچھیں آپ کا زرعی چیٹ مددگار ہے۔ فصل، کیڑے، کھاد یا موسم کے بارے میں انگریزی یا اردو میں سوال لکھیں یا بولیں، اور روزمرہ فیصلوں کے لیے آسان رہنمائی حاصل کریں۔',
+      'aboutFeatureLearningDetail':
+          'لرننگ ہب میں ویڈیوز، مضامین اور فصل کے مطابق کیڑوں/بیماریوں کی رہنمائی ملتی ہے۔ بہتر طریقے سیکھیں اور اپنی پیداوار محفوظ رکھیں۔',
+      'aboutFeatureCalendarDetail':
+          'فصل کیلنڈر گندم، چاول اور کپاس جیسی اہم فصلوں کے بوائی سے کٹائی تک کے مراحل دکھاتا ہے۔ اپنی فصل اور شہر منتخب کر کے بوائی، دیکھ بھال اور کٹائی کا وقت دیکھیں۔',
+      'aboutFeatureMarketDetail':
+          'مارکیٹ پلیس میں بیج، کھاد اور زرعی سامان دیکھیں۔ کیٹیگری سے تلاش کریں اور ضرورت پڑنے پر سپلائرز سے آسانی سے رابطہ کریں۔',
+      'aboutGotIt': 'سمجھ گیا',
+      'aboutFaqTitle': 'مدد اور عمومی سوالات',
+      'aboutFaqWeatherQ': 'موسم کیسے استعمال کریں؟',
+      'aboutFaqWeatherA':
+          'ہوم یا فوری رسائی سے موسم کھولیں۔ مقامی پیشن گوئی کے لیے لوکیشن دیں، یا شہر تلاش کریں۔ تازہ کرنے کے لیے نیچے کھینچیں۔ مشورے آبپاشی، اسپرے اور کٹائی کے وقت بتاتے ہیں۔',
+      'aboutFaqSensorQ': 'سینسر ڈیٹا / ڈی ایس ایس کیسے کام کرتا ہے؟',
+      'aboutFaqSensorA':
+          'نمی، پی ایچ، فصل اور بارش کا امکان درج کریں۔ پاک فصل آن ڈیوائس ماڈل سے آبپاشی اور مٹی کی دیکھ بھال کی ترجیحات تجویز کرتی ہے۔ لاگ اِن ہونے پر ہسٹری محفوظ ہوتی ہے۔',
+      'aboutFaqLanguageQ': 'زبان کیسے تبدیل کریں؟',
+      'aboutFaqLanguageA':
+          'ایپ بار یا ڈراور میں زبان ٹوگل استعمال کریں (EN / اردو)۔ آپ کا انتخاب پوری ایپ پر لاگو ہوتا ہے۔',
+      'aboutFaqOfflineQ': 'کیا ایپ آف لائن کام کرتی ہے؟',
+      'aboutFaqOfflineA':
+          'کمزور نیٹ ورک پر موسم اور کچھ ڈیٹا محفوظ نتائج دکھا سکتا ہے۔ پرانا ڈیٹا ہونے پر آف لائن بیج ظاہر ہوتا ہے — آن لائن ہونے پر تازہ کریں۔',
+      'aboutFaqLoginQ': 'لاگ اِن نہیں ہو رہا۔ کیا کریں؟',
+      'aboutFaqLoginA':
+          'ای میل اور پاس ورڈ چیک کریں، یا لاگ اِن اسکرین پر پاس ورڈ بھول گئے استعمال کریں۔ انٹرنیٹ یقینی بنائیں۔ مسئلہ رہے تو سپورٹ سے رابطہ کریں۔',
+      'aboutContactTitle': 'سپورٹ سے رابطہ',
+      'aboutContactEmail': 'support@pakfasal.app',
+      'aboutContactWhatsapp': '+923164945717',
+      'aboutAppInfoTitle': 'ایپ کی معلومات',
+      'aboutVersionLabel': 'ورژن {version}',
+      'aboutPrivacyNote':
+          'پاک فصل آپ کے اکاؤنٹ اور مقام صرف زرعی ٹولز ذاتی بنانے کے لیے استعمال کرتی ہے۔ ہم آپ کا ذاتی ڈیٹا فروخت نہیں کرتے۔',
+      'aboutShareMessage':
+          'پاک فصل آزمائیں — پاکستانی کسانوں کے لیے اسمارٹ فارمنگ۔ موسم، مٹی کی مشورت، تعلیم اور مزید۔',
+      'aboutRateUnavailable': 'اسٹور لسٹنگ ابھی دستیاب نہیں۔',
+      'aboutShareCopied': 'ایپ لنک کلپ بورڈ میں کاپی ہو گیا۔',
+      'aboutCouldNotOpenEmail': 'ای میل ایپ نہیں کھل سکی۔',
     },
   };
 

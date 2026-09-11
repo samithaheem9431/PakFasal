@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
@@ -8,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/widgets/common_states.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
+import '../../../about/presentation/screens/about_pakfasal_screen.dart';
 import '../../../weather/presentation/providers/weather_provider.dart';
 import '../widgets/dashboard_tile.dart';
 import '../widgets/home_weather_card.dart';
@@ -53,6 +55,98 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   Future<void> _refreshDashboard() async {
     await context.read<WeatherProvider>().refreshAll();
+  }
+
+  Future<void> _handleBackPress() async {
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final buttonShape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        );
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            l10n.t('exitAppTitle'),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: isDark ? scheme.onSurface : AppColors.primaryGreen,
+            ),
+          ),
+          content: Text(
+            l10n.t('exitAppMessage'),
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              height: 1.35,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor:
+                          isDark ? scheme.onSurface : AppColors.darkText,
+                      side: BorderSide(
+                        color: isDark
+                            ? scheme.outline
+                            : AppColors.lightGrey,
+                        width: 1.6,
+                      ),
+                      minimumSize: const Size(0, 48),
+                      shape: buttonShape,
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: Text(l10n.t('no')),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.white,
+                      backgroundColor: AppColors.primaryGreen,
+                      side: const BorderSide(
+                        color: AppColors.darkGreen,
+                        width: 1.6,
+                      ),
+                      minimumSize: const Size(0, 48),
+                      shape: buttonShape,
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: Text(l10n.t('yes')),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldExit == true && mounted) {
+      SystemNavigator.pop();
+    }
   }
 
   void _openNotificationsPanel(AppLocalizations l10n) {
@@ -343,28 +437,36 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 // App info section
                 _DrawerMenuItem(
                   icon: Icons.info_outline,
-                  title: 'About PakFasal',
+                  title: l10n.t('aboutPakFasal'),
                   onTap: () {
                     Navigator.pop(context);
-                    // Add about page navigation here
+                    Navigator.pushNamed(context, AppRoutes.about);
                   },
                 ),
                 
                 _DrawerMenuItem(
                   icon: Icons.help_outline,
-                  title: 'Help & Support',
+                  title: l10n.t('aboutHelpSupport'),
                   onTap: () {
                     Navigator.pop(context);
-                    // Add help page navigation here
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.about,
+                      arguments: AboutPakFasalArgs.help,
+                    );
                   },
                 ),
                 
                 _DrawerMenuItem(
                   icon: Icons.star_outline,
-                  title: 'Rate Us',
+                  title: l10n.t('aboutRateUs'),
                   onTap: () {
                     Navigator.pop(context);
-                    // Add rating functionality here
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.about,
+                      arguments: AboutPakFasalArgs.rate,
+                    );
                   },
                 ),
               ],
@@ -448,8 +550,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final auth = context.read<AuthSessionController>();
     final themeController = context.watch<ThemeController>();
     final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: Scaffold(
       key: _scaffoldKey,
       backgroundColor: scheme.surface,
       drawer: _buildLeftDrawer(
@@ -683,7 +792,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                               ?.copyWith(
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.4,
-                                color: scheme.primary,
+                                color: isDark ? Colors.white : Colors.black,
                               ),
                         ),
                       ),
@@ -778,6 +887,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           ],
         ),
       ),
+    ),
     );
   }
 
