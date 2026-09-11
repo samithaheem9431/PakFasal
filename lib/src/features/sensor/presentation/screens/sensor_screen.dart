@@ -71,6 +71,11 @@ class _SensorScreenState extends State<SensorScreen>
             ..addAll(readings);
         });
       },
+      onError: (Object error, StackTrace stackTrace) {
+        // Missing Firestore indexes (and similar query failures) must not
+        // bubble as uncaught zone errors into Crashlytics.
+        debugPrint('sensor_screen: watchRecentReadings failed: $error');
+      },
     );
   }
 
