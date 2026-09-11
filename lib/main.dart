@@ -10,6 +10,7 @@ import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
 import 'src/core/theme/theme_controller.dart';
 import 'src/features/auth/presentation/providers/auth_session_controller.dart';
+import 'src/features/crop_calendar/data/repositories/guest_crop_planting_store.dart';
 import 'src/features/crop_calendar/presentation/providers/crop_calendar_provider.dart';
 import 'src/features/weather/presentation/providers/weather_provider.dart';
 
@@ -28,6 +29,7 @@ Future<void> main() async {
       await Hive.openBox('weather_cache');
       await Hive.openBox('learning_cache');
       await Hive.openBox('app_preferences');
+      await Hive.openBox(GuestCropPlantingStore.boxName);
 
       final authController = AuthSessionController();
       // Mirror the signed-in user id into Crashlytics so reports are grouped

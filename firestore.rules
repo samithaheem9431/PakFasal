@@ -2,9 +2,8 @@ rules_version = '2';
 
 // Firestore Security Rules for PakFasal.
 //
-// `cloud_firestore` is used by the Sensor module and the Learning module in
-// this app — every other feature uses local/mock data. Guest sessions in
-// the mobile app are a purely local flag (see
+// `cloud_firestore` is used by the Sensor, Learning, and Crop Calendar
+// modules. Guest sessions in the mobile app are a purely local flag (see
 // AuthSessionController.continueAsGuest) and do NOT create a real Firebase
 // Auth session, so `request.auth` is null for guests. Collections that
 // guests must be able to read (like Learning content) therefore use public
@@ -51,6 +50,20 @@ service cloud.firestore {
     match /learning_article_sections/{docId} {
       allow read: if true;
       allow write: if request.auth != null;
+    }
+
+    // Per-user crop calendar plantings (My Crops). Guests have no Firebase
+    // Auth session, so only registered users can read/write their own docs.
+    match /crop_plantings/{plantingId} {
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid;
+      allow read: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+      allow update: if request.auth != null
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
     }
 
     // Deny everything else by default.

@@ -7,6 +7,14 @@
         { "fieldPath": "ownerId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "crop_plantings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerId", "order": "ASCENDING" },
+        { "fieldPath": "sowingDate", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
