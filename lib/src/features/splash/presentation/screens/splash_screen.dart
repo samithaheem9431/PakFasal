@@ -42,22 +42,24 @@ class _SplashScreenState extends State<SplashScreen>
   // ── state ────────────────────────────────────────────────────────────────
   final Color _primaryNeon = const Color(0xFF4AB74B);
   late final List<_Particle> _particles;
+  Timer? _navTimer;
 
   @override
   void initState() {
     super.initState();
 
-    // Generate random particles for the background effect
     final rnd = math.Random();
-    _particles = List.generate(18, (i) => _Particle(
-      x: rnd.nextDouble(),
-      y: rnd.nextDouble(),
-      speed: 0.2 + rnd.nextDouble() * 0.8,
-      size: rnd.nextBool() ? 2.0 : 3.0,
-      opacity: 0.3 + rnd.nextDouble() * 0.5,
-    ));
+    _particles = List.generate(
+      18,
+      (i) => _Particle(
+        x: rnd.nextDouble(),
+        y: rnd.nextDouble(),
+        speed: 0.2 + rnd.nextDouble() * 0.8,
+        size: rnd.nextBool() ? 2.0 : 3.0,
+        opacity: 0.3 + rnd.nextDouble() * 0.5,
+      ),
+    );
 
-    // Pulse – logo breathe
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -67,7 +69,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _pulseController.repeat(reverse: true);
 
-    // Fade/slide – logo + text entrance
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -92,7 +93,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _fadeController.forward();
 
-    // Expanding rings (3 rings based on HTML design)
     _ringController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
@@ -101,14 +101,19 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _ringController, curve: Curves.easeOut),
     );
     _ring2 = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _ringController, curve: const Interval(0.25, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _ringController,
+        curve: const Interval(0.25, 1.0, curve: Curves.easeOut),
+      ),
     );
     _ring3 = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _ringController, curve: const Interval(0.50, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _ringController,
+        curve: const Interval(0.50, 1.0, curve: Curves.easeOut),
+      ),
     );
     _ringController.repeat();
 
-    // Shimmer sweep across logo disc
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3500),
@@ -118,14 +123,12 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _shimmerController.repeat();
 
-    // Dots loading indicator
     _dotsController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100),
     );
     _dotsController.repeat(reverse: true);
 
-    // Wheat sway
     _wheatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
@@ -135,21 +138,19 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _wheatController.repeat(reverse: true);
 
-    // Scanline effect
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
     );
     _scanController.repeat();
 
-    // Particle effect
     _particleController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
     );
     _particleController.repeat();
 
-    Timer(const Duration(milliseconds: 5000), _goNext);
+    _navTimer = Timer(const Duration(seconds: 4), _goNext);
   }
 
   Future<void> _goNext() async {
@@ -157,7 +158,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     final preferences = Hive.box('app_preferences');
     final hasSeenOnboarding =
-    preferences.get('onboarding_seen', defaultValue: false) as bool;
+        preferences.get('onboarding_seen', defaultValue: false) as bool;
     if (!hasSeenOnboarding) {
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
       return;
@@ -172,6 +173,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    _navTimer?.cancel();
     _pulseController.dispose();
     _fadeController.dispose();
     _ringController.dispose();
@@ -191,7 +193,6 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: const Color(0xFF0A1A0D),
       body: Stack(
         children: [
-          // ── Background Gradient ──────────────────────────────
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
@@ -209,7 +210,6 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Scanline ──────────────────────────────────────────
           AnimatedBuilder(
             animation: _scanController,
             builder: (_, __) => Positioned(
@@ -225,7 +225,7 @@ class _SplashScreenState extends State<SplashScreen>
                       colors: [
                         Colors.transparent,
                         _primaryNeon.withValues(alpha: 0.15),
-                        Colors.transparent
+                        Colors.transparent,
                       ],
                     ),
                   ),
@@ -234,7 +234,6 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Radial Glow Background ────────────────────────────
           Align(
             alignment: const Alignment(0, -0.15),
             child: AnimatedBuilder(
@@ -260,7 +259,6 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Floating Particles ────────────────────────────────
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _particleController,
@@ -274,7 +272,6 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Corner Decorations ────────────────────────────────
           Positioned(
             top: 48,
             right: 24,
@@ -285,10 +282,16 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 42,
                 decoration: BoxDecoration(
                   border: Border(
-                    top: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
-                    right: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
+                    top: BorderSide(
+                      color: _primaryNeon.withValues(alpha: 0.15),
+                    ),
+                    right: BorderSide(
+                      color: _primaryNeon.withValues(alpha: 0.15),
+                    ),
                   ),
-                  borderRadius: const BorderRadius.only(topRight: Radius.circular(6)),
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(6),
+                  ),
                 ),
               ),
             ),
@@ -303,16 +306,21 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 42,
                 decoration: BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
-                    left: BorderSide(color: _primaryNeon.withValues(alpha: 0.15)),
+                    bottom: BorderSide(
+                      color: _primaryNeon.withValues(alpha: 0.15),
+                    ),
+                    left: BorderSide(
+                      color: _primaryNeon.withValues(alpha: 0.15),
+                    ),
                   ),
-                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(6)),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(6),
+                  ),
                 ),
               ),
             ),
           ),
 
-          // ── Wheat silhouette row ──────────────────────────────
           Positioned(
             bottom: 0,
             left: 0,
@@ -329,14 +337,12 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Main content ─────────────────────────────────────
           SafeArea(
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 30),
-                  // Logo with rings + pulse + shimmer
                   FadeTransition(
                     opacity: _fadeLogo,
                     child: ScaleTransition(
@@ -347,7 +353,6 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Ring 1
                             AnimatedBuilder(
                               animation: _ring1,
                               builder: (_, __) => Opacity(
@@ -357,12 +362,15 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 100 * (1.0 + _ring1.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _primaryNeon.withValues(alpha: 0.25)),
+                                    border: Border.all(
+                                      color: _primaryNeon.withValues(
+                                        alpha: 0.25,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                            // Ring 2
                             AnimatedBuilder(
                               animation: _ring2,
                               builder: (_, __) => Opacity(
@@ -372,12 +380,15 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 100 * (1.0 + _ring2.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _primaryNeon.withValues(alpha: 0.15)),
+                                    border: Border.all(
+                                      color: _primaryNeon.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                            // Ring 3
                             AnimatedBuilder(
                               animation: _ring3,
                               builder: (_, __) => Opacity(
@@ -387,12 +398,15 @@ class _SplashScreenState extends State<SplashScreen>
                                   height: 100 * (1.0 + _ring3.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _primaryNeon.withValues(alpha: 0.08)),
+                                    border: Border.all(
+                                      color: _primaryNeon.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                            // Logo Disc
                             Container(
                               width: 100,
                               height: 100,
@@ -401,9 +415,14 @@ class _SplashScreenState extends State<SplashScreen>
                                 gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [Color(0xFF1A3D1D), Color(0xFF0F2612)],
+                                  colors: [
+                                    Color(0xFF1A3D1D),
+                                    Color(0xFF0F2612),
+                                  ],
                                 ),
-                                border: Border.all(color: _primaryNeon.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                  color: _primaryNeon.withValues(alpha: 0.3),
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.6),
@@ -416,33 +435,34 @@ class _SplashScreenState extends State<SplashScreen>
                                 child: Stack(
                                   alignment: Alignment.center,
                                   children: [
-                                    // Inner Glow
                                     Positioned.fill(
                                       child: DecoratedBox(
                                         decoration: BoxDecoration(
                                           gradient: RadialGradient(
                                             center: const Alignment(-0.3, -0.4),
                                             colors: [
-                                              _primaryNeon.withValues(alpha: 0.15),
-                                              Colors.transparent
+                                              _primaryNeon.withValues(
+                                                alpha: 0.15,
+                                              ),
+                                              Colors.transparent,
                                             ],
                                             stops: const [0.0, 0.6],
                                           ),
                                         ),
                                       ),
                                     ),
-                                    // Icon
                                     Icon(
                                       Icons.agriculture_rounded,
                                       color: _primaryNeon,
                                       size: 52,
                                     ),
-                                    // Shimmer sweep
                                     AnimatedBuilder(
                                       animation: _shimmer,
                                       builder: (_, __) => Positioned.fill(
                                         child: CustomPaint(
-                                          painter: _ShimmerPainter(_shimmer.value),
+                                          painter: _ShimmerPainter(
+                                            _shimmer.value,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -450,7 +470,6 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ),
                             ),
-                            // Sun accent dot
                             Positioned(
                               top: 44,
                               right: 44,
@@ -464,7 +483,10 @@ class _SplashScreenState extends State<SplashScreen>
                                     color: const Color(0xFFF9D61C),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0xFFF9D61C).withValues(alpha: 0.6 * _dotsController.value),
+                                        color: const Color(0xFFF9D61C)
+                                            .withValues(
+                                          alpha: 0.6 * _dotsController.value,
+                                        ),
                                         blurRadius: 10,
                                       ),
                                     ],
@@ -480,7 +502,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 28),
 
-                  // App name
                   FadeTransition(
                     opacity: _fadeText,
                     child: AnimatedBuilder(
@@ -497,7 +518,10 @@ class _SplashScreenState extends State<SplashScreen>
                             letterSpacing: 2,
                             color: const Color(0xFFE8F5E9),
                             shadows: [
-                              Shadow(color: _primaryNeon.withValues(alpha: 0.35), blurRadius: 30)
+                              Shadow(
+                                color: _primaryNeon.withValues(alpha: 0.35),
+                                blurRadius: 30,
+                              ),
                             ],
                           ),
                           children: [
@@ -514,7 +538,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 8),
 
-                  // Tagline
                   FadeTransition(
                     opacity: _fadeTagline,
                     child: AnimatedBuilder(
@@ -538,7 +561,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 16),
 
-                  // Thin divider line
                   FadeTransition(
                     opacity: _fadeTagline,
                     child: AnimatedBuilder(
@@ -555,7 +577,7 @@ class _SplashScreenState extends State<SplashScreen>
                             colors: [
                               Colors.transparent,
                               _primaryNeon.withValues(alpha: 0.5),
-                              Colors.transparent
+                              Colors.transparent,
                             ],
                           ),
                         ),
@@ -565,29 +587,14 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 36),
 
-                  // Animated loading dots
                   FadeTransition(
                     opacity: _fadeTagline,
-                    child: _AnimatedDots(controller: _dotsController, color: _primaryNeon),
+                    child: _AnimatedDots(
+                      controller: _dotsController,
+                      color: _primaryNeon,
+                    ),
                   ),
                 ],
-              ),
-            ),
-          ),
-
-          // ── Version Tag ──────────────────────────────────────────
-          Positioned(
-            bottom: 122,
-            left: 0,
-            right: 0,
-            child: Text(
-              'v2.0',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                color: _primaryNeon.withValues(alpha: 0.35),
-                letterSpacing: 1.5,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -597,10 +604,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ── Helper classes & widgets ─────────────────────────────────────────────────
-
 class _Particle {
-  _Particle({required this.x, required this.y, required this.speed, required this.size, required this.opacity});
+  _Particle({
+    required this.x,
+    required this.y,
+    required this.speed,
+    required this.size,
+    required this.opacity,
+  });
   final double x;
   final double y;
   final double speed;
@@ -609,25 +620,31 @@ class _Particle {
 }
 
 class _ParticlePainter extends CustomPainter {
-  _ParticlePainter({required this.particles, required this.progress, required this.color});
+  _ParticlePainter({
+    required this.particles,
+    required this.progress,
+    required this.color,
+  });
   final List<_Particle> particles;
   final double progress;
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (var p in particles) {
-      // Calculate continuous upward movement
+    for (final p in particles) {
       final currentY = (p.y - (progress * p.speed)) % 1.0;
-      // Fade out at the very top
-      final currentOpacity = currentY < 0.1 ? (currentY / 0.1) * p.opacity : p.opacity;
+      final currentOpacity =
+          currentY < 0.1 ? (currentY / 0.1) * p.opacity : p.opacity;
 
       final paint = Paint()
         ..color = color.withValues(alpha: currentOpacity < 0 ? 0 : currentOpacity)
         ..style = PaintingStyle.fill;
 
       canvas.drawCircle(
-        Offset(p.x * size.width, (currentY < 0 ? 1.0 + currentY : currentY) * size.height),
+        Offset(
+          p.x * size.width,
+          (currentY < 0 ? 1.0 + currentY : currentY) * size.height,
+        ),
         p.size,
         paint,
       );
@@ -669,8 +686,8 @@ class _AnimatedDots extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 3.5),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color.withValues(alpha: 
-                  0.4 + 0.5 * ((anim.value.abs()) / 7),
+                color: color.withValues(
+                  alpha: 0.4 + 0.5 * ((anim.value.abs()) / 7),
                 ),
               ),
             ),
@@ -680,8 +697,6 @@ class _AnimatedDots extends StatelessWidget {
     );
   }
 }
-
-// ── Custom painters ───────────────────────────────────────────────────────────
 
 class _ShimmerPainter extends CustomPainter {
   _ShimmerPainter(this.progress);
@@ -733,14 +748,12 @@ class _WheatPainter extends CustomPainter {
     for (int i = 0; i < count; i++) {
       final baseX = spacing * i + spacing / 2;
       final baseY = size.height;
-      // Stagger heights
       final h = 50.0 + (i % 3) * 18.0;
       final swayOffset = sway * 4 * math.sin(i * 0.9);
 
       final tipX = baseX + swayOffset;
       final tipY = baseY - h;
 
-      // Stalk
       final path = Path()
         ..moveTo(baseX, baseY)
         ..quadraticBezierTo(
@@ -751,7 +764,6 @@ class _WheatPainter extends CustomPainter {
         );
       canvas.drawPath(path, paint);
 
-      // Grain head
       canvas.save();
       canvas.translate(tipX, tipY);
       canvas.rotate(swayOffset * 0.04);
