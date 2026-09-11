@@ -174,178 +174,270 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   }) {
     final displayName = _displayNameFor(auth);
     final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Drawer(
-      width: 295,
-      backgroundColor: scheme.surface,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── User header ────────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      scheme.primaryContainer,
-                      scheme.secondaryContainer,
+      width: 300,
+      backgroundColor: isDark ? scheme.surface : AppColors.white,
+      child: Column(
+        children: [
+          // ── Green gradient header with user info ─────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.darkGreen,
+                  AppColors.primaryGreen,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User avatar
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.3),
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: scheme.primary,
-                      child: Text(
-                        displayName.isNotEmpty
-                            ? displayName[0].toUpperCase()
-                            : 'F',
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                        ),
+                  child: Center(
+                    child: Text(
+                      displayName.isNotEmpty
+                          ? displayName[0].toUpperCase()
+                          : 'F',
+                      style: const TextStyle(
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 32,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            displayName,
-                            style: TextStyle(
-                              color: scheme.primary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          Text(
-                            'PakFasal Farmer',
-                            style: TextStyle(
-                              color: scheme.primary.withValues(alpha: 0.8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              Divider(color: scheme.outlineVariant),
-              // ── Dark mode toggle ───────────────────────────────────────
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: themeController.isDarkMode,
-                activeColor: AppColors.primaryGreen,
-                title: Text(
-                  themeController.isDarkMode
-                      ? l10n.t('darkMode')
-                      : l10n.t('lightMode'),
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                secondary: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: scheme.secondaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    themeController.isDarkMode
-                        ? Icons.dark_mode
-                        : Icons.light_mode,
-                    color: AppColors.primaryGreen,
-                    size: 18,
                   ),
                 ),
-                onChanged: (_) => themeController.toggleTheme(),
-              ),
-              // ── Language toggle ────────────────────────────────────────
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: scheme.secondaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.language,
-                    color: AppColors.primaryGreen,
-                    size: 18,
+                const SizedBox(height: 16),
+                // User name
+                Text(
+                  displayName,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
                   ),
                 ),
-                title: Text(
-                  l10n.t('language'),
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                trailing: Container(
+                const SizedBox(height: 4),
+                // User role
+                Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: scheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    context.watch<LocalizationController>().isUrdu
-                        ? 'اردو'
-                        : 'EN',
-                    style: const TextStyle(
-                      color: AppColors.primaryGreen,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.verified_user,
+                        color: AppColors.white,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'PakFasal Farmer',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                onTap: () =>
-                    context.read<LocalizationController>().toggleLanguage(),
-              ),
-              const Spacer(),
-              // ── Sign out ───────────────────────────────────────────────
-              Container(
-                decoration: BoxDecoration(
-                  color: scheme.errorContainer.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                  leading: const Icon(
-                    Icons.logout_rounded,
-                    color: AppColors.error,
+              ],
+            ),
+          ),
+          
+          // ── Menu items ───────────────────────────────────────────────
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                // Dark mode toggle
+                _DrawerMenuItem(
+                  icon: themeController.isDarkMode
+                      ? Icons.dark_mode
+                      : Icons.light_mode,
+                  title: themeController.isDarkMode
+                      ? l10n.t('darkMode')
+                      : l10n.t('lightMode'),
+                  trailing: Switch(
+                    value: themeController.isDarkMode,
+                    onChanged: (_) => themeController.toggleTheme(),
+                    activeColor: AppColors.primaryGreen,
                   ),
-                  title: Text(
-                    l10n.t('authSignOut'),
-                    style: TextStyle(
-                      color: scheme.error,
-                      fontWeight: FontWeight.w700,
+                  onTap: () => themeController.toggleTheme(),
+                ),
+                
+                // Language selector
+                _DrawerMenuItem(
+                  icon: Icons.language,
+                  title: l10n.t('language'),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.paleGreen,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      context.watch<LocalizationController>().isUrdu
+                          ? 'اردو'
+                          : 'EN',
+                      style: const TextStyle(
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-                  onTap: () async {
+                  onTap: () =>
+                      context.read<LocalizationController>().toggleLanguage(),
+                ),
+                
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Divider(),
+                ),
+                
+                // App info section
+                _DrawerMenuItem(
+                  icon: Icons.info_outline,
+                  title: 'About PakFasal',
+                  onTap: () {
                     Navigator.pop(context);
-                    await auth.signOut();
-                    if (!mounted) return;
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.login,
-                      (_) => false,
-                    );
+                    // Add about page navigation here
                   },
                 ),
-              ),
-            ],
+                
+                _DrawerMenuItem(
+                  icon: Icons.help_outline,
+                  title: 'Help & Support',
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Add help page navigation here
+                  },
+                ),
+                
+                _DrawerMenuItem(
+                  icon: Icons.star_outline,
+                  title: 'Rate Us',
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Add rating functionality here
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
+          
+          // ── Sign out button ──────────────────────────────────────────
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.error.withValues(alpha: 0.1),
+                  AppColors.error.withValues(alpha: 0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.error.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await auth.signOut();
+                  if (!mounted) return;
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (_) => false,
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.logout_rounded,
+                          color: AppColors.error,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        l10n.t('authSignOut'),
+                        style: const TextStyle(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
@@ -790,6 +882,64 @@ class _FadeSlideIn extends StatelessWidget {
         );
       },
       child: child,
+    );
+  }
+}
+
+// ── Drawer menu item widget ────────────────────────────────────────────────
+class _DrawerMenuItem extends StatelessWidget {
+  const _DrawerMenuItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.paleGreen,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primaryGreen,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+              if (trailing != null) trailing!,
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
