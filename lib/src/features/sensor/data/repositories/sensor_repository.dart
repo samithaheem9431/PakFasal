@@ -1,49 +1,24 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/sensor_reading.dart';
-
-/// Preference key used to persist a stable per-device identity for guest
-/// (unauthenticated) sessions, so their sensor history/cache never mixes
-/// with, or gets wiped by, another guest/user on a different device.
-const _guestOwnerIdPrefKey = 'sensor_guest_owner_id';
 
 class SensorRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Resolves the identity that sensor readings should be scoped to.
+  /// Resolves the Firebase Auth uid that sensor readings are scoped to.
   ///
-  /// Signed-in users are scoped by their Firebase Auth `uid`. Guests get a
-  /// random id generated once and persisted locally, so reinstall-free guest
-  /// sessions on the same device keep seeing their own data, while other
-  /// devices/users never see or reset it.
-  Future<String> _resolveOwnerId() async {
+  /// Guests and signed-out users are rejected — sensor cloud data requires a
+  /// registered account. UI entry points also gate this feature.
+  String _requireOwnerId() {
     final signedInUid = _auth.currentUser?.uid;
-    if (signedInUid != null && signedInUid.isNotEmpty) {
-      return signedInUid;
+    if (signedInUid == null || signedInUid.isEmpty) {
+      throw StateError('Authentication required for sensor data.');
     }
-
-    final prefs = await SharedPreferences.getInstance();
-    final existing = prefs.getString(_guestOwnerIdPrefKey);
-    if (existing != null && existing.isNotEmpty) {
-      return existing;
-    }
-
-    final generated = _generateGuestId();
-    await prefs.setString(_guestOwnerIdPrefKey, generated);
-    return generated;
-  }
-
-  String _generateGuestId() {
-    final random = Random.secure();
-    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
-    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-    return 'guest_$hex';
+    return signedInUid;
   }
 
   /// Streams only the current owner's most recent readings. Re-subscribes
@@ -55,10 +30,15 @@ class SensorRepository {
 
     Future<void> subscribeForCurrentOwner() async {
       await querySub?.cancel();
-      final ownerId = await _resolveOwnerId();
+      final uid = _auth.currentUser?.uid;
+      if (uid == null || uid.isEmpty) {
+        controller.add(const <SensorReading>[]);
+        return;
+      }
+
       querySub = _firestore
           .collection('sensor_readings')
-          .where('ownerId', isEqualTo: ownerId)
+          .where('ownerId', isEqualTo: uid)
           .orderBy('timestamp', descending: true)
           .limit(20)
           .snapshots()
@@ -121,7 +101,7 @@ class SensorRepository {
     required String recommendationDetails,
     required String recommendationPriority,
   }) async {
-    final ownerId = await _resolveOwnerId();
+    final ownerId = _requireOwnerId();
     await _firestore.collection('sensor_readings').add({
       'ownerId': ownerId,
       'soilMoisture': soilMoisture,
@@ -138,7 +118,7 @@ class SensorRepository {
   /// Clears only the current owner's reading history. Other users'/devices'
   /// data is untouched.
   Future<void> clearAllReadings() async {
-    final ownerId = await _resolveOwnerId();
+    final ownerId = _requireOwnerId();
     const batchSize = 200;
     while (true) {
       final snapshot = await _firestore

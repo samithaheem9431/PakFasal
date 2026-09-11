@@ -7,6 +7,7 @@ import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_controller.dart';
+import '../../../../core/widgets/auth_required_dialog.dart';
 import '../../../../core/widgets/common_states.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 import '../../../about/presentation/screens/about_pakfasal_screen.dart';
@@ -243,7 +244,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     );
   }
 
-  void _onBottomNavTap(int index) {
+  Future<void> _onBottomNavTap(int index) async {
+    // Sensor (2) and Ask AI (1) require a registered Firebase account.
+    if (index == 1 || index == 2) {
+      final allowed = await ensureRegisteredUser(context);
+      if (!allowed || !mounted) return;
+    }
+
     setState(() => _selectedBottomIndex = index);
     switch (index) {
       case 0:
@@ -259,6 +266,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         Navigator.pushReplacementNamed(context, AppRoutes.profile);
         break;
     }
+  }
+
+  Future<void> _openProtectedRoute(String routeName) async {
+    final allowed = await ensureRegisteredUser(context);
+    if (!allowed || !mounted) return;
+    Navigator.pushNamed(context, routeName);
   }
 
   Widget _buildLeftDrawer({
@@ -835,10 +848,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             child: DashboardTile(
                               icon: Icons.smart_toy,
                               title: l10n.t('askAi'),
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                AppRoutes.aiQuery,
-                              ),
+                              onTap: () => _openProtectedRoute(AppRoutes.aiQuery),
                             ),
                           ),
                           _FadeSlideIn(
@@ -847,10 +857,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             child: DashboardTile(
                               icon: Icons.sensors,
                               title: l10n.t('sensorData'),
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                AppRoutes.sensor,
-                              ),
+                              onTap: () => _openProtectedRoute(AppRoutes.sensor),
                             ),
                           ),
                           _FadeSlideIn(

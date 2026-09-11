@@ -24,6 +24,11 @@ class AppLocalizations {
       'welcome': 'Welcome to PakFasal',
       'login': 'Login',
       'signup': 'Sign Up',
+      'register': 'Register',
+      'cancel': 'Cancel',
+      'registrationRequiredTitle': 'Registration Required',
+      'registrationRequiredMessage':
+          'This feature is available for registered users only. Please login or create an account to continue.',
       'or': 'OR',
       'email': 'Email',
       'username': 'Username',
@@ -782,6 +787,11 @@ class AppLocalizations {
       'welcome': 'پاک فصل میں خوش آمدید',
       'login': 'لاگ اِن',
       'signup': 'رجسٹر کریں',
+      'register': 'رجسٹر',
+      'cancel': 'منسوخ',
+      'registrationRequiredTitle': 'رجسٹریشن ضروری ہے',
+      'registrationRequiredMessage':
+          'یہ فیچر صرف رجسٹرڈ صارفین کے لیے دستیاب ہے۔ جاری رکھنے کے لیے براہ کرم لاگ اِن کریں یا اکاؤنٹ بنائیں۔',
       'or': 'یا',
       'email': 'ای میل',
       'username': 'صارف نام',

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
 import '../routing/app_routes.dart';
 import '../theme/app_colors.dart';
+import 'auth_required_dialog.dart';
 import 'language_toggle_button.dart';
 
 class PakFasalScaffold extends StatelessWidget {
@@ -40,7 +41,7 @@ class PakFasalScaffold extends StatelessWidget {
     }
   }
 
-  void _onNavTap(BuildContext context, int index) {
+  Future<void> _onNavTap(BuildContext context, int index) async {
     final target = switch (index) {
       1 => AppRoutes.aiQuery,
       2 => AppRoutes.sensor,
@@ -49,6 +50,13 @@ class PakFasalScaffold extends StatelessWidget {
     };
     final current = ModalRoute.of(context)?.settings.name;
     if (current == target) return;
+
+    // Sensor and Ask AI require a registered Firebase account.
+    if (index == 1 || index == 2) {
+      final allowed = await ensureRegisteredUser(context);
+      if (!allowed || !context.mounted) return;
+    }
+
     Navigator.pushReplacementNamed(context, target);
   }
 
