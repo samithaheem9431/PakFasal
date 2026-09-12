@@ -409,7 +409,6 @@ class _SensorScreenState extends State<SensorScreen>
                       if (latestRecommendationResult != null)
                         _EngineBadge(
                           usedMl: latestRecommendationResult.usedMl,
-                          confidence: latestRecommendationResult.mlConfidence,
                           isUrdu: l10n.locale.languageCode == 'ur',
                         ),
                     ],
@@ -429,17 +428,17 @@ class _SensorScreenState extends State<SensorScreen>
                   if (latestRecommendationResult == null)
                     _RecommendationPlaceholderCard(
                       title: l10n.locale.languageCode == 'ur'
-                          ? 'ابھی سفارش موجود نہیں'
-                          : 'No recommendation yet',
+                          ? 'ابھی مشورہ موجود نہیں'
+                          : 'No advice yet',
                       subtitle: l10n.locale.languageCode == 'ur'
-                          ? 'سینسر ویلیوز درج کریں اور "Generate DSS" دبائیں۔'
-                          : 'Enter sensor values and tap "Generate DSS" to see plans.',
+                          ? 'نمی اور پی ایچ درج کریں، پھر "مشورہ حاصل کریں" دبائیں۔'
+                          : 'Enter moisture and pH, then tap "Get advice".',
                     )
                   else ...[
                     _RecommendationPlanCard(
                       title: l10n.locale.languageCode == 'ur'
-                          ? 'آبپاشی پلان'
-                          : 'Irrigation Plan',
+                          ? 'پانی کا مشورہ'
+                          : 'Water advice',
                       preview: latestRecommendationResult.irrigationCardText,
                       isExpanded: _expandedRecommendationSection == 'irrigation',
                       isSpeaking: _isSpeakingRecommendation &&
@@ -448,22 +447,24 @@ class _SensorScreenState extends State<SensorScreen>
                       onToggleView: () => _toggleRecommendationView(
                         sectionKey: 'irrigation',
                         title: l10n.locale.languageCode == 'ur'
-                            ? 'آبپاشی پلان'
-                            : 'Irrigation Plan',
+                            ? 'پانی کا مشورہ'
+                            : 'Water advice',
                         fullText: latestRecommendationResult.irrigationPlan.isEmpty
                             ? latestRecommendationResult.irrigationCardText
                             : latestRecommendationResult.irrigationPlan,
                       ),
                       onSpeak: () => _toggleSpeakSection(
                         sectionKey: _cardSpeakKey('irrigation'),
-                        text: latestRecommendationResult.irrigationCardText,
+                        text: latestRecommendationResult.irrigationPlan.isEmpty
+                            ? latestRecommendationResult.irrigationCardText
+                            : latestRecommendationResult.irrigationPlan,
                       ),
                     ),
                     const SizedBox(height: 8),
                     _RecommendationPlanCard(
                       title: l10n.locale.languageCode == 'ur'
-                          ? 'مٹی اور کھاد پلان'
-                          : 'Soil Plan',
+                          ? 'مٹی اور کھاد'
+                          : 'Soil and fertilizer',
                       preview: latestRecommendationResult.soilCardText,
                       isExpanded: _expandedRecommendationSection == 'soil',
                       isSpeaking:
@@ -472,22 +473,24 @@ class _SensorScreenState extends State<SensorScreen>
                       onToggleView: () => _toggleRecommendationView(
                         sectionKey: 'soil',
                         title: l10n.locale.languageCode == 'ur'
-                            ? 'مٹی اور کھاد پلان'
-                            : 'Soil Plan',
+                            ? 'مٹی اور کھاد'
+                            : 'Soil and fertilizer',
                         fullText: latestRecommendationResult.soilPlan.isEmpty
                             ? latestRecommendationResult.soilCardText
                             : latestRecommendationResult.soilPlan,
                       ),
                       onSpeak: () => _toggleSpeakSection(
                         sectionKey: _cardSpeakKey('soil'),
-                        text: latestRecommendationResult.soilCardText,
+                        text: latestRecommendationResult.soilPlan.isEmpty
+                            ? latestRecommendationResult.soilCardText
+                            : latestRecommendationResult.soilPlan,
                       ),
                     ),
                     const SizedBox(height: 8),
                     _RecommendationPlanCard(
                       title: l10n.locale.languageCode == 'ur'
-                          ? 'مستقبل رسک'
-                          : 'Risk Future',
+                          ? 'خبردار رہیں'
+                          : 'Things to watch',
                       preview: latestRecommendationResult.riskPreview,
                       isExpanded: _expandedRecommendationSection == 'risk',
                       isSpeaking:
@@ -496,22 +499,24 @@ class _SensorScreenState extends State<SensorScreen>
                       onToggleView: () => _toggleRecommendationView(
                         sectionKey: 'risk',
                         title: l10n.locale.languageCode == 'ur'
-                            ? 'مستقبل رسک'
-                            : 'Risk Future',
+                            ? 'خبردار رہیں'
+                            : 'Things to watch',
                         fullText: latestRecommendationResult.futureRisk.isEmpty
                             ? latestRecommendationResult.riskPreview
                             : latestRecommendationResult.futureRisk,
                       ),
                       onSpeak: () => _toggleSpeakSection(
                         sectionKey: _cardSpeakKey('risk'),
-                        text: latestRecommendationResult.riskPreview,
+                        text: latestRecommendationResult.futureRisk.isEmpty
+                            ? latestRecommendationResult.riskPreview
+                            : latestRecommendationResult.futureRisk,
                       ),
                     ),
                     const SizedBox(height: 8),
                     _RecommendationPlanCard(
                       title: l10n.locale.languageCode == 'ur'
-                          ? 'مانیٹرنگ پلان'
-                          : 'Monitoring Plan',
+                          ? 'کب چیک کریں'
+                          : 'When to check',
                       preview: latestRecommendationResult.monitoringPreview,
                       isExpanded: _expandedRecommendationSection == 'monitoring',
                       isSpeaking: _isSpeakingRecommendation &&
@@ -520,15 +525,17 @@ class _SensorScreenState extends State<SensorScreen>
                       onToggleView: () => _toggleRecommendationView(
                         sectionKey: 'monitoring',
                         title: l10n.locale.languageCode == 'ur'
-                            ? 'مانیٹرنگ پلان'
-                            : 'Monitoring Plan',
+                            ? 'کب چیک کریں'
+                            : 'When to check',
                         fullText: latestRecommendationResult.monitoringPlan.isEmpty
                             ? latestRecommendationResult.monitoringPreview
                             : latestRecommendationResult.monitoringPlan,
                       ),
                       onSpeak: () => _toggleSpeakSection(
                         sectionKey: _cardSpeakKey('monitoring'),
-                        text: latestRecommendationResult.monitoringPreview,
+                        text: latestRecommendationResult.monitoringPlan.isEmpty
+                            ? latestRecommendationResult.monitoringPreview
+                            : latestRecommendationResult.monitoringPlan,
                       ),
                     ),
                   ],
@@ -737,81 +744,98 @@ class _SensorScreenState extends State<SensorScreen>
           config: config,
         );
     final soilAction = ml?.soilAction ?? _deriveSoilAction(ph: ph, config: config);
-    var irrigationCardText = isUrdu ? 'آبپاشی شیڈول چیک کریں۔' : 'Check irrigation schedule.';
+    var irrigationCardText = isUrdu
+        ? 'پانی دینے کا وقت چیک کریں۔'
+        : 'Check when to give water.';
     var soilCardText = isUrdu
-        ? 'مٹی کی حالت کے مطابق کھاد دیں۔'
-        : 'Apply fertilizer based on soil condition.';
+        ? 'مٹی کے مطابق کھاد دیں۔'
+        : 'Give fertilizer as soil needs.';
+    var riskCardText = isUrdu
+        ? 'ابھی کوئی بڑا خطرہ نہیں۔'
+        : 'No big worry right now.';
+    var monitoringCardText = isUrdu
+        ? 'کل دوبارہ نمی چیک کریں۔'
+        : 'Check soil moisture again tomorrow.';
 
     // Moisture / irrigation decision (ML-predicted class, rule-based fallback).
     if (irrigationAction == 'irrigate_now') {
       summaryParts.add(l10n.t('sensorRecIrrigateSoon'));
       irrigationCardText = isUrdu
-          ? 'نمی کم ہے، آج یا کل ہلکی آبپاشی کریں۔'
-          : 'Moisture is low, do light irrigation today or tomorrow.';
+          ? 'نمی کم ہے — آج یا کل ہلکا پانی دیں۔'
+          : 'Soil is dry — give light water today or tomorrow.';
       irrigationActions.add(
         isUrdu
-            ? 'فوری آبپاشی کریں: اگلے 12-24 گھنٹے میں ہلکی/درمیانی آبپاشی دیں (قاعدہ M1)۔'
-            : 'Irrigate soon: apply a light to moderate irrigation within 12-24 hours (Rule M1).',
+            ? 'مٹی خشک لگ رہی ہے۔ آج یا کل ہلکا سے درمیانا پانی دیں۔'
+            : 'Soil looks dry. Give light to medium water today or tomorrow.',
       );
       irrigationActions.add(
         isUrdu
-            ? 'پانی وقفوں میں دیں تاکہ مٹی اچھی طرح جذب کرے اور بہاؤ کم ہو۔'
-            : 'Use split irrigation turns so soil can absorb water and runoff stays low.',
+            ? 'ایک ساتھ بہت پانی نہ ڈالیں۔ تھوڑا تھوڑا کرکے دیں تاکہ مٹی اچھی طرح جذب کرے۔'
+            : 'Do not flood the field at once. Give water little by little so soil can soak it.',
       );
       riskNotes.add(
         isUrdu
-            ? 'کم نمی کی وجہ سے فصل میں پانی کے دباؤ اور پیداوار میں کمی کا خطرہ ہے۔'
-            : 'Low moisture may cause crop water stress and reduce yield.',
+            ? 'اگر پانی نہ دیا تو فصل کمزور پڑ سکتی ہے اور پیداوار کم ہو سکتی ہے۔'
+            : 'If you wait too long, the crop can weaken and yield may drop.',
       );
+      riskCardText = isUrdu
+          ? 'خشکی سے فصل کمزور ہو سکتی ہے۔'
+          : 'Dry soil can weaken the crop.';
     } else if (irrigationAction == 'hold_for_rain') {
       summaryParts.add(l10n.t('sensorRecWaitRain'));
       irrigationCardText = isUrdu
-          ? 'بارش متوقع ہے، ابھی آبپاشی روکیں اور دوبارہ چیک کریں۔'
-          : 'Rain is expected, hold irrigation and check again.';
+          ? 'بارش کا امکان ہے — ابھی پانی روک دیں۔'
+          : 'Rain may come — hold water for now.';
       irrigationActions.add(
         isUrdu
-            ? 'بارش متوقع ہے، فوری آبپاشی روکیں اور 12-24 گھنٹے بعد نمی دوبارہ چیک کریں (قاعدہ M2)۔'
-            : 'Rain is likely, hold irrigation now and re-check soil moisture in 12-24 hours (Rule M2).',
+            ? 'بارش کا امکان ہے۔ ابھی پانی نہ دیں، پانی اور پیسہ بچے گا۔'
+            : 'Rain is likely. Do not irrigate now — save water and money.',
       );
       irrigationActions.add(
         isUrdu
-            ? 'اگر بارش نہ ہو تو پھر کنٹرولڈ آبپاشی کریں۔'
-            : 'If rain does not occur, apply controlled irrigation afterwards.',
+            ? 'کل یا پرسوں نمی دوبارہ دیکھیں۔ اگر بارش نہ ہوئی تو پھر ہلکا پانی دیں۔'
+            : 'Check moisture again tomorrow. If rain does not come, then give light water.',
       );
       riskNotes.add(
         isUrdu
-            ? 'غلط وقت پر پانی دینے سے پانی اور لاگت دونوں ضائع ہو سکتے ہیں۔'
-            : 'Irrigating before expected rain can waste water and increase cost.',
+            ? 'بارش سے پہلے پانی دینے سے پانی ضائع ہو سکتا ہے اور خرچہ بڑھ سکتا ہے۔'
+            : 'Watering before rain can waste water and increase cost.',
       );
+      riskCardText = isUrdu
+          ? 'جلدی پانی دینے سے خرچہ بڑھ سکتا ہے۔'
+          : 'Watering too soon can waste money.';
     } else if (irrigationAction == 'reduce_irrigation') {
       summaryParts.add(l10n.t('sensorRecReduceIrrigation'));
       irrigationCardText = isUrdu
-          ? 'نمی زیادہ ہے، اگلی آبپاشی دیر سے کریں۔'
-          : 'Moisture is high, delay the next irrigation.';
+          ? 'نمی زیادہ ہے — اگلا پانی کچھ دن روک دیں۔'
+          : 'Soil is wet — delay the next watering.';
       irrigationActions.add(
         isUrdu
-            ? 'آبپاشی کا وقفہ بڑھائیں اور اگلی آبپاشی تاخیر سے دیں (قاعدہ M3)۔'
-            : 'Increase irrigation interval and delay the next watering cycle (Rule M3).',
+            ? 'مٹی میں پانی کافی ہے۔ اگلی آبپاشی چند دن بعد کریں۔'
+            : 'Soil already has enough water. Wait a few days before the next irrigation.',
       );
       irrigationActions.add(
         isUrdu
-            ? 'کھیت میں نکاسی (drainage) بہتر رکھیں تاکہ پانی کھڑا نہ ہو۔'
-            : 'Improve field drainage to prevent standing water.',
+            ? 'کھیت میں پانی کھڑا نہ رہنے دیں۔ نکاسی کا خیال رکھیں۔'
+            : 'Do not let water stand in the field. Keep drainage clear.',
       );
       riskNotes.add(
         isUrdu
-            ? 'زیادہ نمی سے جڑ سڑن، فنگس اور غذائی عدم توازن کا خطرہ بڑھتا ہے۔'
-            : 'Excess moisture can increase risk of root rot, fungal issues, and nutrient imbalance.',
+            ? 'زیادہ پانی سے جڑیں خراب ہو سکتی ہیں اور بیماری بڑھ سکتی ہے۔'
+            : 'Too much water can rot roots and increase disease.',
       );
+      riskCardText = isUrdu
+          ? 'زیادہ پانی سے جڑیں خراب ہو سکتی ہیں۔'
+          : 'Too much water can harm roots.';
     } else {
       summaryParts.add(l10n.t('sensorRecMoistureOk'));
       irrigationCardText = isUrdu
-          ? 'نمی ٹھیک ہے، موجودہ آبپاشی جاری رکھیں۔'
-          : 'Moisture is fine, continue current irrigation.';
+          ? 'نمی ٹھیک ہے — اپنا معمول جاری رکھیں۔'
+          : 'Moisture is fine — keep your usual watering.';
       irrigationActions.add(
         isUrdu
-            ? 'نمی مناسب حد میں ہے، موجودہ آبپاشی شیڈول برقرار رکھیں (قاعدہ M4)۔'
-            : 'Moisture is in an acceptable band; continue current irrigation schedule (Rule M4).',
+            ? 'نمی ٹھیک ہے۔ اپنی عام آبپاشی جاری رکھیں۔'
+            : 'Moisture is fine. Keep your usual watering schedule.',
       );
     }
 
@@ -819,70 +843,85 @@ class _SensorScreenState extends State<SensorScreen>
     if (soilAction == 'apply_lime') {
       summaryParts.add(l10n.t('sensorRecAcidic'));
       soilCardText = isUrdu
-          ? 'پی ایچ کم ہے، چونا اور متوازن کھاد دیں۔'
-          : 'pH is low, use lime and balanced fertilizer.';
+          ? 'مٹی تیزابی ہے — چونا اور متوازن کھاد دیں۔'
+          : 'Soil is acidic — add lime and balanced fertilizer.';
       fertilizerActions.add(
         isUrdu
-            ? 'مٹی تیزابی ہے: زرعی چونا مناسب مقدار میں شامل کریں (قاعدہ P1)۔'
-            : 'Soil is acidic: apply agricultural lime in recommended dose (Rule P1).',
+            ? 'مٹی تیزابی (کھٹی) ہے۔ زرعی چونا مناسب مقدار میں ڈالیں۔'
+            : 'Soil is acidic (sour). Add agricultural lime in a proper amount.',
       );
       fertilizerActions.add(
         isUrdu
-            ? 'متوازن NPK کھاد چھوٹی قسطوں میں دیں اور نامیاتی مادہ بڑھائیں۔'
-            : 'Apply balanced NPK in split doses and increase organic matter.',
+            ? 'کھاد ایک ساتھ زیادہ نہ دیں۔ چھوٹی قسطوں میں دیں اور گوبر/کمپوسٹ بھی شامل کریں۔'
+            : 'Do not put all fertilizer at once. Give in small doses and add farmyard manure or compost.',
       );
       riskNotes.add(
         isUrdu
-            ? 'تیزابی مٹی میں غذائی اجزاء کی دستیابی متاثر ہو سکتی ہے۔'
-            : 'Acidic soil can reduce nutrient availability to the crop.',
+            ? 'تیزابی مٹی میں کھاد کا فائدہ کم ہو سکتا ہے، اس لیے چونا ضروری ہے۔'
+            : 'In acidic soil, fertilizer works less well — lime helps the crop use nutrients.',
       );
+      if (riskCardText ==
+          (isUrdu ? 'ابھی کوئی بڑا خطرہ نہیں۔' : 'No big worry right now.')) {
+        riskCardText = isUrdu
+            ? 'تیزابی مٹی سے کھاد کا فائدہ کم ہو سکتا ہے۔'
+            : 'Acidic soil can reduce fertilizer benefit.';
+      }
     } else if (soilAction == 'apply_gypsum') {
       summaryParts.add(l10n.t('sensorRecAlkaline'));
       soilCardText = isUrdu
-          ? 'پی ایچ زیادہ ہے، جپسم اور نامیاتی مادہ شامل کریں۔'
-          : 'pH is high, add gypsum and organic matter.';
+          ? 'مٹی الکلائن ہے — جپسم اور نامیاتی مادہ ڈالیں۔'
+          : 'Soil is alkaline — add gypsum and organic matter.';
       fertilizerActions.add(
         isUrdu
-            ? 'مٹی الکلائن ہے: جپسم اور اچھی کوالٹی کا نامیاتی مادہ شامل کریں (قاعدہ P2)۔'
-            : 'Soil is alkaline: add gypsum and quality organic matter (Rule P2).',
+            ? 'مٹی الکلائن (کڑوی/نمکین) ہے۔ جپسم اور اچھا گوبر یا کمپوسٹ ڈالیں۔'
+            : 'Soil is alkaline (hard/salty). Add gypsum and good farmyard manure or compost.',
       );
       fertilizerActions.add(
         isUrdu
-            ? 'یوریا/ڈی اے پی ایک ساتھ زیادہ مقدار میں نہ دیں، چھوٹی قسطوں میں کھاد دیں۔'
-            : 'Avoid heavy one-time urea/DAP dose; apply fertilizers in split doses.',
+            ? 'یوریا یا ڈی اے پی ایک ساتھ بہت نہ دیں۔ تھوڑی تھوڑی قسطوں میں کھاد دیں۔'
+            : 'Do not put urea or DAP all at once. Give fertilizer in small doses.',
       );
       riskNotes.add(
         isUrdu
-            ? 'زیادہ پی ایچ میں کچھ غذائی اجزاء پودے کے لئے کم دستیاب ہو جاتے ہیں۔'
-            : 'High pH can lock nutrients and reduce uptake efficiency.',
+            ? 'زیادہ الکلائن مٹی میں پودے کو خوراک کم ملتی ہے، اس لیے جپسم مددگار ہے۔'
+            : 'In alkaline soil the plant gets less food — gypsum helps improve this.',
       );
+      if (riskCardText ==
+          (isUrdu ? 'ابھی کوئی بڑا خطرہ نہیں۔' : 'No big worry right now.')) {
+        riskCardText = isUrdu
+            ? 'الکلائن مٹی سے پودے کو خوراک کم مل سکتی ہے۔'
+            : 'Alkaline soil can reduce plant nutrition.';
+      }
     } else {
       summaryParts.add('${l10n.t('sensorRecPhSuitable')} $cropName');
       soilCardText = isUrdu
-          ? 'پی ایچ مناسب ہے، متوازن کھاد پلان جاری رکھیں۔'
-          : 'pH is suitable, continue balanced fertilizer plan.';
+          ? 'پی ایچ ٹھیک ہے — متوازن کھاد جاری رکھیں۔'
+          : 'pH is fine — keep balanced fertilizer.';
       fertilizerActions.add(
         isUrdu
-            ? 'پی ایچ $cropName کے لئے مناسب ہے، متوازن کھاد منصوبہ جاری رکھیں (قاعدہ P3)۔'
-            : 'pH is suitable for $cropName; continue a balanced fertilizer plan (Rule P3).',
+            ? '$cropName کے لیے پی ایچ ٹھیک ہے۔ متوازن کھاد کا معمول جاری رکھیں۔'
+            : 'pH is fine for $cropName. Keep your balanced fertilizer routine.',
       );
     }
 
     monitoringPlan.add(
       isUrdu
-          ? 'اگلی سینسر ریڈنگ 24 گھنٹے میں لیں اور ٹرینڈ کا موازنہ کریں۔'
-          : 'Take the next sensor reading within 24 hours and compare trends.',
+          ? 'کل دوبارہ مٹی کی نمی چیک کریں۔'
+          : 'Check soil moisture again tomorrow.',
     );
     monitoringPlan.add(
       isUrdu
-          ? 'بارش کے بعد نمی اور پی ایچ دوبارہ چیک کریں تاکہ فیصلہ اپڈیٹ ہو سکے۔'
-          : 'After rainfall, re-check moisture and pH to validate the plan.',
+          ? 'بارش کے بعد نمی اور پی ایچ پھر دیکھیں۔'
+          : 'After rain, check moisture and pH again.',
     );
     monitoringPlan.add(
       isUrdu
-          ? 'اگر اگلی دو ریڈنگز میں بہتری نہ آئے تو کھاد/آبپاشی پلان دوبارہ ایڈجسٹ کریں۔'
-          : 'If the next two readings do not improve, adjust irrigation/fertilizer plan again.',
+          ? 'اگر دو بار چیک کرنے پر بھی حالت بہتر نہ ہو تو پانی یا کھاد کا طریقہ بدلیں۔'
+          : 'If things do not improve after two checks, change your water or fertilizer plan.',
     );
+    monitoringCardText = isUrdu
+        ? 'کل نمی چیک کریں، بارش کے بعد بھی دیکھیں۔'
+        : 'Check moisture tomorrow, and again after rain.';
 
     final priority = ml?.priority ??
         _calculatePriority(
@@ -893,76 +932,58 @@ class _SensorScreenState extends State<SensorScreen>
         );
     final priorityLabel = isUrdu
         ? switch (priority) {
-            'HIGH' => 'زیادہ',
-            'MEDIUM' => 'درمیانہ',
-            _ => 'کم',
+            'HIGH' => 'زیادہ توجہ',
+            'MEDIUM' => 'درمیانی توجہ',
+            _ => 'کم توجہ',
           }
         : switch (priority) {
-            'HIGH' => 'High',
-            'MEDIUM' => 'Medium',
-            _ => 'Low',
+            'HIGH' => 'Needs more attention',
+            'MEDIUM' => 'Medium attention',
+            _ => 'Low attention',
           };
 
-    final engineLabel = isUrdu
-        ? (usingMl
-              ? 'فیصلہ انجن: مشین لرننگ (Random Forest)'
-              : 'فیصلہ انجن: رول بیسڈ (بیک اپ)')
-        : (usingMl
-              ? 'Decision engine: Machine Learning (Random Forest)'
-              : 'Decision engine: Rule-based (fallback)');
-    final mlConfidenceLine = usingMl
-        ? (isUrdu
-              ? 'ماڈل کانفیڈنس: آبپاشی ${(ml.irrigationConfidence * 100).toStringAsFixed(0)}٪، مٹی ${(ml.soilConfidence * 100).toStringAsFixed(0)}٪، ترجیح ${(ml.priorityConfidence * 100).toStringAsFixed(0)}٪۔\n'
-              : 'Model confidence: irrigation ${(ml.irrigationConfidence * 100).toStringAsFixed(0)}%, soil ${(ml.soilConfidence * 100).toStringAsFixed(0)}%, priority ${(ml.priorityConfidence * 100).toStringAsFixed(0)}%.\n')
-        : '';
-
+    // Farmer-facing saved text — no rule codes, thresholds, or ML jargon.
     final details = isUrdu
-        ? '$engineLabel\n'
-              '$mlConfidenceLine'
-              'ترجیحی سطح: $priorityLabel\n'
-              'تشخیصی خلاصہ: ${summaryParts.join('، ')}۔\n'
-              'ان پٹ ڈیٹا: نمی ${moisture.toStringAsFixed(1)}٪، پی ایچ ${ph.toStringAsFixed(1)}، بارش امکان $rainChancePercent٪، فصل $cropName۔\n'
-              'لاگو تھریش ہولڈز: نمی کم < ${config.moistureLowThreshold}، نمی زیادہ > ${config.moistureHighThreshold}، پی ایچ کم < ${config.phLowThreshold}، پی ایچ زیادہ > ${config.phHighThreshold}، بارش حد >= ${config.rainChanceThreshold}٪۔\n'
-              'آبپاشی پلان: ${irrigationActions.join(' ')}\n'
-              'کھاد/مٹی اصلاح: ${fertilizerActions.join(' ')}\n'
-              'رسک نوٹس: ${riskNotes.isEmpty ? 'کوئی بڑا فوری رسک نہیں۔' : riskNotes.join(' ')}\n'
-              'مانیٹرنگ پلان: ${monitoringPlan.join(' ')}'
-        : '$engineLabel\n'
-              '$mlConfidenceLine'
-              'Priority level: $priorityLabel\n'
-              'Decision summary: ${summaryParts.join(', ')}.\n'
-              'Input data: moisture ${moisture.toStringAsFixed(1)}%, pH ${ph.toStringAsFixed(1)}, rain chance $rainChancePercent%, crop $cropName.\n'
-              'Applied thresholds: low moisture < ${config.moistureLowThreshold}, high moisture > ${config.moistureHighThreshold}, low pH < ${config.phLowThreshold}, high pH > ${config.phHighThreshold}, rain threshold >= ${config.rainChanceThreshold}%.\n'
-              'Irrigation plan: ${irrigationActions.join(' ')}\n'
-              'Fertilizer/soil plan: ${fertilizerActions.join(' ')}\n'
-              'Risk notes: ${riskNotes.isEmpty ? 'No major immediate risk.' : riskNotes.join(' ')}\n'
-              'Monitoring plan: ${monitoringPlan.join(' ')}';
+        ? 'ترجیح: $priorityLabel۔\n'
+              'خلاصہ: ${summaryParts.join('۔ ')}۔\n'
+              'آپ کی ریڈنگ: نمی ${moisture.toStringAsFixed(0)}٪، پی ایچ ${ph.toStringAsFixed(1)}، بارش امکان $rainChancePercent٪، فصل $cropName۔\n'
+              'پانی: ${irrigationActions.join(' ')}\n'
+              'مٹی اور کھاد: ${fertilizerActions.join(' ')}\n'
+              'خبردار: ${riskNotes.isEmpty ? 'ابھی کوئی بڑا خطرہ نہیں۔' : riskNotes.join(' ')}\n'
+              'کب چیک کریں: ${monitoringPlan.join(' ')}'
+        : 'Priority: $priorityLabel.\n'
+              'Summary: ${summaryParts.join('. ')}.\n'
+              'Your reading: moisture ${moisture.toStringAsFixed(0)}%, pH ${ph.toStringAsFixed(1)}, rain chance $rainChancePercent%, crop $cropName.\n'
+              'Water: ${irrigationActions.join(' ')}\n'
+              'Soil and fertilizer: ${fertilizerActions.join(' ')}\n'
+              'Watch out: ${riskNotes.isEmpty ? 'No big worry right now.' : riskNotes.join(' ')}\n'
+              'When to check: ${monitoringPlan.join(' ')}';
+
     final irrigationPlan = isUrdu
-        ? 'موجودہ صورتحال: نمی ${moisture.toStringAsFixed(1)}٪ ہے اور بارش امکان $rainChancePercent٪ ہے۔ '
-              'تجویز کردہ آبپاشی اقدامات: ${irrigationActions.join(' ')} '
-              'عملی نوٹ: اگلے 24 گھنٹے میں نمی دوبارہ چیک کریں اور اسی کے مطابق آبپاشی ایڈجسٹ کریں۔'
-        : 'Current status: moisture is ${moisture.toStringAsFixed(1)}% and rain chance is $rainChancePercent%. '
-              'Recommended irrigation actions: ${irrigationActions.join(' ')} '
-              'Practical note: re-check moisture within the next 24 hours and adjust irrigation accordingly.';
+        ? 'ابھی نمی ${moisture.toStringAsFixed(0)}٪ ہے اور بارش کا امکان $rainChancePercent٪ ہے۔ '
+              '${irrigationActions.join(' ')} '
+              'کل دوبارہ نمی دیکھ کر فیصلہ کریں۔'
+        : 'Right now moisture is ${moisture.toStringAsFixed(0)}% and rain chance is $rainChancePercent%. '
+              '${irrigationActions.join(' ')} '
+              'Check moisture again tomorrow and decide.';
+
     final soilPlan = isUrdu
-        ? 'موجودہ صورتحال: پی ایچ ${ph.toStringAsFixed(1)} ہے، فصل $cropName۔ '
-              'تجویز کردہ مٹی/کھاد اقدامات: ${fertilizerActions.join(' ')} '
-              'عملی نوٹ: کھاد قسطوں میں دیں اور اگلی ریڈنگ پر پی ایچ کا دوبارہ جائزہ لیں۔'
-        : 'Current status: pH is ${ph.toStringAsFixed(1)} for crop $cropName. '
-              'Recommended soil/fertilizer actions: ${fertilizerActions.join(' ')} '
-              'Practical note: apply fertilizer in split doses and review pH again on the next reading.';
+        ? 'ابھی پی ایچ ${ph.toStringAsFixed(1)} ہے ($cropName)۔ '
+              '${fertilizerActions.join(' ')} '
+              'کھاد تھوڑی تھوڑی کرکے دیں اور اگلی بار پی ایچ پھر چیک کریں۔'
+        : 'Right now pH is ${ph.toStringAsFixed(1)} for $cropName. '
+              '${fertilizerActions.join(' ')} '
+              'Give fertilizer in small doses and check pH again next time.';
+
     final futureRisk = riskNotes.isEmpty
         ? (isUrdu
-              ? 'فی الحال کوئی بڑا فوری رسک سامنے نہیں آیا، مگر ریڈنگز باقاعدگی سے مانیٹر کریں۔'
-              : 'No major immediate risk is detected right now, but keep monitoring readings regularly.')
+              ? 'ابھی کوئی بڑا خطرہ نہیں۔ باقاعدگی سے نمی اور پی ایچ چیک کرتے رہیں۔'
+              : 'No big worry right now. Keep checking moisture and pH regularly.')
         : (isUrdu
-              ? 'ممکنہ رسک: ${riskNotes.join(' ')} حفاظتی اقدام: آبپاشی اور کھاد فیصلے اگلی ریڈنگ کے مطابق اپڈیٹ کریں۔'
-              : 'Potential risk: ${riskNotes.join(' ')} Preventive action: update irrigation and fertilizer decisions based on the next reading.');
-    final monitoringPlanText = isUrdu
-        ? 'مانیٹرنگ شیڈول: ${monitoringPlan.join(' ')} '
-              'فالو اپ: اگر دو مسلسل ریڈنگز میں بہتری نہ ہو تو پلان دوبارہ ترتیب دیں۔'
-        : 'Monitoring schedule: ${monitoringPlan.join(' ')} '
-              'Follow-up: if there is no improvement in two consecutive readings, revise the plan.';
+              ? '${riskNotes.join(' ')} اگلی ریڈنگ دیکھ کر پانی اور کھاد کا فیصلہ اپڈیٹ کریں۔'
+              : '${riskNotes.join(' ')} Update water and fertilizer after the next reading.');
+
+    final monitoringPlanText = monitoringPlan.join(' ');
 
     return _RecommendationResult(
       summary: '${summaryParts.join('. ')}.',
@@ -972,30 +993,20 @@ class _SensorScreenState extends State<SensorScreen>
       soilPlan: soilPlan,
       futureRisk: futureRisk,
       monitoringPlan: monitoringPlanText,
-      irrigationPreview: _ultraShortPreview(irrigationPlan),
-      soilPreview: _ultraShortPreview(soilPlan),
-      riskPreview: _ultraShortPreview(futureRisk),
-      monitoringPreview: _ultraShortPreview(monitoringPlanText),
-      irrigationCardText: _ultraShortPreview(irrigationCardText),
-      soilCardText: _ultraShortPreview(soilCardText),
+      irrigationPreview: irrigationCardText,
+      soilPreview: soilCardText,
+      riskPreview: riskCardText,
+      monitoringPreview: monitoringCardText,
+      irrigationCardText: irrigationCardText,
+      soilCardText: soilCardText,
       usedMl: usingMl,
       mlConfidence: usingMl
           ? (ml.irrigationConfidence +
-                    ml.soilConfidence +
-                    ml.priorityConfidence) /
-                3
+                  ml.soilConfidence +
+                  ml.priorityConfidence) /
+              3
           : 0,
     );
-  }
-
-  String _ultraShortPreview(String value) {
-    final sentence = value
-        .split(RegExp(r'(?<=[.!؟۔])\s+'))
-        .firstWhere((part) => part.trim().isNotEmpty, orElse: () => value)
-        .trim()
-        .replaceAll(RegExp(r'\s+'), ' ');
-    if (sentence.length <= 60) return sentence;
-    return '${sentence.substring(0, 57)}...';
   }
 
   /// Rule-based fallback for the irrigation decision class, mirroring the
@@ -1168,9 +1179,9 @@ class _SensorScreenState extends State<SensorScreen>
   String _localizedPriorityLabel(AppLocalizations l10n, String priority) {
     final isUrdu = l10n.locale.languageCode == 'ur';
     return switch (priority) {
-      'HIGH' => isUrdu ? 'ترجیح: زیادہ' : 'Priority: High',
-      'MEDIUM' => isUrdu ? 'ترجیح: درمیانہ' : 'Priority: Medium',
-      _ => isUrdu ? 'ترجیح: کم' : 'Priority: Low',
+      'HIGH' => isUrdu ? 'توجہ: زیادہ' : 'Attention: High',
+      'MEDIUM' => isUrdu ? 'توجہ: درمیانی' : 'Attention: Medium',
+      _ => isUrdu ? 'توجہ: کم' : 'Attention: Low',
     };
   }
 
@@ -1735,22 +1746,18 @@ class _MoistureForecastCard extends StatelessWidget {
 class _EngineBadge extends StatelessWidget {
   const _EngineBadge({
     required this.usedMl,
-    required this.confidence,
     required this.isUrdu,
   });
 
   final bool usedMl;
-  final double confidence;
   final bool isUrdu;
 
   @override
   Widget build(BuildContext context) {
     final color = usedMl ? AppColors.primaryGreen : AppColors.mutedText;
     final label = usedMl
-        ? (isUrdu
-              ? 'ML ماڈل • ${(confidence * 100).toStringAsFixed(0)}٪'
-              : 'ML model • ${(confidence * 100).toStringAsFixed(0)}%')
-        : (isUrdu ? 'رول بیسڈ' : 'Rule-based');
+        ? (isUrdu ? 'سمارٹ مشورہ' : 'Smart advice')
+        : (isUrdu ? 'سادہ مشورہ' : 'Simple advice');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -1762,7 +1769,7 @@ class _EngineBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            usedMl ? Icons.auto_awesome : Icons.rule,
+            usedMl ? Icons.auto_awesome : Icons.tips_and_updates,
             size: 13,
             color: color,
           ),
