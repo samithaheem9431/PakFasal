@@ -58,6 +58,10 @@ flutter run --dart-define-from-file=config/dev.json
 ./scripts/run_dev.sh --release --build
 ```
 
+### 4. Run on iPhone (needs a Mac)
+
+See the full checklist: [docs/IOS_SETUP.md](docs/IOS_SETUP.md)
+
 ## Project structure
 
 ```
