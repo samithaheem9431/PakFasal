@@ -117,16 +117,15 @@ class PakFasalScaffold extends StatelessWidget {
               ),
             ),
             actions: [
+              if (actions != null) ...actions!,
               Container(
-                margin: const EdgeInsets.only(right: 4),
+                margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
                   color: AppColors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const LanguageToggleButton(),
               ),
-              const SizedBox(width: 12),
-              if (actions != null) ...actions!,
             ],
           ),
         ),

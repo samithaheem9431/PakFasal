@@ -373,7 +373,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
       showBack: true,
       actions: [
         IconButton(
-          icon: Icon(Icons.history, color: palette.primary),
+          icon: const Icon(Icons.history, color: AppColors.white),
           tooltip: l10n.t('aiHistory'),
           onPressed: () => _showHistoryPanel(context, l10n),
         ),

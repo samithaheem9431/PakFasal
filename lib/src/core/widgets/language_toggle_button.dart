@@ -40,34 +40,38 @@ class LanguageToggleButton extends StatelessWidget {
       border = AppColors.white.withValues(alpha: 0.3);
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: background,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: controller.toggleLanguage,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.language,
-            size: 16,
-            color: foreground,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: border),
           ),
-          const SizedBox(width: 4),
-          InkWell(
-            onTap: controller.toggleLanguage,
-            child: Text(
-              controller.isUrdu ? 'اردو' : 'EN',
-              style: TextStyle(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.language,
+                size: 16,
                 color: foreground,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
               ),
-            ),
+              const SizedBox(width: 4),
+              Text(
+                controller.isUrdu ? 'اردو' : 'EN',
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
