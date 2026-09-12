@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../localization/app_localizations.dart';
 import '../routing/app_routes.dart';
 import '../theme/app_colors.dart';
 import 'auth_required_dialog.dart';
 import 'language_toggle_button.dart';
+
+SystemUiOverlayStyle pakFasalSystemOverlay(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarContrastEnforced: false,
+    systemNavigationBarIconBrightness:
+        isDark ? Brightness.light : Brightness.dark,
+  );
+}
 
 class PakFasalScaffold extends StatelessWidget {
   const PakFasalScaffold({
@@ -62,133 +77,185 @@ class PakFasalScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.darkGreen,
-                AppColors.primaryGreen,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryGreen.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: pakFasalSystemOverlay(context),
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.darkGreen,
+                  AppColors.primaryGreen,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
-          ),
-          child: AppBar(
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: showBack
-                ? IconButton(
-                    onPressed: () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                        return;
-                      }
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.home,
-                        (_) => false,
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: AppColors.white,
-                    ),
-                  )
-                : null,
-            title: Text(
-              title,
-              style: const TextStyle(
-                color: AppColors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
-            ),
-            actions: [
-              if (actions != null) ...actions!,
-              Container(
-                margin: const EdgeInsets.only(right: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                child: const LanguageToggleButton(),
+              ],
+            ),
+            child: AppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              systemOverlayStyle: pakFasalSystemOverlay(context),
+              leading: showBack
+                  ? IconButton(
+                      onPressed: () {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                          return;
+                        }
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes.home,
+                          (_) => false,
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AppColors.white,
+                      ),
+                    )
+                  : null,
+              title: Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
               ),
-            ],
+              actions: [
+                if (actions != null) ...actions!,
+                Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const LanguageToggleButton(),
+                ),
+              ],
+            ),
+          ),
+        ),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Builder(
+                builder: (bodyContext) {
+                  final bottomInset = MediaQuery.paddingOf(bodyContext).bottom;
+                  return SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: showBottomNavigation
+                            ? PakFasalFloatingBottomBar.clearance + bottomInset
+                            : 0,
+                      ),
+                      child: child,
+                    ),
+                  );
+                },
+              ),
+            ),
+            if (showBottomNavigation)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: PakFasalFloatingBottomBar(
+                  selectedIndex: _selectedNavIndex(context),
+                  onTap: (index) => _onNavTap(context, index),
+                ),
+              ),
+          ],
+        ),
+        floatingActionButton: floatingActionButton,
+      ),
+    );
+  }
+}
+
+class PakFasalFloatingBottomBar extends StatelessWidget {
+  const PakFasalFloatingBottomBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onTap,
+  });
+
+  static const double clearance = 88;
+
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Container(
+            height: 68,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.primaryGreen : AppColors.white,
+              borderRadius: BorderRadius.circular(40),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.10),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _BottomTabItem(
+                  icon: Icons.home,
+                  label: localizations.t('home'),
+                  isActive: selectedIndex == 0,
+                  onTap: () => onTap(0),
+                ),
+                _BottomTabItem(
+                  icon: Icons.smart_toy_outlined,
+                  label: localizations.t('askAi'),
+                  isActive: selectedIndex == 1,
+                  onTap: () => onTap(1),
+                ),
+                _BottomTabItem(
+                  icon: Icons.sensors_outlined,
+                  label: localizations.t('sensorData'),
+                  isActive: selectedIndex == 2,
+                  onTap: () => onTap(2),
+                ),
+                _BottomTabItem(
+                  icon: Icons.person_outline,
+                  label: localizations.t('profile'),
+                  isActive: selectedIndex == 3,
+                  onTap: () => onTap(3),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-      body: SafeArea(child: child),
-      floatingActionButton: floatingActionButton,
-      bottomNavigationBar: showBottomNavigation
-          ? SafeArea(
-              top: false,
-              child: Container(
-                height: 72,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryGreen,
-                      AppColors.darkGreen,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.4),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _BottomTabItem(
-                      icon: Icons.home,
-                      label: localizations.t('home'),
-                      isActive: _selectedNavIndex(context) == 0,
-                      onTap: () => _onNavTap(context, 0),
-                    ),
-                    _BottomTabItem(
-                      icon: Icons.smart_toy_outlined,
-                      label: localizations.t('askAi'),
-                      isActive: _selectedNavIndex(context) == 1,
-                      onTap: () => _onNavTap(context, 1),
-                    ),
-                    _BottomTabItem(
-                      icon: Icons.sensors_outlined,
-                      label: localizations.t('sensorData'),
-                      isActive: _selectedNavIndex(context) == 2,
-                      onTap: () => _onNavTap(context, 2),
-                    ),
-                    _BottomTabItem(
-                      icon: Icons.person_outline,
-                      label: localizations.t('profile'),
-                      isActive: _selectedNavIndex(context) == 3,
-                      onTap: () => _onNavTap(context, 3),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : null,
     );
   }
 }
@@ -208,45 +275,55 @@ class _BottomTabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color activeColor = AppColors.white;
+    final Color inactiveColor = isDark
+        ? AppColors.white.withValues(alpha: 0.72)
+        : const Color(0xFF4A5568);
+
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: isDark && isActive
+                ? AppColors.white.withValues(alpha: 0.18)
+                : null,
+            gradient: !isDark && isActive
+                ? const LinearGradient(
+                    colors: [
+                      Color(0xFF108D4C),
+                      Color(0xFF0A5E32),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  )
+                : null,
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 24,
-                color: isActive 
-                    ? AppColors.white 
-                    : AppColors.white.withValues(alpha: 0.6),
+                size: 22,
+                color: isActive ? activeColor : inactiveColor,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  color: isActive 
-                      ? AppColors.white 
-                      : AppColors.white.withValues(alpha: 0.6),
+                  color: isActive ? activeColor : inactiveColor,
                 ),
               ),
-              if (isActive)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  width: 4,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: AppColors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
             ],
           ),
         ),
@@ -254,4 +331,3 @@ class _BottomTabItem extends StatelessWidget {
     );
   }
 }
-

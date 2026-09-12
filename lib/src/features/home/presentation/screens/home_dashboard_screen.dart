@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/widgets/auth_required_dialog.dart';
 import '../../../../core/widgets/common_states.dart';
+import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 import '../../../about/presentation/screens/about_pakfasal_screen.dart';
 import '../../../weather/presentation/providers/weather_provider.dart';
@@ -571,7 +572,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         if (didPop) return;
         _handleBackPress();
       },
-      child: Scaffold(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: pakFasalSystemOverlay(context),
+        child: Scaffold(
       key: _scaffoldKey,
       backgroundColor: scheme.surface,
       drawer: _buildLeftDrawer(
@@ -579,64 +582,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         themeController: themeController,
         l10n: l10n,
       ),
-      // ── Bottom navigation bar with deep green background ──────────
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          height: 72,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primaryGreen,
-                AppColors.darkGreen,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryGreen.withValues(alpha: 0.4),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _BottomTabItem(
-                icon: Icons.home,
-                label: l10n.t('home'),
-                isActive: _selectedBottomIndex == 0,
-                onTap: () => _onBottomNavTap(0),
-              ),
-              _BottomTabItem(
-                icon: Icons.smart_toy_outlined,
-                label: l10n.t('askAi'),
-                isActive: _selectedBottomIndex == 1,
-                onTap: () => _onBottomNavTap(1),
-              ),
-              _BottomTabItem(
-                icon: Icons.sensors_outlined,
-                label: l10n.t('sensorData'),
-                isActive: _selectedBottomIndex == 2,
-                onTap: () => _onBottomNavTap(2),
-              ),
-              _BottomTabItem(
-                icon: Icons.person_outline,
-                label: l10n.t('profile'),
-                isActive: _selectedBottomIndex == 3,
-                onTap: () => _onBottomNavTap(3),
-              ),
-            ],
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Column(
           children: [
             // ── App bar with gradient green background ─────────────────────
             Container(
@@ -752,7 +702,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 color: AppColors.primaryGreen,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.fromLTRB(
+                    12,
+                    12,
+                    12,
+                    12 +
+                        PakFasalFloatingBottomBar.clearance +
+                        MediaQuery.paddingOf(context).bottom,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -894,6 +851,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           ],
         ),
       ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: PakFasalFloatingBottomBar(
+              selectedIndex: _selectedBottomIndex,
+              onTap: _onBottomNavTap,
+            ),
+          ),
+        ],
+      ),
+    ),
     ),
     );
   }
@@ -904,65 +873,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final email = auth.userEmail?.trim();
     if (email != null && email.isNotEmpty) return email.split('@').first;
     return 'Farmer';
-  }
-}
-
-// ── Bottom tab item with white icons ──────────────────────────────────────
-class _BottomTabItem extends StatelessWidget {
-  const _BottomTabItem({
-    required this.icon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 24,
-                color: isActive ? AppColors.white : AppColors.white.withValues(alpha: 0.6),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  color: isActive ? AppColors.white : AppColors.white.withValues(alpha: 0.6),
-                ),
-              ),
-              if (isActive)
-                Container(
-                  margin: const EdgeInsets.only(top: 4),
-                  width: 4,
-                  height: 4,
-                  decoration: const BoxDecoration(
-                    color: AppColors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

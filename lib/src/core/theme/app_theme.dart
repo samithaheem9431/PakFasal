@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -88,6 +89,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.lightGreyBackground,
+      canvasColor: AppColors.lightGreyBackground,
       fontFamily: 'Roboto',
       visualDensity: VisualDensity.adaptivePlatformDensity,
       appBarTheme: AppBarTheme(
@@ -95,6 +97,15 @@ class AppTheme {
         foregroundColor: scheme.primary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemNavigationBarContrastEnforced: false,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
         centerTitle: true,
         titleTextStyle: const TextStyle(
           fontSize: 20,
@@ -231,7 +242,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         selectedItemColor: scheme.primary,
         unselectedItemColor: const Color(0xFF7A7A7A),
         selectedLabelStyle: const TextStyle(
@@ -253,6 +265,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
+      canvasColor: scheme.surface,
       fontFamily: 'Roboto',
       visualDensity: VisualDensity.adaptivePlatformDensity,
       appBarTheme: AppBarTheme(
@@ -260,6 +273,15 @@ class AppTheme {
         foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarDividerColor: Colors.transparent,
+          systemNavigationBarContrastEnforced: false,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
         centerTitle: true,
         titleTextStyle: TextStyle(
           fontSize: 20,
@@ -362,7 +384,8 @@ class AppTheme {
       ),
       iconTheme: IconThemeData(size: 28, color: scheme.primary),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: scheme.surfaceContainerLow,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         selectedItemColor: scheme.primary,
         unselectedItemColor: scheme.onSurfaceVariant,
         selectedLabelStyle: const TextStyle(
