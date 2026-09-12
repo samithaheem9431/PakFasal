@@ -249,6 +249,11 @@ class _LoginViewState extends State<_LoginView>
     final session = context.watch<AuthSessionController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scheme = Theme.of(context).colorScheme;
+    final accentText =
+        isDark ? AppColors.white : AppTheme.primaryGreen;
+    final accentTextMuted = isDark
+        ? AppColors.white.withValues(alpha: 0.7)
+        : AppTheme.primaryGreen.withValues(alpha: 0.7);
 
     return Scaffold(
       body: DecoratedBox(
@@ -322,12 +327,14 @@ class _LoginViewState extends State<_LoginView>
                                   .titleLarge
                                   ?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.primaryGreen,
+                                color: accentText,
                                 letterSpacing: 0.4,
                               ),
                             ),
                           ),
-                          const LanguageToggleButton(),
+                          const LanguageToggleButton(
+                            variant: LanguageToggleVariant.onSurface,
+                          ),
                         ],
                       ),
                     ),
@@ -376,7 +383,7 @@ class _LoginViewState extends State<_LoginView>
                                         .headlineSmall
                                         ?.copyWith(
                                       fontWeight: FontWeight.w800,
-                                      color: AppTheme.primaryGreen,
+                                      color: accentText,
                                       letterSpacing: 0.3,
                                     ),
                                   ),
@@ -388,8 +395,7 @@ class _LoginViewState extends State<_LoginView>
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                      color: AppTheme.primaryGreen
-                                          .withValues(alpha: 0.7),
+                                      color: accentTextMuted,
                                       height: 1.4,
                                     ),
                                   ),
@@ -567,8 +573,7 @@ class _LoginViewState extends State<_LoginView>
                                                   AppRoutes.forgotPassword,
                                                 ),
                                             style: TextButton.styleFrom(
-                                              foregroundColor:
-                                              AppTheme.primaryGreen,
+                                              foregroundColor: accentText,
                                               padding:
                                               const EdgeInsets.symmetric(
                                                   vertical: 4),
@@ -633,10 +638,9 @@ class _LoginViewState extends State<_LoginView>
                                             AppRoutes.signup,
                                           ),
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor:
-                                            AppTheme.primaryGreen,
+                                            foregroundColor: accentText,
                                             side: BorderSide(
-                                                color: AppTheme.primaryGreen
+                                                color: accentText
                                                     .withValues(alpha: 0.5)),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -660,8 +664,7 @@ class _LoginViewState extends State<_LoginView>
                                                     session,
                                                   ),
                                           style: TextButton.styleFrom(
-                                            foregroundColor:
-                                                AppTheme.primaryGreen,
+                                            foregroundColor: accentText,
                                           ),
                                           child: Text(
                                             l10n.t('continueAsGuest'),

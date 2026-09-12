@@ -3,38 +3,65 @@ import 'package:provider/provider.dart';
 
 import '../localization/localization_controller.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+
+/// [onPrimary] — white text (green app bars).
+/// [onSurface] — adapts to light/dark page backgrounds.
+enum LanguageToggleVariant { onPrimary, onSurface }
 
 class LanguageToggleButton extends StatelessWidget {
-  const LanguageToggleButton({super.key});
+  const LanguageToggleButton({
+    super.key,
+    this.variant = LanguageToggleVariant.onPrimary,
+  });
+
+  final LanguageToggleVariant variant;
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<LocalizationController>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color foreground;
+    final Color background;
+    final Color border;
+
+    if (variant == LanguageToggleVariant.onSurface) {
+      foreground = isDark ? AppColors.white : AppTheme.primaryGreen;
+      background = isDark
+          ? AppColors.white.withValues(alpha: 0.12)
+          : AppTheme.primaryGreen.withValues(alpha: 0.12);
+      border = isDark
+          ? AppColors.white.withValues(alpha: 0.35)
+          : AppTheme.primaryGreen.withValues(alpha: 0.35);
+    } else {
+      foreground = AppColors.white;
+      background = AppColors.white.withValues(alpha: 0.2);
+      border = AppColors.white.withValues(alpha: 0.3);
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.2),
+        color: background,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.language,
             size: 16,
-            color: AppColors.white,
+            color: foreground,
           ),
           const SizedBox(width: 4),
           InkWell(
             onTap: controller.toggleLanguage,
             child: Text(
               controller.isUrdu ? 'اردو' : 'EN',
-              style: const TextStyle(
-                color: AppColors.white,
+              style: TextStyle(
+                color: foreground,
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
               ),

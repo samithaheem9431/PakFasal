@@ -114,6 +114,11 @@ class _SignupViewState extends State<_SignupView>
     final session = context.watch<AuthSessionController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scheme = Theme.of(context).colorScheme;
+    final accentText =
+        isDark ? AppColors.white : AppTheme.primaryGreen;
+    final accentTextMuted = isDark
+        ? AppColors.white.withValues(alpha: 0.65)
+        : AppTheme.primaryGreen.withValues(alpha: 0.65);
 
     return Scaffold(
       body: DecoratedBox(
@@ -170,7 +175,7 @@ class _SignupViewState extends State<_SignupView>
                             onPressed: () => Navigator.pop(context),
                             icon: Icon(
                               Icons.arrow_back_rounded,
-                              color: AppTheme.primaryGreen,
+                              color: accentText,
                             ),
                           ),
                           Expanded(
@@ -181,7 +186,7 @@ class _SignupViewState extends State<_SignupView>
                                   .titleLarge
                                   ?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: AppTheme.primaryGreen,
+                                color: accentText,
                                 letterSpacing: 0.4,
                               ),
                             ),
@@ -239,7 +244,7 @@ class _SignupViewState extends State<_SignupView>
                                               .titleMedium
                                               ?.copyWith(
                                             fontWeight: FontWeight.w800,
-                                            color: AppTheme.primaryGreen,
+                                            color: accentText,
                                           ),
                                         ),
                                         Text(
@@ -248,8 +253,7 @@ class _SignupViewState extends State<_SignupView>
                                               .textTheme
                                               .bodySmall
                                               ?.copyWith(
-                                            color: AppTheme.primaryGreen
-                                                .withValues(alpha: 0.65),
+                                            color: accentTextMuted,
                                           ),
                                         ),
                                       ],
@@ -428,35 +432,78 @@ class _SignupViewState extends State<_SignupView>
                                               context, form, session, l10n),
                                         ),
 
-                                        const SizedBox(height: 16),
+                                        const SizedBox(height: 20),
+
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Divider(
+                                                color: scheme.onSurfaceVariant
+                                                    .withValues(alpha: 0.3),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 12),
+                                              child: Text(
+                                                l10n.t('or'),
+                                                style: TextStyle(
+                                                  color:
+                                                      scheme.onSurfaceVariant,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.6,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Divider(
+                                                color: scheme.onSurfaceVariant
+                                                    .withValues(alpha: 0.3),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 14),
 
                                         // Already have account
-                                        Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                        Wrap(
+                                          alignment: WrapAlignment.center,
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
                                           children: [
                                             Text(
                                               l10n.t('alreadyHaveAccount'),
                                               style: TextStyle(
-                                                  color: scheme.onSurfaceVariant,
-                                                  fontSize: 13),
+                                                color: scheme.onSurfaceVariant,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
                                             TextButton(
                                               onPressed: () =>
                                                   Navigator.pop(context),
                                               style: TextButton.styleFrom(
-                                                foregroundColor:
-                                                AppTheme.primaryGreen,
+                                                foregroundColor: accentText,
                                                 padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 6),
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 4,
+                                                ),
+                                                minimumSize: Size.zero,
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
                                               ),
                                               child: Text(
-                                                l10n.t('login'),
+                                                l10n.t('signIn'),
                                                 style: const TextStyle(
-                                                    fontWeight:
-                                                    FontWeight.w700,
-                                                    fontSize: 13),
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 13,
+                                                  letterSpacing: 0.2,
+                                                ),
                                               ),
                                             ),
                                           ],
