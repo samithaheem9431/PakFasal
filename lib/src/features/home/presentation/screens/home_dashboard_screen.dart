@@ -14,6 +14,7 @@ import '../../../auth/presentation/providers/auth_session_controller.dart';
 import '../../../about/presentation/screens/about_pakfasal_screen.dart';
 import '../../../weather/presentation/providers/weather_provider.dart';
 import '../widgets/dashboard_tile.dart';
+import '../widgets/home_top_bar.dart';
 import '../widgets/home_weather_card.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
@@ -584,116 +585,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       ),
       body: Stack(
         children: [
-          SafeArea(
-            bottom: false,
-            child: Column(
+          Column(
           children: [
-            // ── App bar with gradient green background ─────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.darkGreen,
-                    AppColors.primaryGreen,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryGreen.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    icon: const Icon(Icons.menu, size: 24, color: AppColors.white),
-                  ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: const BoxDecoration(
-                            color: AppColors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.eco,
-                            color: AppColors.primaryGreen,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'PakFasal',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              l10n.t('appTagline'),
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Stack(
-                    children: [
-                      IconButton(
-                        onPressed: () => _openNotificationsPanel(l10n),
-                        icon: const Icon(
-                          Icons.notifications_none,
-                          color: AppColors.white,
-                          size: 24,
-                        ),
-                      ),
-                      Positioned(
-                        top: 6,
-                        right: 8,
-                        child: Container(
-                          width: 16,
-                          height: 16,
-                          decoration: const BoxDecoration(
-                            color: AppColors.error,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Text(
-                              '3',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            HomeTopBar(
+              tagline: l10n.t('appTagline'),
+              onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+              onNotificationTap: () => _openNotificationsPanel(l10n),
             ),
             // ── Scrollable body ──────────────────────────────────────────
             Expanded(
@@ -704,7 +601,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.fromLTRB(
                     12,
-                    12,
+                    4,
                     12,
                     12 +
                         PakFasalFloatingBottomBar.clearance +
@@ -758,18 +655,24 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         animate: _animateContentIn,
                         child: Text(
                           l10n.t('quickAccess'),
+                          textHeightBehavior: const TextHeightBehavior(
+                            applyHeightToFirstAscent: false,
+                            applyHeightToLastDescent: false,
+                          ),
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.4,
+                                height: 1.0,
                                 color: isDark ? Colors.white : Colors.black,
                               ),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
                         crossAxisCount: 3,
                         mainAxisSpacing: 10,
                         crossAxisSpacing: 10,
@@ -850,7 +753,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             ),
           ],
         ),
-      ),
           Positioned(
             left: 0,
             right: 0,
