@@ -33,8 +33,9 @@ dependencies:
   permission_handler: ^12.0.1
   firebase_crashlytics: ^5.2.0
 
-  # Weather module
+  # Weather / Learning image caching
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   shared_preferences: ^2.3.5
   flutter_spinkit: ^5.2.1
   share_plus: ^12.0.2
@@ -78,3 +79,9 @@ flutter:
     - assets/images/learning/learning_banner.jpg
     - assets/images/learning/banner_full.jpg
     - assets/images/dashboard/weather_bg.jpg
+    - assets/images/dashboard/tile_learning.png
+    - assets/images/dashboard/tile_weather.png
+    - assets/images/dashboard/tile_ask_ai.png
+    - assets/images/dashboard/tile_sensor.png
+    - assets/images/dashboard/tile_marketplace.png
+    - assets/images/dashboard/tile_crop_calendar.png

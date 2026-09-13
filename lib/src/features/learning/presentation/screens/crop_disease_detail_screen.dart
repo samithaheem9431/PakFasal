@@ -6,6 +6,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
+import '../../data/learning_image_cache.dart';
 import '../../domain/entities/crop_disease_models.dart';
 import '../widgets/learning_widgets.dart';
 
@@ -158,7 +159,12 @@ class _DiseaseLeading extends StatelessWidget {
         height: 38,
         child: CachedNetworkImage(
           imageUrl: imageUrl,
+          cacheManager: LearningImageCache.manager,
           fit: BoxFit.cover,
+          fadeInDuration: Duration.zero,
+          fadeOutDuration: Duration.zero,
+          memCacheWidth: (38 * MediaQuery.devicePixelRatioOf(context)).round(),
+          memCacheHeight: (38 * MediaQuery.devicePixelRatioOf(context)).round(),
           placeholder: (_, __) => fallback,
           errorWidget: (_, __, ___) => fallback,
         ),
@@ -180,27 +186,37 @@ class _DiseaseHeroImage extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          fit: BoxFit.cover,
-          placeholder: (_, __) => Container(
-            color: scheme.surfaceContainerHighest,
-            alignment: Alignment.center,
-            child: const SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-          ),
-          errorWidget: (_, __, ___) => Container(
-            color: scheme.errorContainer.withValues(alpha: 0.45),
-            alignment: Alignment.center,
-            child: Icon(
-              Icons.broken_image_outlined,
-              color: scheme.error,
-              size: 36,
-            ),
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final dpr = MediaQuery.devicePixelRatioOf(context);
+            return CachedNetworkImage(
+              imageUrl: imageUrl,
+              cacheManager: LearningImageCache.manager,
+              fit: BoxFit.cover,
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+              memCacheWidth: (constraints.maxWidth * dpr).round(),
+              memCacheHeight: (constraints.maxHeight * dpr).round(),
+              placeholder: (_, __) => Container(
+                color: scheme.surfaceContainerHighest,
+                alignment: Alignment.center,
+                child: const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                ),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                color: scheme.errorContainer.withValues(alpha: 0.45),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.broken_image_outlined,
+                  color: scheme.error,
+                  size: 36,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

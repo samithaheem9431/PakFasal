@@ -255,15 +255,17 @@ class _BannerSection extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: AspectRatio(
-          aspectRatio: 2.5, // Maintain proper width to height ratio
-          child: Image.asset(
-            'assets/images/learning/banner_full.jpg',
-            fit: BoxFit.contain, // Show full image without cropping
-            alignment: Alignment.center,
-            errorBuilder: (context, error, stackTrace) {
-              // Fallback to old design if image fails
-              return Container(
+        // Use image's natural aspect (1024x409) so nothing is cropped.
+        child: Image.asset(
+          'assets/images/learning/banner_full.jpg',
+          width: double.infinity,
+          fit: BoxFit.fitWidth,
+          alignment: Alignment.center,
+          errorBuilder: (context, error, stackTrace) {
+            // Fallback to old design if image fails
+            return AspectRatio(
+              aspectRatio: 1024 / 409,
+              child: Container(
                 color: isDark ? scheme.surfaceContainerHighest : Colors.white,
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -315,9 +317,9 @@ class _BannerSection extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -6,6 +6,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
+import '../../data/learning_image_cache.dart';
 import '../../data/repositories/crop_diseases_repository.dart';
 import '../../domain/entities/crop_disease_models.dart';
 import '../widgets/learning_widgets.dart';
@@ -171,19 +172,31 @@ class _ModernCropCardState extends State<_ModernCropCard> {
                 // Background image (full width, semi-transparent)
                 Positioned.fill(
                   child: widget.crop.imageUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: widget.crop.imageUrl,
-                          fit: BoxFit.cover,
-                          color: Colors.black.withValues(alpha: 0.3),
-                          colorBlendMode: BlendMode.darken,
-                          placeholder: (_, __) => _ImagePlaceholder(
-                            icon: widget.crop.icon,
-                            scheme: scheme,
-                          ),
-                          errorWidget: (_, __, ___) => _ImagePlaceholder(
-                            icon: widget.crop.icon,
-                            scheme: scheme,
-                          ),
+                      ? LayoutBuilder(
+                          builder: (context, constraints) {
+                            final dpr = MediaQuery.devicePixelRatioOf(context);
+                            return CachedNetworkImage(
+                              imageUrl: widget.crop.imageUrl,
+                              cacheManager: LearningImageCache.manager,
+                              fit: BoxFit.cover,
+                              fadeInDuration: Duration.zero,
+                              fadeOutDuration: Duration.zero,
+                              memCacheWidth:
+                                  (constraints.maxWidth * dpr).round(),
+                              memCacheHeight:
+                                  (constraints.maxHeight * dpr).round(),
+                              color: Colors.black.withValues(alpha: 0.3),
+                              colorBlendMode: BlendMode.darken,
+                              placeholder: (_, __) => _ImagePlaceholder(
+                                icon: widget.crop.icon,
+                                scheme: scheme,
+                              ),
+                              errorWidget: (_, __, ___) => _ImagePlaceholder(
+                                icon: widget.crop.icon,
+                                scheme: scheme,
+                              ),
+                            );
+                          },
                         )
                       : _ImagePlaceholder(
                           icon: widget.crop.icon,
@@ -446,7 +459,12 @@ class _CropAvatar extends StatelessWidget {
         height: 52,
         child: CachedNetworkImage(
           imageUrl: crop.imageUrl,
+          cacheManager: LearningImageCache.manager,
           fit: BoxFit.cover,
+          fadeInDuration: Duration.zero,
+          fadeOutDuration: Duration.zero,
+          memCacheWidth: (52 * MediaQuery.devicePixelRatioOf(context)).round(),
+          memCacheHeight: (52 * MediaQuery.devicePixelRatioOf(context)).round(),
           placeholder: (_, __) => fallback,
           errorWidget: (_, __, ___) => fallback,
         ),

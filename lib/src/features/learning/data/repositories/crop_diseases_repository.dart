@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 
 import '../../domain/entities/crop_disease_models.dart'
     show CropDiseaseEntry, ResolvedCropWithDiseases, stringListOf;
+import '../learning_image_cache.dart';
 
 /// Loads the "Pests & Diseases" content from Firestore.
 ///
@@ -28,7 +29,8 @@ import '../../domain/entities/crop_disease_models.dart'
 /// Both languages are kept on the resolved models (see
 /// [ResolvedCropWithDiseases]) so switching the app's language re-renders
 /// instantly without a re-fetch. Results are cached in Hive so the module
-/// still works offline after the first successful load.
+/// still works offline after the first successful load. Crop/disease photos
+/// are also prefetched into [LearningImageCache] for instant display.
 class CropDiseasesRepository {
   CropDiseasesRepository({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
@@ -46,7 +48,10 @@ class CropDiseasesRepository {
 
     if (!forceRefresh) {
       final cached = _readCache(box);
-      if (cached != null) return cached;
+      if (cached != null) {
+        _prefetchImages(cached);
+        return cached;
+      }
     }
 
     try {
@@ -104,12 +109,21 @@ class CropDiseasesRepository {
       if (result.isNotEmpty) {
         box.put(_cacheKey, jsonEncode(result.map((e) => e.toJson()).toList()));
       }
+      _prefetchImages(result);
       return result;
     } catch (_) {
       final cached = _readCache(box);
-      if (cached != null) return cached;
+      if (cached != null) {
+        _prefetchImages(cached);
+        return cached;
+      }
       rethrow;
     }
+  }
+
+  /// Fire-and-forget disk cache for crop/disease photos.
+  void _prefetchImages(List<ResolvedCropWithDiseases> crops) {
+    LearningImageCache.prefetchFromCrops(crops);
   }
 
   List<ResolvedCropWithDiseases>? _readCache(Box box) {

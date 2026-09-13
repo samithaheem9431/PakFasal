@@ -779,7 +779,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             delayMs: 160,
                             animate: _animateContentIn,
                             child: DashboardTile(
-                              icon: Icons.menu_book,
+                              imageAsset: 'assets/images/dashboard/tile_learning.png',
                               title: l10n.t('learning'),
                               onTap: () => Navigator.pushNamed(
                                 context,
@@ -791,7 +791,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             delayMs: 210,
                             animate: _animateContentIn,
                             child: DashboardTile(
-                              icon: Icons.cloud,
+                              imageAsset: 'assets/images/dashboard/tile_weather.png',
                               title: l10n.t('weather'),
                               onTap: () => Navigator.pushNamed(
                                 context,
@@ -803,7 +803,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             delayMs: 260,
                             animate: _animateContentIn,
                             child: DashboardTile(
-                              icon: Icons.smart_toy,
+                              imageAsset: 'assets/images/dashboard/tile_ask_ai.png',
                               title: l10n.t('askAi'),
                               onTap: () => _openProtectedRoute(AppRoutes.aiQuery),
                             ),
@@ -812,7 +812,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             delayMs: 310,
                             animate: _animateContentIn,
                             child: DashboardTile(
-                              icon: Icons.sensors,
+                              imageAsset: 'assets/images/dashboard/tile_sensor.png',
                               title: l10n.t('sensorData'),
                               onTap: () => _openProtectedRoute(AppRoutes.sensor),
                             ),
@@ -821,7 +821,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             delayMs: 360,
                             animate: _animateContentIn,
                             child: DashboardTile(
-                              icon: Icons.store,
+                              imageAsset: 'assets/images/dashboard/tile_marketplace.png',
                               title: l10n.t('marketplace'),
                               onTap: () => Navigator.pushNamed(
                                 context,
@@ -833,7 +833,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             delayMs: 410,
                             animate: _animateContentIn,
                             child: DashboardTile(
-                              icon: Icons.calendar_month,
+                              imageAsset: 'assets/images/dashboard/tile_crop_calendar.png',
                               title: l10n.t('cropCalendar'),
                               onTap: () => Navigator.pushNamed(
                                 context,
