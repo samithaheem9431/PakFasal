@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/layout/responsive.dart';
+
 class DashboardTile extends StatefulWidget {
   const DashboardTile({
     super.key,
@@ -23,10 +25,14 @@ class _DashboardTileState extends State<DashboardTile> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleSize = context.scaleFont(12, min: 0.9, max: 1.2);
+    final hPad = context.screenWidth < 360 ? 6.0 : 8.0;
 
     // Light green background for tiles in light mode
-    final baseSurface = isDark ? scheme.surfaceContainerHighest : const Color(0xFFF1F8F5);
-    final pressedSurface = isDark ? scheme.surfaceContainerHigh : const Color(0xFFE8F5E9);
+    final baseSurface =
+        isDark ? scheme.surfaceContainerHighest : const Color(0xFFF1F8F5);
+    final pressedSurface =
+        isDark ? scheme.surfaceContainerHigh : const Color(0xFFE8F5E9);
 
     return AnimatedScale(
       scale: _pressed ? 0.96 : 1.0,
@@ -63,7 +69,7 @@ class _DashboardTileState extends State<DashboardTile> {
             onTapCancel: () => setState(() => _pressed = false),
             onTapUp: (_) => setState(() => _pressed = false),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
@@ -88,7 +94,7 @@ class _DashboardTileState extends State<DashboardTile> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 12,
+                      fontSize: titleSize,
                       height: 1.15,
                       letterSpacing: 0.2,
                       color: scheme.onSurface,

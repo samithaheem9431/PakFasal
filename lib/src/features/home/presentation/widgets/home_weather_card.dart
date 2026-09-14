@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../weather/domain/entities/weather_models.dart';
@@ -44,9 +45,12 @@ class HomeWeatherCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final feelsLike = (weather.temperatureC - 3).round();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor =
-        isDark ? AppColors.primaryGreen : Colors.white;
+    final borderColor = isDark ? AppColors.primaryGreen : Colors.white;
     final bgAsset = _isNight ? _nightBg : _dayBg;
+    final tempSize = context.scaleFont(56, min: 0.78, max: 1.15);
+    final unitSize = context.scaleFont(24, min: 0.85, max: 1.1);
+    final isNarrow = context.screenWidth < 360;
+    final contentPad = isNarrow ? 14.0 : 18.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -92,7 +96,12 @@ class HomeWeatherCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                  padding: EdgeInsets.fromLTRB(
+                    contentPad,
+                    contentPad,
+                    contentPad,
+                    14,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -110,9 +119,9 @@ class HomeWeatherCard extends StatelessWidget {
                               weather.locationLabel,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 14,
+                                fontSize: context.scaleFont(14),
                                 fontWeight: FontWeight.w600,
                                 height: 1.2,
                               ),
@@ -134,7 +143,7 @@ class HomeWeatherCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 18),
+                      SizedBox(height: isNarrow ? 12 : 18),
                       TweenAnimationBuilder<double>(
                         tween: Tween<double>(
                           begin: weather.temperatureC - 5,
@@ -148,19 +157,19 @@ class HomeWeatherCard extends StatelessWidget {
                               children: [
                                 TextSpan(
                                   text: value.toStringAsFixed(0),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 56,
+                                    fontSize: tempSize,
                                     fontWeight: FontWeight.w800,
                                     height: 0.95,
                                     letterSpacing: -1.5,
                                   ),
                                 ),
-                                const TextSpan(
+                                TextSpan(
                                   text: '°C',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 24,
+                                    fontSize: unitSize,
                                     fontWeight: FontWeight.w700,
                                     height: 1,
                                   ),
@@ -175,7 +184,7 @@ class HomeWeatherCard extends StatelessWidget {
                         '${l10n.t('feelsLike')} $feelsLike°',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.92),
-                          fontSize: 13,
+                          fontSize: context.scaleFont(13),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -184,7 +193,12 @@ class HomeWeatherCard extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+                  padding: EdgeInsets.fromLTRB(
+                    isNarrow ? 8 : 10,
+                    0,
+                    isNarrow ? 8 : 10,
+                    12,
+                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: BackdropFilter(
@@ -195,18 +209,19 @@ class HomeWeatherCard extends StatelessWidget {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.02),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.14),
-                            ),
+                          color: Colors.white.withValues(alpha: 0.02),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.14),
                           ),
+                        ),
                         child: Row(
                           children: [
                             _MetricColumn(
                               icon: Icons.water_drop_outlined,
                               value: '${weather.humidity.toStringAsFixed(0)}%',
                               label: humidityLabel,
+                              compact: isNarrow,
                             ),
                             Container(
                               width: 1,
@@ -217,6 +232,7 @@ class HomeWeatherCard extends StatelessWidget {
                               icon: Icons.cloudy_snowing,
                               value: '${weather.rainChancePercent}%',
                               label: rainChanceLabel,
+                              compact: isNarrow,
                             ),
                             Container(
                               width: 1,
@@ -228,6 +244,7 @@ class HomeWeatherCard extends StatelessWidget {
                               value:
                                   '${weather.windSpeedKmh.toStringAsFixed(0)} km/h',
                               label: l10n.t('wind'),
+                              compact: isNarrow,
                             ),
                           ],
                         ),
@@ -249,11 +266,13 @@ class _MetricColumn extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
+    this.compact = false,
   });
 
   final IconData icon;
   final String value;
   final String label;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -261,13 +280,15 @@ class _MetricColumn extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 20),
+          Icon(icon, color: Colors.white, size: compact ? 18 : 20),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: compact ? 13 : 15,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -279,7 +300,7 @@ class _MetricColumn extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 10,
+              fontSize: compact ? 9 : 10,
               fontWeight: FontWeight.w500,
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
@@ -436,8 +437,8 @@ class _FloatingGraphicState extends State<_FloatingGraphic>
         );
       },
       child: Container(
-        width: 160,
-        height: 160,
+        width: context.scale(160, min: 0.75, max: 1.15),
+        height: context.scale(160, min: 0.75, max: 1.15),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(

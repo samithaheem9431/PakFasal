@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/layout/responsive.dart';
+
 /// Shared visual building blocks for the Learning module's sub-screens
 /// (YouTube videos, Articles, Pests & Diseases, and their detail views), so
 /// search boxes, filter chips, empty states, loading skeletons and detail
@@ -339,14 +341,15 @@ class LearningGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final columns = context.topicGridColumns();
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 0.92,
+        childAspectRatio: columns == 1 ? 1.5 : 0.92,
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) =>

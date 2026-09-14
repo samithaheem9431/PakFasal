@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../layout/responsive.dart';
 import '../localization/app_localizations.dart';
 import '../routing/app_routes.dart';
 import '../theme/app_colors.dart';
@@ -163,7 +164,7 @@ class PakFasalScaffold extends StatelessWidget {
                             ? PakFasalFloatingBottomBar.clearance + bottomInset
                             : 0,
                       ),
-                      child: child,
+                      child: ResponsiveContent(child: child),
                     ),
                   );
                 },
@@ -203,55 +204,73 @@ class PakFasalFloatingBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final narrow = context.screenWidth < 360;
+    final sidePad = context.isExpanded ? 24.0 : (narrow ? 10.0 : 16.0);
 
     return Material(
       type: MaterialType.transparency,
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Container(
-            height: 68,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.primaryGreen : AppColors.white,
-              borderRadius: BorderRadius.circular(40),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.10),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: AppBreakpoints.maxContentWidth,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _BottomTabItem(
-                  icon: Icons.home,
-                  label: localizations.t('home'),
-                  isActive: selectedIndex == 0,
-                  onTap: () => onTap(0),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(sidePad, 0, sidePad, 12),
+              child: Container(
+                height: narrow ? 62 : 68,
+                padding: EdgeInsets.symmetric(
+                  horizontal: narrow ? 4 : 8,
+                  vertical: 6,
                 ),
-                _BottomTabItem(
-                  icon: Icons.smart_toy_outlined,
-                  label: localizations.t('askAi'),
-                  isActive: selectedIndex == 1,
-                  onTap: () => onTap(1),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.primaryGreen : AppColors.white,
+                  borderRadius: BorderRadius.circular(40),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          Colors.black.withValues(alpha: isDark ? 0.18 : 0.10),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                _BottomTabItem(
-                  icon: Icons.sensors_outlined,
-                  label: localizations.t('sensorData'),
-                  isActive: selectedIndex == 2,
-                  onTap: () => onTap(2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _BottomTabItem(
+                      icon: Icons.home,
+                      label: localizations.t('home'),
+                      isActive: selectedIndex == 0,
+                      onTap: () => onTap(0),
+                      compact: narrow,
+                    ),
+                    _BottomTabItem(
+                      icon: Icons.smart_toy_outlined,
+                      label: localizations.t('askAi'),
+                      isActive: selectedIndex == 1,
+                      onTap: () => onTap(1),
+                      compact: narrow,
+                    ),
+                    _BottomTabItem(
+                      icon: Icons.sensors_outlined,
+                      label: localizations.t('sensorData'),
+                      isActive: selectedIndex == 2,
+                      onTap: () => onTap(2),
+                      compact: narrow,
+                    ),
+                    _BottomTabItem(
+                      icon: Icons.person_outline,
+                      label: localizations.t('profile'),
+                      isActive: selectedIndex == 3,
+                      onTap: () => onTap(3),
+                      compact: narrow,
+                    ),
+                  ],
                 ),
-                _BottomTabItem(
-                  icon: Icons.person_outline,
-                  label: localizations.t('profile'),
-                  isActive: selectedIndex == 3,
-                  onTap: () => onTap(3),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -266,12 +285,14 @@ class _BottomTabItem extends StatelessWidget {
     required this.label,
     required this.isActive,
     required this.onTap,
+    this.compact = false,
   });
 
   final IconData icon;
   final String label;
   final bool isActive;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -281,50 +302,58 @@ class _BottomTabItem extends StatelessWidget {
         ? AppColors.white.withValues(alpha: 0.72)
         : const Color(0xFF4A5568);
 
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: isDark && isActive
-                ? AppColors.white.withValues(alpha: 0.18)
-                : null,
-            gradient: !isDark && isActive
-                ? const LinearGradient(
-                    colors: [
-                      Color(0xFF108D4C),
-                      Color(0xFF0A5E32),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 22,
-                color: isActive ? activeColor : inactiveColor,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+    return Expanded(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 4 : 8,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: isDark && isActive
+                  ? AppColors.white.withValues(alpha: 0.18)
+                  : null,
+              gradient: !isDark && isActive
+                  ? const LinearGradient(
+                      colors: [
+                        Color(0xFF108D4C),
+                        Color(0xFF0A5E32),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: compact ? 20 : 22,
                   color: isActive ? activeColor : inactiveColor,
                 ),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: compact ? 9 : 10,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive ? activeColor : inactiveColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

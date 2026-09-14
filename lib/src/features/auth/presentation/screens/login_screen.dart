@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -342,8 +343,14 @@ class _LoginViewState extends State<_LoginView>
 
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(22, 16, 22, 28),
-                      child: Column(
+                      padding: context.pagePadding(
+                        horizontal: 22,
+                        top: 16,
+                        bottom: 28,
+                      ),
+                      child: ResponsiveContent(
+                        maxWidth: 520,
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // Hero illustration area
@@ -351,12 +358,14 @@ class _LoginViewState extends State<_LoginView>
                             opacity: _fadeHeader,
                             child: Padding(
                               padding:
-                              const EdgeInsets.symmetric(vertical: 18),
+                              EdgeInsets.symmetric(
+                                vertical: context.screenHeight < 700 ? 8 : 18,
+                              ),
                               child: Column(
                                 children: [
                                   Container(
-                                    width: 80,
-                                    height: 80,
+                                    width: context.scale(80, min: 0.85, max: 1.1),
+                                    height: context.scale(80, min: 0.85, max: 1.1),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: scheme.surface,
@@ -372,7 +381,7 @@ class _LoginViewState extends State<_LoginView>
                                     child: Icon(
                                       Icons.agriculture_rounded,
                                       color: AppTheme.primaryGreen,
-                                      size: 40,
+                                      size: context.scale(40, min: 0.85, max: 1.1),
                                     ),
                                   ),
                                   const SizedBox(height: 14),
@@ -681,6 +690,7 @@ class _LoginViewState extends State<_LoginView>
                             ),
                           ),
                         ],
+                      ),
                       ),
                     ),
                   ),

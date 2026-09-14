@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/weather_models.dart';
@@ -74,8 +75,9 @@ class WeatherHighlightsGrid extends StatelessWidget {
       icon: Icons.insights_rounded,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 360;
-          final columns = isNarrow ? 1 : 2;
+          final columns = constraints.maxWidth < 360
+              ? 1
+              : context.gridColumns(compact: 2, medium: 3, expanded: 3);
           return GridView.builder(
             padding: EdgeInsets.zero,
             shrinkWrap: true,

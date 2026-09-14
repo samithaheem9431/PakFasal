@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
@@ -115,11 +116,10 @@ class _WeatherContent extends StatelessWidget {
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(
-        14,
-        14,
-        14,
-        24 + MediaQuery.of(context).padding.bottom,
+      padding: context.pagePadding(
+        horizontal: 14,
+        top: 14,
+        bottom: 24 + MediaQuery.of(context).padding.bottom,
       ),
       children: [
         if (weather.isStale) ...[

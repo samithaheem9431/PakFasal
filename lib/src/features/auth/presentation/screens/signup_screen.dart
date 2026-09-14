@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -198,8 +199,14 @@ class _SignupViewState extends State<_SignupView>
 
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 28),
-                      child: Column(
+                      padding: context.pagePadding(
+                        horizontal: 22,
+                        top: 10,
+                        bottom: 28,
+                      ),
+                      child: ResponsiveContent(
+                        maxWidth: 520,
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // Header
@@ -516,6 +523,7 @@ class _SignupViewState extends State<_SignupView>
                             ),
                           ),
                         ],
+                      ),
                       ),
                     ),
                   ),

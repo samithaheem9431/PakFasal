@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../providers/marketplace_provider.dart';
@@ -53,7 +54,7 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
             animate: _animateIn,
             delayMs: 20,
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: context.pagePadding(horizontal: 12, top: 12, bottom: 12),
               child: TextField(
                 onChanged: provider.setSearchQuery,
                 decoration: InputDecoration(
@@ -69,7 +70,7 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
             child: SizedBox(
               height: 44,
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: context.pagePadding(horizontal: 12),
                 scrollDirection: Axis.horizontal,
                 children: provider.categories
                     .map(
@@ -90,7 +91,7 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
             animate: _animateIn,
             delayMs: 140,
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: context.pagePadding(horizontal: 12, top: 12, bottom: 12),
               child: DropdownButtonFormField<String>(
                 value: provider.selectedCompany,
                 decoration: InputDecoration(
@@ -123,7 +124,11 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
                     )
                   : ListView.separated(
                       key: const ValueKey('products-list'),
-                      padding: const EdgeInsets.all(12),
+                      padding: context.pagePadding(
+                        horizontal: 12,
+                        top: 12,
+                        bottom: 12,
+                      ),
                       itemCount: products.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {

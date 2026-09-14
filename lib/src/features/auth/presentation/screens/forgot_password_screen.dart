@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -179,9 +180,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
                         Expanded(
                           child: SingleChildScrollView(
-                            padding:
-                            const EdgeInsets.fromLTRB(22, 16, 22, 28),
-                            child: SlideTransition(
+                            padding: context.pagePadding(
+                              horizontal: 22,
+                              top: 16,
+                              bottom: 28,
+                            ),
+                            child: ResponsiveContent(
+                              maxWidth: 520,
+                              child: SlideTransition(
                               position: _slideAll,
                               child: FadeTransition(
                                 opacity: _fadeAll,
@@ -338,6 +344,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                   ],
                                 ),
                               ),
+                            ),
                             ),
                           ),
                         ),

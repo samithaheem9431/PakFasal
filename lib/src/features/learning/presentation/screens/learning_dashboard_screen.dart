@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
@@ -118,8 +119,12 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
       title: l10n.t('learning'),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final columns = context.topicGridColumns();
+          final hPad = context.isCompact ? 20.0 : 28.0;
+          final aspect = columns == 1 ? 1.6 : (columns >= 3 ? 0.95 : 0.88);
+
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 28),
             child: ConstrainedBox(
               constraints:
               BoxConstraints(minHeight: constraints.maxHeight - 16),
@@ -168,13 +173,11 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                    SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      // Slightly taller than 0.90 so card Column (text + badge) does not
-                      // overflow on tight font metrics or accessibility text scale.
-                      childAspectRatio: 0.88,
+                      childAspectRatio: aspect,
                     ),
                     itemCount: items.length,
                     itemBuilder: (context, index) {

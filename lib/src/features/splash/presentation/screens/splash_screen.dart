@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/layout/responsive.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 
@@ -342,24 +343,27 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 30),
+                  SizedBox(height: context.heroHeight(30)),
                   FadeTransition(
                     opacity: _fadeLogo,
                     child: ScaleTransition(
                       scale: _pulse,
                       child: SizedBox(
-                        width: 164,
-                        height: 164,
+                        width: context.scale(164, min: 0.75, max: 1.15),
+                        height: context.scale(164, min: 0.75, max: 1.15),
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
                             AnimatedBuilder(
                               animation: _ring1,
-                              builder: (_, __) => Opacity(
+                              builder: (_, __) {
+                                final ringBase =
+                                    context.scale(100, min: 0.75, max: 1.15);
+                                return Opacity(
                                 opacity: (1 - _ring1.value) * 0.8,
                                 child: Container(
-                                  width: 100 * (1.0 + _ring1.value * 0.9),
-                                  height: 100 * (1.0 + _ring1.value * 0.9),
+                                  width: ringBase * (1.0 + _ring1.value * 0.9),
+                                  height: ringBase * (1.0 + _ring1.value * 0.9),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
@@ -369,7 +373,8 @@ class _SplashScreenState extends State<SplashScreen>
                                     ),
                                   ),
                                 ),
-                              ),
+                              );
+                              },
                             ),
                             AnimatedBuilder(
                               animation: _ring2,
