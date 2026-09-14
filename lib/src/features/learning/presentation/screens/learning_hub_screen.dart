@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
@@ -229,14 +231,53 @@ class LearningHubScreen extends StatelessWidget {
   }
 }
 
-// Banner Section Widget
-class _BannerSection extends StatelessWidget {
+// Banner Section Widget — auto-sliding carousel (same height as before)
+class _BannerSection extends StatefulWidget {
+  @override
+  State<_BannerSection> createState() => _BannerSectionState();
+}
+
+class _BannerSectionState extends State<_BannerSection> {
+  static const _aspectRatio = 1024 / 512;
+  static const _slides = <String>[
+    'assets/images/learning/banner_full.jpg',
+    'assets/images/learning/banner_slide_1.jpg',
+    'assets/images/learning/banner_slide_2.jpg',
+    'assets/images/learning/banner_slide_3.jpg',
+  ];
+
+  late final PageController _pageController;
+  Timer? _autoSlideTimer;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final next = (_currentPage + 1) % _slides.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoSlideTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
-    
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -245,7 +286,7 @@ class _BannerSection extends StatelessWidget {
         color: isDark ? scheme.surfaceContainerHighest : null,
         boxShadow: [
           BoxShadow(
-            color: isDark 
+            color: isDark
                 ? Colors.black.withValues(alpha: 0.3)
                 : Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -255,71 +296,114 @@ class _BannerSection extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        // Use image's natural aspect (1024x409) so nothing is cropped.
-        child: Image.asset(
-          'assets/images/learning/banner_full.jpg',
-          width: double.infinity,
-          fit: BoxFit.fitWidth,
-          alignment: Alignment.center,
-          errorBuilder: (context, error, stackTrace) {
-            // Fallback to old design if image fails
-            return AspectRatio(
-              aspectRatio: 1024 / 409,
-              child: Container(
-                color: isDark ? scheme.surfaceContainerHighest : Colors.white,
-                padding: const EdgeInsets.all(20),
+        child: AspectRatio(
+          aspectRatio: _aspectRatio,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                itemCount: _slides.length,
+                onPageChanged: (index) {
+                  setState(() => _currentPage = index);
+                },
+                itemBuilder: (context, index) {
+                  return Image.asset(
+                    _slides[index],
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: isDark
+                            ? scheme.surfaceContainerHighest
+                            : Colors.white,
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    l10n.t('learningHubEyebrow').toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: scheme.onSurfaceVariant,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    l10n.t('learningHeadlineQuestion'),
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: scheme.onSurface,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    l10n.t('learningDashboardHint'),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 2,
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 60,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 10,
                 child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            l10n.t('learningHubEyebrow').toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: scheme.onSurfaceVariant,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.t('learningHeadlineQuestion'),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: scheme.onSurface,
-                              height: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            l10n.t('learningDashboardHint'),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: scheme.onSurfaceVariant,
-                            ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_slides.length, (index) {
+                    final isActive = index == _currentPage;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: isActive ? 18 : 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 3,
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: Icon(
-                        Icons.image_not_supported,
-                        size: 60,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                    );
+                  }),
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );

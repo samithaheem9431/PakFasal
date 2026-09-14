@@ -78,6 +78,9 @@ flutter:
     - assets/images/learning/pest_disease.jpg
     - assets/images/learning/learning_banner.jpg
     - assets/images/learning/banner_full.jpg
+    - assets/images/learning/banner_slide_1.jpg
+    - assets/images/learning/banner_slide_2.jpg
+    - assets/images/learning/banner_slide_3.jpg
     - assets/images/dashboard/weather_bg.jpg
     - assets/images/dashboard/weather_bg_night.jpg
     - assets/images/dashboard/tile_learning.png

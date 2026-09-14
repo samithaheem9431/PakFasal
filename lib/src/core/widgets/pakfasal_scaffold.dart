@@ -155,13 +155,14 @@ class PakFasalScaffold extends StatelessWidget {
             Positioned.fill(
               child: Builder(
                 builder: (bodyContext) {
-                  final bottomInset = MediaQuery.paddingOf(bodyContext).bottom;
                   return SafeArea(
                     bottom: false,
                     child: Padding(
                       padding: EdgeInsets.only(
                         bottom: showBottomNavigation
-                            ? PakFasalFloatingBottomBar.clearance + bottomInset
+                            ? PakFasalFloatingBottomBar.contentClearance(
+                                bodyContext,
+                              )
                             : 0,
                       ),
                       child: ResponsiveContent(child: child),
@@ -195,7 +196,17 @@ class PakFasalFloatingBottomBar extends StatelessWidget {
     required this.onTap,
   });
 
-  static const double clearance = 88;
+  /// Space content needs above the screen bottom so it clears the floating bar.
+  static double contentClearance(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < 360;
+    final barHeight = narrow ? 62.0 : 68.0;
+    const padBelowBar = 12.0;
+    const gapAboveBar = 6.0;
+    return barHeight +
+        padBelowBar +
+        gapAboveBar +
+        MediaQuery.paddingOf(context).bottom;
+  }
 
   final int selectedIndex;
   final ValueChanged<int> onTap;

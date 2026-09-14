@@ -599,177 +599,215 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 onRefresh: _refreshDashboard,
                 color: AppColors.primaryGreen,
                 child: LayoutBuilder(
-                  builder: (context, _) {
+                  builder: (context, constraints) {
                     final columns = context.dashboardColumns();
-                    final hPad = context.isCompact ? 12.0 : 20.0;
-                    final aspect = columns >= 4
-                        ? 1.0
-                        : (columns == 2 ? 0.95 : 0.9);
+                    final hPad = context.isCompact ? 12.0 : 16.0;
+                    final bottomClearance =
+                        PakFasalFloatingBottomBar.contentClearance(context);
+                    const topPad = 4.0;
+                    const spacing = 10.0;
+                    final rows = (6 / columns).ceil();
 
                     return SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(
-                        hPad,
-                        4,
-                        hPad,
-                        12 +
-                            PakFasalFloatingBottomBar.clearance +
-                            MediaQuery.paddingOf(context).bottom,
-                      ),
-                      child: ResponsiveContent(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Consumer<WeatherProvider>(
-                              builder: (context, weather, _) {
-                                if (weather.current == null &&
-                                    weather.isLoadingCurrent) {
-                                  return const _FadeSlideIn(
-                                    delayMs: 40,
-                                    child: LoadingStateCard(),
-                                  );
-                                }
-                                if (weather.current == null) {
-                                  return _FadeSlideIn(
-                                    delayMs: 40,
-                                    child: ErrorStateCard(
-                                      onRetry: () => weather.loadCurrent(
-                                        forceRefresh: true,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                final data = weather.current!;
-                                final lastSyncAt = weather.lastSyncAt;
-                                final isOfflineMode = weather.isStale;
-                                return _FadeSlideIn(
-                                  delayMs: 40,
-                                  animate: _animateContentIn,
-                                  child: HomeWeatherCard(
-                                    weather: data,
-                                    temperatureLabel: l10n.t('temperature'),
-                                    humidityLabel: l10n.t('humidity'),
-                                    rainChanceLabel: l10n.t('rainChance'),
-                                    isOffline: isOfflineMode,
-                                    lastSyncedLabel: lastSyncAt == null
-                                        ? null
-                                        : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',
+                      child: SizedBox(
+                        height: constraints.maxHeight,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            hPad,
+                            topPad,
+                            hPad,
+                            bottomClearance,
+                          ),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxWidth: AppBreakpoints.maxContentWidth,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Consumer<WeatherProvider>(
+                                    builder: (context, weather, _) {
+                                      if (weather.current == null &&
+                                          weather.isLoadingCurrent) {
+                                        return const _FadeSlideIn(
+                                          delayMs: 40,
+                                          child: LoadingStateCard(),
+                                        );
+                                      }
+                                      if (weather.current == null) {
+                                        return _FadeSlideIn(
+                                          delayMs: 40,
+                                          child: ErrorStateCard(
+                                            onRetry: () => weather.loadCurrent(
+                                              forceRefresh: true,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      final data = weather.current!;
+                                      final lastSyncAt = weather.lastSyncAt;
+                                      final isOfflineMode = weather.isStale;
+                                      return _FadeSlideIn(
+                                        delayMs: 40,
+                                        animate: _animateContentIn,
+                                        child: HomeWeatherCard(
+                                          weather: data,
+                                          temperatureLabel:
+                                              l10n.t('temperature'),
+                                          humidityLabel: l10n.t('humidity'),
+                                          rainChanceLabel: l10n.t('rainChance'),
+                                          isOffline: isOfflineMode,
+                                          lastSyncedLabel: lastSyncAt == null
+                                              ? null
+                                              : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 14),
-                            _FadeSlideIn(
-                              delayMs: 120,
-                              animate: _animateContentIn,
-                              child: Text(
-                                l10n.t('quickAccess'),
-                                textHeightBehavior: const TextHeightBehavior(
-                                  applyHeightToFirstAscent: false,
-                                  applyHeightToLastDescent: false,
-                                ),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.4,
-                                      height: 1.0,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black,
+                                  const SizedBox(height: 10),
+                                  _FadeSlideIn(
+                                    delayMs: 120,
+                                    animate: _animateContentIn,
+                                    child: Text(
+                                      l10n.t('quickAccess'),
+                                      textHeightBehavior:
+                                          const TextHeightBehavior(
+                                        applyHeightToFirstAscent: false,
+                                        applyHeightToLastDescent: false,
+                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.4,
+                                            height: 1.0,
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
                                     ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Expanded(
+                                    child: LayoutBuilder(
+                                      builder: (context, gridConstraints) {
+                                        final usableHeight =
+                                            gridConstraints.maxHeight;
+                                        final tileHeight = rows <= 0
+                                            ? usableHeight
+                                            : (usableHeight -
+                                                    (rows - 1) * spacing) /
+                                                rows;
+                                        final safeTileHeight =
+                                            tileHeight > 0 ? tileHeight : 96.0;
+                                        final tileWidth =
+                                            (gridConstraints.maxWidth -
+                                                    (columns - 1) * spacing) /
+                                                columns;
+                                        return GridView.count(
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          padding: EdgeInsets.zero,
+                                          crossAxisCount: columns,
+                                          mainAxisSpacing: spacing,
+                                          crossAxisSpacing: spacing,
+                                          childAspectRatio:
+                                              tileWidth / safeTileHeight,
+                                          children: [
+                                            _FadeSlideIn(
+                                              delayMs: 160,
+                                              animate: _animateContentIn,
+                                              child: DashboardTile(
+                                                imageAsset:
+                                                    'assets/images/dashboard/tile_learning.png',
+                                                title: l10n.t('learning'),
+                                                onTap: () =>
+                                                    Navigator.pushNamed(
+                                                  context,
+                                                  AppRoutes.learning,
+                                                ),
+                                              ),
+                                            ),
+                                            _FadeSlideIn(
+                                              delayMs: 210,
+                                              animate: _animateContentIn,
+                                              child: DashboardTile(
+                                                imageAsset:
+                                                    'assets/images/dashboard/tile_weather.png',
+                                                title: l10n.t('weather'),
+                                                onTap: () =>
+                                                    Navigator.pushNamed(
+                                                  context,
+                                                  AppRoutes.weather,
+                                                ),
+                                              ),
+                                            ),
+                                            _FadeSlideIn(
+                                              delayMs: 260,
+                                              animate: _animateContentIn,
+                                              child: DashboardTile(
+                                                imageAsset:
+                                                    'assets/images/dashboard/tile_ask_ai.png',
+                                                title: l10n.t('askAi'),
+                                                onTap: () =>
+                                                    _openProtectedRoute(
+                                                  AppRoutes.aiQuery,
+                                                ),
+                                              ),
+                                            ),
+                                            _FadeSlideIn(
+                                              delayMs: 310,
+                                              animate: _animateContentIn,
+                                              child: DashboardTile(
+                                                imageAsset:
+                                                    'assets/images/dashboard/tile_sensor.png',
+                                                title: l10n.t('sensorData'),
+                                                onTap: () =>
+                                                    _openProtectedRoute(
+                                                  AppRoutes.sensor,
+                                                ),
+                                              ),
+                                            ),
+                                            _FadeSlideIn(
+                                              delayMs: 360,
+                                              animate: _animateContentIn,
+                                              child: DashboardTile(
+                                                imageAsset:
+                                                    'assets/images/dashboard/tile_marketplace.png',
+                                                title: l10n.t('marketplace'),
+                                                onTap: () =>
+                                                    Navigator.pushNamed(
+                                                  context,
+                                                  AppRoutes.marketplace,
+                                                ),
+                                              ),
+                                            ),
+                                            _FadeSlideIn(
+                                              delayMs: 410,
+                                              animate: _animateContentIn,
+                                              child: DashboardTile(
+                                                imageAsset:
+                                                    'assets/images/dashboard/tile_crop_calendar.png',
+                                                title: l10n.t('cropCalendar'),
+                                                onTap: () =>
+                                                    Navigator.pushNamed(
+                                                  context,
+                                                  AppRoutes.cropCalendar,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: EdgeInsets.zero,
-                              crossAxisCount: columns,
-                              mainAxisSpacing: 10,
-                              crossAxisSpacing: 10,
-                              childAspectRatio: aspect,
-                              children: [
-                                _FadeSlideIn(
-                                  delayMs: 160,
-                                  animate: _animateContentIn,
-                                  child: DashboardTile(
-                                    imageAsset:
-                                        'assets/images/dashboard/tile_learning.png',
-                                    title: l10n.t('learning'),
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.learning,
-                                    ),
-                                  ),
-                                ),
-                                _FadeSlideIn(
-                                  delayMs: 210,
-                                  animate: _animateContentIn,
-                                  child: DashboardTile(
-                                    imageAsset:
-                                        'assets/images/dashboard/tile_weather.png',
-                                    title: l10n.t('weather'),
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.weather,
-                                    ),
-                                  ),
-                                ),
-                                _FadeSlideIn(
-                                  delayMs: 260,
-                                  animate: _animateContentIn,
-                                  child: DashboardTile(
-                                    imageAsset:
-                                        'assets/images/dashboard/tile_ask_ai.png',
-                                    title: l10n.t('askAi'),
-                                    onTap: () => _openProtectedRoute(
-                                      AppRoutes.aiQuery,
-                                    ),
-                                  ),
-                                ),
-                                _FadeSlideIn(
-                                  delayMs: 310,
-                                  animate: _animateContentIn,
-                                  child: DashboardTile(
-                                    imageAsset:
-                                        'assets/images/dashboard/tile_sensor.png',
-                                    title: l10n.t('sensorData'),
-                                    onTap: () => _openProtectedRoute(
-                                      AppRoutes.sensor,
-                                    ),
-                                  ),
-                                ),
-                                _FadeSlideIn(
-                                  delayMs: 360,
-                                  animate: _animateContentIn,
-                                  child: DashboardTile(
-                                    imageAsset:
-                                        'assets/images/dashboard/tile_marketplace.png',
-                                    title: l10n.t('marketplace'),
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.marketplace,
-                                    ),
-                                  ),
-                                ),
-                                _FadeSlideIn(
-                                  delayMs: 410,
-                                  animate: _animateContentIn,
-                                  child: DashboardTile(
-                                    imageAsset:
-                                        'assets/images/dashboard/tile_crop_calendar.png',
-                                    title: l10n.t('cropCalendar'),
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.cropCalendar,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     );
