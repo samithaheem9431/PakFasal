@@ -25,6 +25,19 @@ class HomeWeatherCard extends StatelessWidget {
   final bool isOffline;
 
   static const _radius = 22.0;
+  static const _dayBg = 'assets/images/dashboard/weather_bg.jpg';
+  static const _nightBg = 'assets/images/dashboard/weather_bg_night.jpg';
+
+  bool get _isNight {
+    final now = DateTime.now();
+    final sunrise = weather.sunrise;
+    final sunset = weather.sunset;
+    if (sunrise != null && sunset != null) {
+      return now.isBefore(sunrise) || now.isAfter(sunset);
+    }
+    final hour = now.hour;
+    return hour < 6 || hour >= 19;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +46,7 @@ class HomeWeatherCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final borderColor =
         isDark ? AppColors.primaryGreen : Colors.white;
+    final bgAsset = _isNight ? _nightBg : _dayBg;
 
     return Container(
       decoration: BoxDecoration(
@@ -52,7 +66,7 @@ class HomeWeatherCard extends StatelessWidget {
           children: [
             Positioned.fill(
               child: Image.asset(
-                'assets/images/dashboard/weather_bg.jpg',
+                bgAsset,
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
               ),
