@@ -372,6 +372,20 @@ class AppLocalizations {
       'saveChanges': 'Save Changes',
       'saving': 'Saving...',
       'profileUpdated': 'Profile updated successfully.',
+      'changeProfilePhoto': 'Change profile photo',
+      'takePhoto': 'Take photo',
+      'chooseFromGallery': 'Choose from gallery',
+      'uploadingPhoto': 'Uploading photo...',
+      'profilePhotoUpdated': 'Profile photo updated successfully.',
+      'profilePhotoUploadFailed': 'Could not upload profile photo. Try again.',
+      'profilePhotoSaveFailed':
+          'Photo uploaded, but could not save to database. Deploy Firestore users rules.',
+      'removeProfilePhoto': 'Remove profile photo',
+      'profilePhotoRemoved': 'Profile photo removed.',
+      'profilePhotoRemoveFailed':
+          'Could not remove profile photo. Try again.',
+      'cloudinaryNotConfigured':
+          'Cloudinary is not configured. Add cloud name and upload preset.',
       'voice': 'Voice',
       'notifications': 'Notifications',
       'quickAccess': 'Quick Access',
@@ -1164,6 +1178,21 @@ class AppLocalizations {
       'saveChanges': 'تبدیلیاں محفوظ کریں',
       'saving': 'محفوظ کیا جا رہا ہے...',
       'profileUpdated': 'پروفائل کامیابی سے اپڈیٹ ہو گئی۔',
+      'changeProfilePhoto': 'پروفائل تصویر تبدیل کریں',
+      'takePhoto': 'تصویر لیں',
+      'chooseFromGallery': 'گیلری سے منتخب کریں',
+      'uploadingPhoto': 'تصویر اپ لوڈ ہو رہی ہے...',
+      'profilePhotoUpdated': 'پروفائل تصویر کامیابی سے اپڈیٹ ہو گئی۔',
+      'profilePhotoUploadFailed':
+          'پروفائل تصویر اپ لوڈ نہیں ہو سکی۔ دوبارہ کوشش کریں۔',
+      'profilePhotoSaveFailed':
+          'تصویر اپ لوڈ ہو گئی، مگر ڈیٹابیس میں محفوظ نہیں ہوئی۔ Firestore users rules ڈپلائے کریں۔',
+      'removeProfilePhoto': 'پروفائل تصویر ہٹائیں',
+      'profilePhotoRemoved': 'پروفائل تصویر ہٹا دی گئی۔',
+      'profilePhotoRemoveFailed':
+          'پروفائل تصویر نہیں ہٹ سکی۔ دوبارہ کوشش کریں۔',
+      'cloudinaryNotConfigured':
+          'Cloudinary سیٹ نہیں ہے۔ Cloud name اور upload preset شامل کریں۔',
       'voice': 'آواز',
       'notifications': 'اطلاعات',
       'quickAccess': 'فوری رسائی',

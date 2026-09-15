@@ -57,6 +57,15 @@ class AppConfig {
     defaultValue: 'dev',
   );
 
+  static const String _envCloudinaryCloudName = String.fromEnvironment(
+    'CLOUDINARY_CLOUD_NAME',
+    defaultValue: '',
+  );
+  static const String _envCloudinaryUploadPreset = String.fromEnvironment(
+    'CLOUDINARY_UPLOAD_PRESET',
+    defaultValue: '',
+  );
+
   // ── Runtime overrides loaded from bundled JSON ───────────────────────────
 
   static Map<String, String> _runtime = const <String, String>{};
@@ -144,6 +153,20 @@ class AppConfig {
   static bool get hasOpenWeatherApiKey => openWeatherApiKey.isNotEmpty;
   static bool get useOneCallV3 =>
       _openWeatherUseOneCallV3.toLowerCase() == 'true';
+
+  // ── Cloudinary (profile image uploads) ───────────────────────────────────
+
+  /// Cloud name from the Cloudinary dashboard.
+  static String get cloudinaryCloudName =>
+      _resolve('CLOUDINARY_CLOUD_NAME', _envCloudinaryCloudName, '');
+
+  /// Unsigned upload preset restricted to image uploads (e.g. folder
+  /// `pakfasal/profiles`). Never put the API secret in the app.
+  static String get cloudinaryUploadPreset =>
+      _resolve('CLOUDINARY_UPLOAD_PRESET', _envCloudinaryUploadPreset, '');
+
+  static bool get hasCloudinaryConfig =>
+      cloudinaryCloudName.isNotEmpty && cloudinaryUploadPreset.isNotEmpty;
 
   // ── Build-time environment label ─────────────────────────────────────────
 

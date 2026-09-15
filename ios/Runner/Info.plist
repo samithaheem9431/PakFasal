@@ -55,6 +55,10 @@
 	<string>PakFasal uses your location to show accurate weather and farming advisories for your area.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>PakFasal uses Face ID to unlock the app securely.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PakFasal needs camera access so you can set your profile photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>PakFasal needs photo library access so you can choose a profile photo.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
@@ -333,19 +332,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         offset: const Offset(0, 4),
                       ),
                     ],
+                    image: auth.userPhotoUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(auth.userPhotoUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: Center(
-                    child: Text(
-                      displayName.isNotEmpty
-                          ? displayName[0].toUpperCase()
-                          : 'F',
-                      style: const TextStyle(
-                        color: AppColors.primaryGreen,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 32,
-                      ),
-                    ),
-                  ),
+                  child: auth.userPhotoUrl != null
+                      ? null
+                      : Center(
+                          child: Text(
+                            displayName.isNotEmpty
+                                ? displayName[0].toUpperCase()
+                                : 'F',
+                            style: const TextStyle(
+                              color: AppColors.primaryGreen,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 32,
+                            ),
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 16),
                 // User name
