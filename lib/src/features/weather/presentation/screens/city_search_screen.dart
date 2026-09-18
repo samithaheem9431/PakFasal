@@ -23,13 +23,22 @@ class _CitySearchScreenState extends State<CitySearchScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   Timer? _debounce;
+  WeatherProvider? _weather;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       _focusNode.requestFocus();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache before dispose — context.read is unsafe during unmount.
+    _weather = context.read<WeatherProvider>();
   }
 
   @override
@@ -37,7 +46,13 @@ class _CitySearchScreenState extends State<CitySearchScreen> {
     _debounce?.cancel();
     _controller.dispose();
     _focusNode.dispose();
-    context.read<WeatherProvider>().clearSearch();
+    // Defer notifyListeners — calling during unmount locks the tree.
+    final weather = _weather;
+    if (weather != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        weather.clearSearch();
+      });
+    }
     super.dispose();
   }
 

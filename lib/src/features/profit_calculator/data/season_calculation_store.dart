@@ -13,20 +13,27 @@ class SeasonCalculationStore {
 
   Box? _box;
 
-  Box get _ensureBox {
+  Future<Box> _ensureBox() async {
     final existing = _box;
     if (existing != null && existing.isOpen) return existing;
-    _box = Hive.box(boxName);
+
+    if (Hive.isBoxOpen(boxName)) {
+      _box = Hive.box(boxName);
+    } else {
+      _box = await Hive.openBox(boxName);
+    }
     return _box!;
   }
 
-  List<SeasonCalculation> loadAll() {
-    final raw = _ensureBox.get(_listKey);
-    if (raw is! String || raw.isEmpty) return const [];
-
+  Future<List<SeasonCalculation>> loadAll() async {
     try {
+      final box = await _ensureBox();
+      final raw = box.get(_listKey);
+      if (raw is! String || raw.isEmpty) return <SeasonCalculation>[];
+
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return const [];
+      if (decoded is! List) return <SeasonCalculation>[];
+
       final seasons = <SeasonCalculation>[];
       for (final item in decoded) {
         if (item is! Map) continue;
@@ -37,12 +44,12 @@ class SeasonCalculationStore {
       seasons.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return seasons;
     } catch (_) {
-      return const [];
+      return <SeasonCalculation>[];
     }
   }
 
   Future<void> save(SeasonCalculation season) async {
-    final list = loadAll();
+    final list = [...await loadAll()];
     final index = list.indexWhere((s) => s.id == season.id);
     if (index >= 0) {
       list[index] = season;
@@ -53,14 +60,16 @@ class SeasonCalculationStore {
   }
 
   Future<void> delete(String id) async {
-    final list = loadAll().where((s) => s.id != id).toList();
+    final list = [...await loadAll()]..removeWhere((s) => s.id == id);
     await _persist(list);
   }
 
   Future<void> _persist(List<SeasonCalculation> seasons) async {
+    final box = await _ensureBox();
     final sorted = [...seasons]
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final encoded = jsonEncode(sorted.map((s) => s.toMap()).toList());
-    await _ensureBox.put(_listKey, encoded);
+    await box.put(_listKey, encoded);
+    await box.flush();
   }
 }

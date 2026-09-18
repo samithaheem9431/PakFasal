@@ -5,57 +5,68 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/weather_models.dart';
 import '../utils/weather_view_mapper.dart';
-import 'section_card.dart';
+import 'weather_glass_card.dart';
 
-/// 7-day forecast vertical list. Each row is a card with the day, weather
-/// icon, rain probability, and a small Hi/Lo bar that visualizes the day's
-/// temperature range relative to the week's overall range.
+/// Apple-style multi-day forecast with temperature range bars.
 class DailyForecastList extends StatelessWidget {
-  const DailyForecastList({super.key, required this.forecast});
+  const DailyForecastList({
+    super.key,
+    required this.forecast,
+    this.currentTempC,
+  });
 
   final List<DailyForecast> forecast;
+  final double? currentTempC;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (forecast.isEmpty) {
-      return SectionCard(
-        title: l10n.t('weather7DayTitle'),
-        icon: Icons.date_range_rounded,
+      return WeatherGlassCard(
         child: SizedBox(
           height: 60,
           child: Center(
-            child: Text(
-              l10n.t('loading'),
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+            child: Text(l10n.t('loading'), style: WeatherGlassStyle.caption(context)),
           ),
         ),
       );
     }
 
-    final allMin = forecast.map((d) => d.minTempC).reduce(_min);
-    final allMax = forecast.map((d) => d.maxTempC).reduce(_max);
+    final days = forecast.take(10).toList();
+    final allMin = days.map((d) => d.minTempC).reduce(_min);
+    final allMax = days.map((d) => d.maxTempC).reduce(_max);
 
-    return SectionCard(
-      title: l10n.t('weather7DayTitle'),
-      icon: Icons.date_range_rounded,
+    return WeatherGlassCard(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var i = 0; i < forecast.length.clamp(0, 7); i++)
-            Padding(
-              padding: EdgeInsets.only(top: i == 0 ? 0 : 6),
-              child: _DailyRow(
-                forecast: forecast[i],
-                isToday: i == 0,
-                isTomorrow: i == 1,
-                weekMin: allMin,
-                weekMax: allMax,
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_month_rounded,
+                size: 14,
+                color: WeatherGlassStyle.label(context),
               ),
+              const SizedBox(width: 6),
+              Text(
+                l10n.t('weather10DayTitle').toUpperCase(),
+                style: WeatherGlassStyle.sectionLabel(context, size: 11),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          for (var i = 0; i < days.length; i++) ...[
+            if (i > 0)
+              Divider(height: 1, color: WeatherGlassStyle.divider(context)),
+            _DailyRow(
+              forecast: days[i],
+              isToday: i == 0,
+              weekMin: allMin,
+              weekMax: allMax,
+              currentTempC: i == 0 ? currentTempC : null,
             ),
+          ],
         ],
       ),
     );
@@ -67,7 +78,6 @@ class DailyForecastList extends StatelessWidget {
 
 String? _localizedWeekday(AppLocalizations l10n, DateTime? date) {
   if (date == null) return null;
-  // DateTime.weekday: 1 = Mon ... 7 = Sun
   const keys = [
     'dowMon',
     'dowTue',
@@ -85,93 +95,66 @@ class _DailyRow extends StatelessWidget {
   const _DailyRow({
     required this.forecast,
     required this.isToday,
-    required this.isTomorrow,
     required this.weekMin,
     required this.weekMax,
+    this.currentTempC,
   });
 
   final DailyForecast forecast;
   final bool isToday;
-  final bool isTomorrow;
   final double weekMin;
   final double weekMax;
+  final double? currentTempC;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
     final dayLabel = isToday
         ? l10n.t('weatherToday')
-        : isTomorrow
-            ? l10n.t('weatherTomorrow')
-            : _localizedWeekday(l10n, forecast.date) ??
-                forecast.dateLabel.split(',').first;
+        : _localizedWeekday(l10n, forecast.date) ??
+            forecast.dateLabel.split(',').first;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          // Day label — clip with ellipsis on long Urdu labels.
           SizedBox(
-            width: 60,
+            width: 56,
             child: Text(
               dayLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
-                color: isToday ? AppColors.primaryGreen : scheme.onSurface,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: WeatherGlassStyle.value(context)),
             ),
           ),
-          // Icon
           SizedBox(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             child: _DailyIcon(
               iconCode: forecast.iconCode,
               fallback: WeatherViewMapper.iconForCode(forecast.conditionCode),
             ),
           ),
-          const SizedBox(width: 6),
-          // Rain probability — use FittedBox so "100%" never overflows.
           SizedBox(
-            width: 46,
+            width: 40,
             child: forecast.rainChance > 0
-                ? FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.grain,
-                          size: 13,
-                          color: AppColors.weatherBlue,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          '${forecast.rainChance}%',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.weatherBlue,
-                          ),
-                        ),
-                      ],
+                ? Text(
+                    '${forecast.rainChance}%',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF64B5F6),
                     ),
                   )
                 : const SizedBox.shrink(),
           ),
-          const SizedBox(width: 6),
-          // Temperature range bar
           Expanded(
             child: _TempRangeBar(
               min: forecast.minTempC,
               max: forecast.maxTempC,
               weekMin: weekMin,
               weekMax: weekMax,
+              currentTempC: currentTempC,
             ),
           ),
         ],
@@ -190,33 +173,33 @@ class _DailyIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = WeatherViewMapper.networkIconUrl(iconCode);
     if (url == null) {
-      return Icon(fallback, size: 22, color: AppColors.cropYellow);
+      return Icon(fallback, size: 22, color: WeatherGlassStyle.icon(context));
     }
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.contain,
       placeholder: (_, __) =>
-          Icon(fallback, size: 22, color: AppColors.cropYellow),
+          Icon(fallback, size: 22, color: WeatherGlassStyle.icon(context)),
       errorWidget: (_, __, ___) =>
-          Icon(fallback, size: 22, color: AppColors.cropYellow),
+          Icon(fallback, size: 22, color: WeatherGlassStyle.icon(context)),
     );
   }
 }
 
-/// Mini bar that shows where today's min/max sits within the week's range,
-/// styled like Apple Weather's daily list.
 class _TempRangeBar extends StatelessWidget {
   const _TempRangeBar({
     required this.min,
     required this.max,
     required this.weekMin,
     required this.weekMax,
+    this.currentTempC,
   });
 
   final double min;
   final double max;
   final double weekMin;
   final double weekMax;
+  final double? currentTempC;
 
   @override
   Widget build(BuildContext context) {
@@ -227,64 +210,91 @@ class _TempRangeBar extends StatelessWidget {
           child: Text(
             '${min.toStringAsFixed(0)}°',
             textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: WeatherGlassStyle.label(context)),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final span = (weekMax - weekMin).abs().clamp(1, 1000).toDouble();
               final leftFrac = ((min - weekMin) / span).clamp(0.0, 1.0);
-              final widthFrac =
-                  ((max - min).abs() / span).clamp(0.05, 1.0);
-              return Stack(
-                children: [
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  Positioned(
-                    left: leftFrac * constraints.maxWidth,
-                    top: 0,
-                    child: Container(
-                      width: widthFrac * constraints.maxWidth,
-                      height: 6,
+              final widthFrac = ((max - min).abs() / span).clamp(0.05, 1.0);
+              final barLeft = leftFrac * constraints.maxWidth;
+              final barWidth = widthFrac * constraints.maxWidth;
+
+              double? markerX;
+              if (currentTempC != null) {
+                final m =
+                    ((currentTempC! - weekMin) / span).clamp(0.0, 1.0);
+                markerX = m * constraints.maxWidth;
+              }
+
+              return SizedBox(
+                height: 10,
+                child: Stack(
+                  alignment: Alignment.centerLeft,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: 4,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            AppColors.weatherBlue,
-                            AppColors.cropYellow,
-                            Color(0xFFEF5350),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(6),
+                        color: WeatherGlassStyle.value(context).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      left: barLeft,
+                      child: Container(
+                        width: barWidth,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF64B5F6),
+                              Color(0xFFFFD54F),
+                              Color(0xFFFF8A65),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    if (markerX != null)
+                      Positioned(
+                        left: markerX - 5,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primaryGreen,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryGreen
+                                    .withValues(alpha: 0.25),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               );
             },
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         SizedBox(
-          width: 30,
+          width: 34,
           child: Text(
             '${max.toStringAsFixed(0)}°',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: WeatherGlassStyle.value(context)),
           ),
         ),
       ],

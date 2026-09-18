@@ -8,7 +8,8 @@ enum IncomeMode { totalSale, yieldTimesRate }
 class ProfitCalculatorProvider extends ChangeNotifier {
   ProfitCalculatorProvider({SeasonCalculationStore? store})
       : _store = store ?? SeasonCalculationStore() {
-    refreshSaved();
+    // Load saved seasons after construction (async Hive open-safe).
+    Future.microtask(refreshSaved);
   }
 
   final SeasonCalculationStore _store;
@@ -30,6 +31,8 @@ class ProfitCalculatorProvider extends ChangeNotifier {
 
   List<SeasonCalculation> savedSeasons = const [];
   int formSyncToken = 0;
+  bool isSaving = false;
+  String? lastError;
 
   double get totalExpense =>
       seedCost +
@@ -57,8 +60,14 @@ class ProfitCalculatorProvider extends ChangeNotifier {
 
   bool get canSave => cropName.trim().isNotEmpty;
 
-  void refreshSaved() {
-    savedSeasons = _store.loadAll();
+  Future<void> refreshSaved() async {
+    try {
+      savedSeasons = await _store.loadAll();
+      lastError = null;
+    } catch (e) {
+      savedSeasons = <SeasonCalculation>[];
+      lastError = e.toString();
+    }
     notifyListeners();
   }
 
@@ -167,50 +176,78 @@ class ProfitCalculatorProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns `true` on success, `false` if crop name missing, throws on Hive errors
+  /// only after setting [lastError] — callers should check return + [lastError].
   Future<bool> saveSeason() async {
-    if (!canSave) return false;
+    if (!canSave) {
+      lastError = null;
+      return false;
+    }
 
-    final now = DateTime.now();
-    final income = effectiveIncome;
-    final season = SeasonCalculation(
-      id: _editingId.isEmpty
-          ? 'season_${now.microsecondsSinceEpoch}'
-          : _editingId,
-      cropName: cropName.trim(),
-      areaAcres: areaAcres,
-      seedCost: seedCost,
-      fertilizerCost: fertilizerCost,
-      pesticideCost: pesticideCost,
-      labourCost: labourCost,
-      irrigationCost: irrigationCost,
-      transportCost: transportCost,
-      otherCost: otherCost,
-      incomeTotal: income,
-      yieldAmount:
-          incomeMode == IncomeMode.yieldTimesRate ? yieldAmount : 0,
-      marketRate:
-          incomeMode == IncomeMode.yieldTimesRate ? marketRate : 0,
-      createdAt: () {
-        if (_editingId.isEmpty) return now;
+    isSaving = true;
+    lastError = null;
+    notifyListeners();
+
+    try {
+      final now = DateTime.now();
+      final income = effectiveIncome;
+      DateTime createdAt = now;
+      if (_editingId.isNotEmpty) {
         for (final s in savedSeasons) {
-          if (s.id == _editingId) return s.createdAt;
+          if (s.id == _editingId) {
+            createdAt = s.createdAt;
+            break;
+          }
         }
-        return now;
-      }(),
-    );
+      }
 
-    await _store.save(season);
-    _editingId = season.id;
-    refreshSaved();
-    return true;
+      final season = SeasonCalculation(
+        id: _editingId.isEmpty
+            ? 'season_${now.microsecondsSinceEpoch}'
+            : _editingId,
+        cropName: cropName.trim(),
+        areaAcres: areaAcres,
+        seedCost: seedCost,
+        fertilizerCost: fertilizerCost,
+        pesticideCost: pesticideCost,
+        labourCost: labourCost,
+        irrigationCost: irrigationCost,
+        transportCost: transportCost,
+        otherCost: otherCost,
+        incomeTotal: income,
+        yieldAmount:
+            incomeMode == IncomeMode.yieldTimesRate ? yieldAmount : 0,
+        marketRate:
+            incomeMode == IncomeMode.yieldTimesRate ? marketRate : 0,
+        createdAt: createdAt,
+      );
+
+      await _store.save(season);
+      _editingId = season.id;
+      savedSeasons = await _store.loadAll();
+      return true;
+    } catch (e) {
+      lastError = e.toString();
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
   }
 
   Future<void> deleteSeason(String id) async {
-    await _store.delete(id);
-    if (_editingId == id) {
-      clearForm();
-    } else {
-      refreshSaved();
+    try {
+      await _store.delete(id);
+      lastError = null;
+      if (_editingId == id) {
+        clearForm();
+        await refreshSaved();
+      } else {
+        await refreshSaved();
+      }
+    } catch (e) {
+      lastError = e.toString();
+      notifyListeners();
     }
   }
 }

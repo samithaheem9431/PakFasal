@@ -1,58 +1,58 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/weather_models.dart';
 
-/// Returns a tasteful background gradient for the hero card based on the
-/// current weather condition + time of day.
-///
-/// We deliberately pick muted, agriculture-friendly tones (deep canal blue,
-/// soft sunset amber, overcast slate) rather than saturated weather-app
-/// gradients — the rest of the app uses a green palette and we want the
-/// weather screen to feel premium without screaming.
+/// Sky / hero gradients — bright sky-blue in light, deep blue-green in dark.
 class WeatherGradients {
   WeatherGradients._();
 
-  static List<Color> forCurrent(CurrentWeather current) {
+  static List<Color> forCurrent(
+    CurrentWeather current, {
+    bool isDark = false,
+  }) {
     final code = current.conditionCode;
-    final isNight = _isNight(current);
-
-    // Thunderstorm / storm — moody indigo
-    if (code >= 95) {
-      return const [Color(0xFF1E2A47), Color(0xFF3D4E73)];
-    }
-    // Snow — frosted blue
-    if (code >= 71 && code <= 86) {
-      return const [Color(0xFF6A8FB1), Color(0xFFB7D2E6)];
-    }
-    // Rain / showers — overcast slate-blue
-    if (code >= 51 && code <= 82) {
-      return const [Color(0xFF2C5E7C), Color(0xFF4F86A8)];
-    }
-    // Fog / mist
-    if (code == 45 || code == 48) {
-      return const [Color(0xFF6E7A82), Color(0xFFA8B2B8)];
-    }
-    // Cloudy
-    if (code >= 2 && code <= 3) {
-      return isNight
-          ? const [Color(0xFF2A3850), Color(0xFF455A78)]
-          : const [Color(0xFF4A6B85), Color(0xFF7FA0BA)];
-    }
-    // Clear / partly cloudy
-    if (isNight) {
-      return const [Color(0xFF1B2A4E), Color(0xFF34487A)];
-    }
-    // Default sunny — deep canal blue (matches PakFasal "sky" identity)
-    return const [Color(0xFF1C6B9E), Color(0xFF3A8DB8)];
+    final isNight = isNightNow(current);
+    // Same deep blue sky in light + dark (user preference).
+    return _blueSky(code, isNight);
   }
 
-  /// Soft surface accent matching the hero gradient (used by chips / chips
-  /// on the hero card).
-  static Color heroSurface() => const Color(0x26FFFFFF);
-  static Color heroSubtext() => const Color(0x99FFFFFF);
-  static Color heroMuted() => const Color(0x66FFFFFF);
+  static List<Color> _blueSky(int code, bool isNight) {
+    if (code >= 95) {
+      return const [Color(0xFF1A237E), Color(0xFF283593), Color(0xFF102017)];
+    }
+    if (code >= 71 && code <= 86) {
+      return const [Color(0xFF263238), Color(0xFF37474F), Color(0xFF102017)];
+    }
+    if (code >= 51 && code <= 82) {
+      return const [Color(0xFF0D47A1), Color(0xFF1565C0), Color(0xFF0F3818)];
+    }
+    if (code == 45 || code == 48) {
+      return const [Color(0xFF37474F), Color(0xFF455A64), Color(0xFF102017)];
+    }
+    if (code >= 2 && code <= 3) {
+      return const [Color(0xFF1B3A4B), Color(0xFF24556A), Color(0xFF102017)];
+    }
+    if (isNight) {
+      return const [Color(0xFF0D47A1), Color(0xFF0F3818), Color(0xFF102017)];
+    }
+    return const [
+      Color(0xFF1565C0),
+      Color(0xFF0D47A1),
+      Color(0xFF0F3818),
+    ];
+  }
 
-  static bool _isNight(CurrentWeather c) {
+  static Color scaffoldFallback({required bool isDark}) =>
+      const Color(0xFF0D47A1);
+
+  /// White hero text — sky is deep blue in both themes.
+  static Color heroText({required bool isDark}) => AppColors.white;
+
+  static Color heroSubtext({required bool isDark}) =>
+      AppColors.white.withValues(alpha: 0.85);
+
+  static bool isNightNow(CurrentWeather c) {
     final now = c.observedAt ?? DateTime.now();
     final sunrise = c.sunrise;
     final sunset = c.sunset;

@@ -49,14 +49,19 @@ class _ProfitCalculatorViewState extends State<_ProfitCalculatorView> {
 
   Future<void> _save(ProfitCalculatorProvider provider) async {
     final l10n = AppLocalizations.of(context);
+    // Ensure latest crop text is in the provider before validating/saving.
+    provider.setCropName(_cropController.text);
+
     final ok = await provider.saveSeason();
     if (!mounted) return;
+
+    final error = provider.lastError;
+    final message = error != null
+        ? l10n.t('seasonSaveFailed')
+        : (ok ? l10n.t('seasonSaved') : l10n.t('seasonSaveNeedCrop'));
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          ok ? l10n.t('seasonSaved') : l10n.t('seasonSaveNeedCrop'),
-        ),
-      ),
+      SnackBar(content: Text(message)),
     );
   }
 
@@ -266,13 +271,24 @@ class _ProfitCalculatorViewState extends State<_ProfitCalculatorView> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _save(provider),
+                  onPressed: provider.isSaving
+                      ? null
+                      : () => _save(provider),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryGreen,
                     foregroundColor: AppColors.white,
                     minimumSize: const Size(0, 48),
                   ),
-                  child: Text(l10n.t('saveSeason')),
+                  child: provider.isSaving
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: AppColors.white,
+                          ),
+                        )
+                      : Text(l10n.t('saveSeason')),
                 ),
               ),
             ],

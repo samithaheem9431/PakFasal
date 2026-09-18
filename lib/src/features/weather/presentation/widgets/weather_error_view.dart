@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/pakfasal_scaffold.dart';
 
-/// Friendly empty / error state shown when the very first fetch fails
-/// and there is no cached data available either.
+/// Empty / error state — light / dark aware.
 class WeatherErrorView extends StatelessWidget {
   const WeatherErrorView({
     super.key,
@@ -22,9 +22,16 @@ class WeatherErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final bottom = PakFasalFloatingBottomBar.contentClearance(context);
+    final textColor = dark ? AppColors.white : AppColors.darkText;
+    final muted = dark
+        ? AppColors.white.withValues(alpha: 0.7)
+        : AppColors.mutedText;
+
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
+      padding: EdgeInsets.fromLTRB(20, 24, 20, bottom + 16),
       children: [
         Container(
           width: 96,
@@ -32,12 +39,13 @@ class WeatherErrorView extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.primaryGreen.withValues(alpha: 0.10),
+            color: (dark ? AppColors.lightGreen : AppColors.primaryGreen)
+                .withValues(alpha: 0.12),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.cloud_off_rounded,
             size: 44,
-            color: AppColors.primaryGreen,
+            color: dark ? AppColors.lightGreen : AppColors.primaryGreen,
           ),
         ),
         Center(
@@ -47,7 +55,7 @@ class WeatherErrorView extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: textColor,
             ),
           ),
         ),
@@ -56,10 +64,7 @@ class WeatherErrorView extends StatelessWidget {
           Text(
             message!,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 12, color: muted),
           ),
         ],
         const SizedBox(height: 22),
@@ -87,8 +92,11 @@ class WeatherErrorView extends StatelessWidget {
               icon: const Icon(Icons.search_rounded),
               label: Text(l10n.t('weatherSearchCity')),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryGreen,
-                side: const BorderSide(color: AppColors.primaryGreen),
+                foregroundColor:
+                    dark ? AppColors.lightGreen : AppColors.primaryGreen,
+                side: BorderSide(
+                  color: dark ? AppColors.lightGreen : AppColors.primaryGreen,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -100,8 +108,14 @@ class WeatherErrorView extends StatelessWidget {
           const SizedBox(height: 10),
           TextButton.icon(
             onPressed: onUseLocation,
-            icon: const Icon(Icons.my_location_rounded),
-            label: Text(l10n.t('weatherUseCurrentLocation')),
+            icon: const Icon(
+              Icons.my_location_rounded,
+              color: AppColors.weatherBlue,
+            ),
+            label: Text(
+              l10n.t('weatherUseCurrentLocation'),
+              style: const TextStyle(color: AppColors.weatherBlue),
+            ),
           ),
         ],
       ],

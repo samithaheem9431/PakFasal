@@ -2,33 +2,32 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/weather_models.dart';
 import '../utils/weather_view_mapper.dart';
-import 'section_card.dart';
+import 'weather_glass_card.dart';
 
-/// Horizontal slider of hourly forecast pills. Highlights "Now" with a
-/// filled green pill so the current hour is visually anchored.
+/// Apple-style hourly strip with a one-line condition summary above.
 class HourlyForecastSlider extends StatelessWidget {
-  const HourlyForecastSlider({super.key, required this.hourly});
+  const HourlyForecastSlider({
+    super.key,
+    required this.hourly,
+    this.summary,
+  });
 
   final List<HourlyForecastPoint> hourly;
+  final String? summary;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (hourly.isEmpty) {
-      return SectionCard(
-        title: l10n.t('weatherHourlyTitle'),
+      return WeatherGlassCard(
         child: SizedBox(
           height: 60,
           child: Center(
             child: Text(
               l10n.t('loading'),
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              style: WeatherGlassStyle.caption(context),
             ),
           ),
         ),
@@ -36,37 +35,62 @@ class HourlyForecastSlider extends StatelessWidget {
     }
 
     final items = hourly.take(12).toList();
+    final summaryText = summary ?? _defaultSummary(l10n, items.first);
 
-    return SectionCard(
-      title: l10n.t('weatherHourlyTitle'),
-      child: SizedBox(
-        height: 118,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (context, index) {
-            final point = items[index];
-            final isNow = index == 0;
-            return _HourlyPill(
-              label: isNow ? l10n.t('weatherNow') : point.timeLabel,
-              tempC: point.temperatureC,
-              isNow: isNow,
-              iconCode: point.iconCode,
-              fallbackIcon:
-                  WeatherViewMapper.iconForCode(point.conditionCode),
-              rainProbability: point.rainProbabilityPercent,
-            );
-          },
-        ),
+    return WeatherGlassCard(
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            summaryText,
+            style: WeatherGlassStyle.body(context, size: 13),
+          ),
+          const SizedBox(height: 10),
+          Divider(height: 1, color: WeatherGlassStyle.divider(context)),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 96,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 14),
+              itemBuilder: (context, index) {
+                final point = items[index];
+                final isNow = index == 0;
+                return _HourlyColumn(
+                  label: isNow ? l10n.t('weatherNow') : point.timeLabel,
+                  tempC: point.temperatureC,
+                  isNow: isNow,
+                  iconCode: point.iconCode,
+                  fallbackIcon:
+                      WeatherViewMapper.iconForCode(point.conditionCode),
+                  rainProbability: point.rainProbabilityPercent,
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  String _defaultSummary(AppLocalizations l10n, HourlyForecastPoint first) {
+    final condition = WeatherViewMapper.localizedCondition(
+      l10n,
+      first.conditionCode,
+    );
+    final wind = first.windSpeedKmh;
+    if (wind != null && wind > 0) {
+      return '$condition. ${l10n.t('wind')} '
+          '${wind.toStringAsFixed(0)} ${l10n.t('kmh')}.';
+    }
+    return condition;
+  }
 }
 
-class _HourlyPill extends StatelessWidget {
-  const _HourlyPill({
+class _HourlyColumn extends StatelessWidget {
+  const _HourlyColumn({
     required this.label,
     required this.tempC,
     required this.isNow,
@@ -84,87 +108,49 @@ class _HourlyPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 64,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-      decoration: BoxDecoration(
-        color: isNow
-            ? AppColors.primaryGreen
-            : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: isNow
-              ? AppColors.primaryGreen
-              : AppColors.primaryGreen.withValues(alpha: 0.10),
-          width: 1,
-        ),
-        boxShadow: isNow
-            ? [
-                BoxShadow(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.30),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
+    final valueColor = WeatherGlassStyle.value(context);
+    return SizedBox(
+      width: 52,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: isNow ? AppColors.white : scheme.onSurfaceVariant,
+              fontSize: 13,
+              fontWeight: isNow ? FontWeight.w700 : FontWeight.w500,
+              color: valueColor,
             ),
           ),
-          const SizedBox(height: 6),
+          if (rainProbability != null && rainProbability! >= 20)
+            Text(
+              '$rainProbability%',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64B5F6),
+              ),
+            )
+          else
+            const SizedBox(height: 14),
           SizedBox(
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             child: _IconOrFallback(
               iconCode: iconCode,
               fallbackIcon: fallbackIcon,
-              tint: isNow ? AppColors.cropYellow : AppColors.cropYellow,
             ),
           ),
-          const SizedBox(height: 4),
           Text(
             '${tempC.toStringAsFixed(0)}°',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: isNow ? AppColors.white : scheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: valueColor,
             ),
           ),
-          if (rainProbability != null && rainProbability! > 0) ...[
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.grain,
-                  size: 10,
-                  color: isNow
-                      ? AppColors.white.withValues(alpha: 0.85)
-                      : AppColors.weatherBlue,
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  '$rainProbability%',
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    color: isNow
-                        ? AppColors.white.withValues(alpha: 0.85)
-                        : AppColors.weatherBlue,
-                  ),
-                ),
-              ],
-            ),
-          ],
         ],
       ),
     );
@@ -175,24 +161,23 @@ class _IconOrFallback extends StatelessWidget {
   const _IconOrFallback({
     required this.iconCode,
     required this.fallbackIcon,
-    required this.tint,
   });
 
   final String? iconCode;
   final IconData fallbackIcon;
-  final Color tint;
 
   @override
   Widget build(BuildContext context) {
+    final tint = WeatherGlassStyle.icon(context);
     final url = WeatherViewMapper.networkIconUrl(iconCode);
     if (url == null) {
-      return Icon(fallbackIcon, size: 22, color: tint);
+      return Icon(fallbackIcon, size: 24, color: tint);
     }
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.contain,
-      placeholder: (_, __) => Icon(fallbackIcon, size: 22, color: tint),
-      errorWidget: (_, __, ___) => Icon(fallbackIcon, size: 22, color: tint),
+      placeholder: (_, __) => Icon(fallbackIcon, size: 24, color: tint),
+      errorWidget: (_, __, ___) => Icon(fallbackIcon, size: 24, color: tint),
     );
   }
 }

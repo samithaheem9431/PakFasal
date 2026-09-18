@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utils/farmer_advisor.dart';
+import 'weather_glass_card.dart';
 
 /// Stack of banners for serious crop alerts (heatwave, heavy rain, frost,
 /// high wind, thunderstorm). Banners are sorted by severity so the most
@@ -35,20 +36,8 @@ class _AlertBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = alert.accent;
-    return Container(
+    return WeatherGlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withValues(alpha: 0.40)),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: 0.10),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
       child: Row(
         children: [
           Container(
@@ -79,11 +68,7 @@ class _AlertBanner extends StatelessWidget {
                     alert.body,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                    style: WeatherGlassStyle.body(context, size: 12),
                   ),
                 ],
               ],

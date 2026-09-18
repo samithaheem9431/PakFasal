@@ -3,33 +3,32 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../providers/weather_provider.dart';
 import '../utils/farmer_advisor.dart';
+import '../utils/weather_gradients.dart';
+import '../utils/weather_view_mapper.dart';
 import '../widgets/crop_alert_banner.dart';
 import '../widgets/daily_forecast_list.dart';
 import '../widgets/farmer_advisory_section.dart';
 import '../widgets/hourly_forecast_slider.dart';
-import '../widgets/sunrise_sunset_card.dart';
 import '../widgets/temperature_hero_card.dart';
 import '../widgets/weather_error_view.dart';
 import '../widgets/weather_highlights_grid.dart';
 import '../widgets/weather_skeleton.dart';
+import '../widgets/weather_sky_background.dart';
+import '../widgets/weather_glass_card.dart';
 
-/// Premium agriculture-themed weather dashboard.
+/// Apple Weather–style immersive dashboard.
 ///
 /// Composition (top → bottom):
-///   1. [CropAlertBannerStack]       severe alerts (heatwave, heavy rain…)
-///   2. [TemperatureHeroCard]        big temperature + condition
-///   3. [HourlyForecastSlider]       next 12 hours
-///   4. [WeatherHighlightsGrid]      humidity / wind / UV / pressure …
-///   5. [SunriseSunsetCard]          sun arc + times
-///   6. [FarmerAdvisorySection]      irrigation / spraying / harvest tips
-///   7. [DailyForecastList]          7-day outlook
-///
-/// State, networking, caching and offline behaviour are all delegated to
-/// [WeatherProvider]; this screen is "dumb" and only composes widgets.
+///   1. Collapsing hero (city / temp / condition / H-L)
+///   2. Hourly glass strip
+///   3. 10-day forecast
+///   4. Detail metric tiles
+///   5. Crop alerts + farmer advisories
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
 
@@ -71,19 +70,29 @@ class _WeatherScreenState extends State<WeatherScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return PakFasalScaffold(
       title: l10n.t('weather'),
       showBack: true,
+      backgroundColor: WeatherGradients.scaffoldFallback(isDark: isDark),
+      extendBehindBottomBar: true,
+      actions: [
+        IconButton(
+          tooltip: l10n.t('weatherSearchCity'),
+          onPressed: () =>
+              Navigator.pushNamed(context, AppRoutes.weatherCitySearch),
+          icon: const Icon(Icons.search_rounded, color: AppColors.white),
+        ),
+      ],
       child: RefreshIndicator(
-        color: AppColors.primaryGreen,
+        color: isDark ? AppColors.lightGreen : AppColors.primaryGreen,
+        backgroundColor: isDark ? AppColors.darkSurfaceHigh : AppColors.white,
         onRefresh: _refresh,
         child: Consumer<WeatherProvider>(
           builder: (context, weather, _) {
-            // First-load empty state — show skeleton.
             if (!weather.hasSnapshot && weather.isLoading) {
               return const WeatherSkeleton();
             }
-            // Total failure (no cache, no live data).
             if (!weather.hasSnapshot) {
               return WeatherErrorView(
                 onRetry: _refresh,
@@ -99,10 +108,35 @@ class _WeatherScreenState extends State<WeatherScreen>
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-
-class _WeatherContent extends StatelessWidget {
+class _WeatherContent extends StatefulWidget {
   const _WeatherContent();
+
+  @override
+  State<_WeatherContent> createState() => _WeatherContentState();
+}
+
+class _WeatherContentState extends State<_WeatherContent> {
+  double _collapse = 0;
+
+  bool _onScroll(ScrollNotification n) {
+    if (n.metrics.axis != Axis.vertical) return false;
+    final next = (n.metrics.pixels / 120).clamp(0.0, 1.0);
+    if ((next - _collapse).abs() > 0.01) {
+      setState(() => _collapse = next);
+    }
+    return false;
+  }
+
+  String _hourlySummary(
+    AppLocalizations l10n,
+    WeatherProvider weather,
+  ) {
+    final current = weather.snapshot!.current;
+    final condition = current.conditionLabel ??
+        WeatherViewMapper.localizedCondition(l10n, current.conditionCode);
+    final wind = current.windSpeedKmh.toStringAsFixed(0);
+    return '$condition. ${l10n.t('wind')} $wind ${l10n.t('kmh')}.';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,48 +144,68 @@ class _WeatherContent extends StatelessWidget {
     final weather = context.watch<WeatherProvider>();
     final snapshot = weather.snapshot!;
     final current = snapshot.current;
+    final isMyLocation = weather.activeLocation?.isCurrent ?? true;
 
     final advisories = FarmerAdvisor.advise(l10n, snapshot);
     final cropAlerts = FarmerAdvisor.alerts(l10n, snapshot);
 
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: context.pagePadding(
-        horizontal: 14,
-        top: 14,
-        bottom: 24 + MediaQuery.of(context).padding.bottom,
-      ),
+    final topInset = 12.0;
+
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        if (weather.isStale) ...[
-          _OfflineHint(message: l10n.t('weatherOfflineNotice')),
-          const SizedBox(height: 8),
-        ],
-        if (cropAlerts.isNotEmpty) ...[
-          CropAlertBannerStack(alerts: cropAlerts),
-          const SizedBox(height: 12),
-        ],
-        TemperatureHeroCard(current: current),
-        const SizedBox(height: 12),
-        HourlyForecastSlider(hourly: snapshot.hourly),
-        const SizedBox(height: 12),
-        WeatherHighlightsGrid(current: current),
-        const SizedBox(height: 12),
-        if (current.sunrise != null && current.sunset != null) ...[
-          SunriseSunsetCard(
-            sunrise: current.sunrise,
-            sunset: current.sunset,
+        Positioned.fill(
+          child: WeatherSkyBackground(current: current),
+        ),
+        NotificationListener<ScrollNotification>(
+          onNotification: _onScroll,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: context.pagePadding(
+              horizontal: 16,
+              top: topInset,
+              bottom: 16 +
+                  PakFasalFloatingBottomBar.contentClearance(context),
+            ),
+            children: [
+              if (weather.isStale) ...[
+                _OfflineHint(message: l10n.t('weatherOfflineNotice')),
+                const SizedBox(height: 10),
+              ],
+              TemperatureHeroCard(
+                current: current,
+                collapseProgress: _collapse,
+                isMyLocation: isMyLocation,
+              ),
+              const SizedBox(height: 8),
+              HourlyForecastSlider(
+                hourly: snapshot.hourly,
+                summary: _hourlySummary(l10n, weather),
+              ),
+              const SizedBox(height: 12),
+              DailyForecastList(
+                forecast: snapshot.daily,
+                currentTempC: current.temperatureC,
+              ),
+              const SizedBox(height: 12),
+              WeatherHighlightsGrid(current: current),
+              if (cropAlerts.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                CropAlertBannerStack(alerts: cropAlerts),
+              ],
+              if (advisories.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                FarmerAdvisorySection(advisories: advisories),
+              ],
+            ],
           ),
-          const SizedBox(height: 12),
-        ],
-        FarmerAdvisorySection(advisories: advisories),
-        if (advisories.isNotEmpty) const SizedBox(height: 12),
-        DailyForecastList(forecast: snapshot.daily),
+        ),
       ],
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────
 
 class _OfflineHint extends StatelessWidget {
   const _OfflineHint({required this.message});
@@ -160,18 +214,8 @@ class _OfflineHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor =
-        isDark ? const Color(0xFFFFD180) : const Color(0xFF8C5500);
-    return Container(
+    return WeatherGlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: isDark ? 0.18 : 0.10),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.warning.withValues(alpha: 0.35),
-        ),
-      ),
       child: Row(
         children: [
           const Icon(
@@ -183,11 +227,7 @@ class _OfflineHint extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
+              style: WeatherGlassStyle.body(context, size: 12),
             ),
           ),
         ],
@@ -195,4 +235,3 @@ class _OfflineHint extends StatelessWidget {
     );
   }
 }
-

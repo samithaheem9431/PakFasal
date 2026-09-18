@@ -32,6 +32,10 @@ class PakFasalScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.showBottomNavigation = true,
+    this.backgroundColor,
+    this.transparentChrome = false,
+    this.extendBodyBehindAppBar = false,
+    this.extendBehindBottomBar = false,
   });
 
   final String title;
@@ -41,6 +45,14 @@ class PakFasalScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final bool showBottomNavigation;
+  /// When set, overrides the theme scaffold background (e.g. weather sky).
+  final Color? backgroundColor;
+  /// Transparent app bar (white icons) for immersive screens like weather.
+  final bool transparentChrome;
+  /// Lets [child] draw under the app bar (pair with [transparentChrome]).
+  final bool extendBodyBehindAppBar;
+  /// Lets [child] paint under the floating bottom bar (no bottom clearance pad).
+  final bool extendBehindBottomBar;
 
   int _selectedNavIndex(BuildContext context) {
     final route = ModalRoute.of(context)?.settings.name;
@@ -79,92 +91,104 @@ class PakFasalScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final bg = backgroundColor ?? theme.scaffoldBackgroundColor;
+
+    final appBar = AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      systemOverlayStyle: pakFasalSystemOverlay(context),
+      leading: showBack
+          ? IconButton(
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                  return;
+                }
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.home,
+                  (_) => false,
+                );
+              },
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.white,
+              ),
+            )
+          : null,
+      title: Text(
+        title,
+        style: TextStyle(
+          color: AppColors.white,
+          fontWeight: transparentChrome ? FontWeight.w600 : FontWeight.w700,
+          fontSize: transparentChrome ? 16 : 18,
+        ),
+      ),
+      actions: [
+        if (actions != null) ...actions!,
+        Container(
+          margin: const EdgeInsets.only(right: 12),
+          decoration: BoxDecoration(
+            color: AppColors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const LanguageToggleButton(),
+        ),
+      ],
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: pakFasalSystemOverlay(context),
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
+        backgroundColor: bg,
+        extendBodyBehindAppBar: extendBodyBehindAppBar || transparentChrome,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.darkGreen,
-                  AppColors.primaryGreen,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              systemOverlayStyle: pakFasalSystemOverlay(context),
-              leading: showBack
-                  ? IconButton(
-                      onPressed: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                          return;
-                        }
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          AppRoutes.home,
-                          (_) => false,
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: AppColors.white,
-                      ),
-                    )
-                  : null,
-              title: Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
-              ),
-              actions: [
-                if (actions != null) ...actions!,
-                Container(
-                  margin: const EdgeInsets.only(right: 12),
+          child: transparentChrome
+              ? appBar
+              : Container(
                   decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(
+                      colors: [
+                        AppColors.darkGreen,
+                        AppColors.primaryGreen,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: const LanguageToggleButton(),
+                  child: appBar,
                 ),
-              ],
-            ),
-          ),
         ),
         body: Stack(
           children: [
             Positioned.fill(
               child: Builder(
                 builder: (bodyContext) {
+                  final immersive = transparentChrome || extendBodyBehindAppBar;
+                  // Weather paints sky under the floating bar without a dark strip.
+                  final bottomPad =
+                      (!extendBehindBottomBar &&
+                              !immersive &&
+                              showBottomNavigation)
+                          ? PakFasalFloatingBottomBar.contentClearance(
+                              bodyContext,
+                            )
+                          : 0.0;
                   return SafeArea(
+                    top: !immersive,
                     bottom: false,
                     child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: showBottomNavigation
-                            ? PakFasalFloatingBottomBar.contentClearance(
-                                bodyContext,
-                              )
-                            : 0,
-                      ),
+                      padding: EdgeInsets.only(bottom: bottomPad),
                       child: ResponsiveContent(child: child),
                     ),
                   );
