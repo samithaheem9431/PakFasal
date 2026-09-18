@@ -52,6 +52,13 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
+    // Government schemes — managed by the admin panel; public read so guests
+    // and signed-out users can browse schemes in the app.
+    match /govt_schemes/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Per-user farmer profiles (photoUrl from Cloudinary, etc.).
     // Document id must match the signed-in user's uid.
     match /users/{userId} {

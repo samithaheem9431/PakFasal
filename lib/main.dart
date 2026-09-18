@@ -29,6 +29,7 @@ Future<void> main() async {
       await Hive.initFlutter();
       await Hive.openBox('weather_cache');
       await Hive.openBox('learning_cache');
+      await Hive.openBox('govt_schemes_cache');
       await Hive.openBox('app_preferences');
       await Hive.openBox(GuestCropPlantingStore.boxName);
 

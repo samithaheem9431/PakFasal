@@ -677,24 +677,67 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                                   _FadeSlideIn(
                                     delayMs: 120,
                                     animate: _animateContentIn,
-                                    child: Text(
-                                      l10n.t('quickAccess'),
-                                      textHeightBehavior:
-                                          const TextHeightBehavior(
-                                        applyHeightToFirstAscent: false,
-                                        applyHeightToLastDescent: false,
-                                      ),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w800,
-                                            letterSpacing: 0.4,
-                                            height: 1.0,
-                                            color: isDark
-                                                ? Colors.white
-                                                : Colors.black,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            l10n.t('quickAccess'),
+                                            textHeightBehavior:
+                                                const TextHeightBehavior(
+                                              applyHeightToFirstAscent: false,
+                                              applyHeightToLastDescent: false,
+                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: 0.4,
+                                                  height: 1.0,
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                ),
                                           ),
+                                        ),
+                                        InkWell(
+                                          onTap: () => Navigator.pushNamed(
+                                            context,
+                                            AppRoutes.viewAllModules,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 2,
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  l10n.t('viewAll'),
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                    height: 1.0,
+                                                    color: isDark
+                                                        ? AppColors.lightGreen
+                                                        : AppColors.primaryGreen,
+                                                  ),
+                                                ),
+                                                Icon(
+                                                  Icons.chevron_right,
+                                                  size: 18,
+                                                  color: isDark
+                                                      ? AppColors.lightGreen
+                                                      : AppColors.primaryGreen,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(height: 8),

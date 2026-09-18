@@ -40,7 +40,7 @@ const List<Product> mockProducts = [
     description:
         'Nitrogen-rich urea fertilizer for fast vegetative crop growth.',
     imageUrl:
-        'https://images.unsplash.com/photo-1625246333195-78d73c7782b6?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=1200&q=80',
     price: 3800,
     location: 'Bahawalpur',
     verified: true,

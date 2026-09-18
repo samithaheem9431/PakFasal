@@ -7,7 +7,9 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/crop_calendar/presentation/screens/crop_calendar_screen.dart';
+import '../../features/govt_schemes/presentation/screens/govt_schemes_screen.dart';
 import '../../features/home/presentation/screens/home_dashboard_screen.dart';
+import '../../features/home/presentation/screens/view_all_modules_screen.dart';
 import '../../features/learning/presentation/screens/learning_hub_screen.dart';
 import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -32,6 +34,8 @@ class AppRoutes {
   static const profile = '/profile';
   static const marketplace = '/marketplace';
   static const cropCalendar = '/crop-calendar';
+  static const govtSchemes = '/govt-schemes';
+  static const viewAllModules = '/view-all-modules';
   static const about = '/about';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -70,6 +74,16 @@ class AppRoutes {
         return _materialRoute(const AuthGate(child: MarketplaceScreen()), settings);
       case cropCalendar:
         return _materialRoute(const AuthGate(child: CropCalendarScreen()), settings);
+      case govtSchemes:
+        return _materialRoute(
+          const AuthGate(child: GovtSchemesScreen()),
+          settings,
+        );
+      case viewAllModules:
+        return _materialRoute(
+          const AuthGate(child: ViewAllModulesScreen()),
+          settings,
+        );
       case about:
         return _materialRoute(
           const AuthGate(child: AboutPakFasalScreen()),

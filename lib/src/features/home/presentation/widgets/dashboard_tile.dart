@@ -8,11 +8,19 @@ class DashboardTile extends StatefulWidget {
     required this.imageAsset,
     required this.title,
     required this.onTap,
+    this.imageScale = 1.0,
+    this.showLightBackdrop = false,
   });
 
   final String imageAsset;
   final String title;
   final VoidCallback onTap;
+
+  /// Slight zoom for busy icons so they read clearer in small tiles.
+  final double imageScale;
+
+  /// Soft white plate behind the icon in light mode (helps bright subjects).
+  final bool showLightBackdrop;
 
   @override
   State<DashboardTile> createState() => _DashboardTileState();
@@ -75,15 +83,47 @@ class _DashboardTileState extends State<DashboardTile> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Expanded(
-                    child: Image.asset(
-                      widget.imageAsset,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                      errorBuilder: (_, __, ___) => Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 36,
-                        color: scheme.primary,
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final side = constraints.biggest.shortestSide;
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Soft plate so bright icons stay readable in light mode
+                            if (!isDark && widget.showLightBackdrop)
+                              Container(
+                                width: side * 0.9,
+                                height: side * 0.9,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.72),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: scheme.primary
+                                          .withValues(alpha: 0.10),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            Transform.scale(
+                              scale: widget.imageScale,
+                              child: Image.asset(
+                                widget.imageAsset,
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                                gaplessPlayback: true,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 36,
+                                  color: scheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 6),
