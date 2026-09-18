@@ -14,6 +14,7 @@ import '../../features/learning/presentation/screens/learning_hub_screen.dart';
 import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profit_calculator/presentation/screens/profit_calculator_screen.dart';
 import '../../features/sensor/presentation/screens/sensor_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/weather/presentation/screens/city_search_screen.dart';
@@ -35,6 +36,7 @@ class AppRoutes {
   static const marketplace = '/marketplace';
   static const cropCalendar = '/crop-calendar';
   static const govtSchemes = '/govt-schemes';
+  static const profitCalculator = '/profit-calculator';
   static const viewAllModules = '/view-all-modules';
   static const about = '/about';
 
@@ -77,6 +79,11 @@ class AppRoutes {
       case govtSchemes:
         return _materialRoute(
           const AuthGate(child: GovtSchemesScreen()),
+          settings,
+        );
+      case profitCalculator:
+        return _materialRoute(
+          const AuthGate(child: ProfitCalculatorScreen()),
           settings,
         );
       case viewAllModules:

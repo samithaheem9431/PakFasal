@@ -13,6 +13,7 @@ import 'src/features/auth/presentation/providers/auth_session_controller.dart';
 import 'src/features/crop_calendar/data/repositories/guest_crop_planting_store.dart';
 import 'src/features/crop_calendar/presentation/providers/crop_calendar_provider.dart';
 import 'src/features/learning/data/repositories/crop_diseases_repository.dart';
+import 'src/features/profit_calculator/data/season_calculation_store.dart';
 import 'src/features/weather/presentation/providers/weather_provider.dart';
 
 Future<void> main() async {
@@ -32,6 +33,7 @@ Future<void> main() async {
       await Hive.openBox('govt_schemes_cache');
       await Hive.openBox('app_preferences');
       await Hive.openBox(GuestCropPlantingStore.boxName);
+      await Hive.openBox(SeasonCalculationStore.boxName);
 
       // Warm Pests & Diseases metadata + images in the background so the
       // Learning module opens from disk cache instead of waiting on network.

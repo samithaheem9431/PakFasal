@@ -52,11 +52,18 @@ class ViewAllModulesScreen extends StatelessWidget {
                         imageAsset:
                             'assets/images/dashboard/tile_govt_schemes.png',
                         title: l10n.t('govtSchemes'),
-                        imageScale: 1.08,
-                        showLightBackdrop: true,
                         onTap: () => Navigator.pushNamed(
                           context,
                           AppRoutes.govtSchemes,
+                        ),
+                      ),
+                      DashboardTile(
+                        imageAsset:
+                            'assets/images/dashboard/tile_profit_calculator.png',
+                        title: l10n.t('profitCalculator'),
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.profitCalculator,
                         ),
                       ),
                     ],

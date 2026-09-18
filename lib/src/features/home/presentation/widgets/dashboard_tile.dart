@@ -86,42 +86,26 @@ class _DashboardTileState extends State<DashboardTile> {
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final side = constraints.biggest.shortestSide;
-                        return Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Soft plate so bright icons stay readable in light mode
-                            if (!isDark && widget.showLightBackdrop)
-                              Container(
-                                width: side * 0.9,
-                                height: side * 0.9,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.72),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: scheme.primary
-                                          .withValues(alpha: 0.10),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            Transform.scale(
-                              scale: widget.imageScale,
-                              child: Image.asset(
-                                widget.imageAsset,
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
-                                gaplessPlayback: true,
-                                errorBuilder: (_, __, ___) => Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 36,
-                                  color: scheme.primary,
-                                ),
-                              ),
+                        // Decode near display size so icons stay sharp when
+                        // downscaled into small tiles (esp. light-mode edges).
+                        final dpr = MediaQuery.devicePixelRatioOf(context);
+                        final cachePx = (side * dpr).round().clamp(64, 512);
+                        return Transform.scale(
+                          scale: widget.imageScale,
+                          child: Image.asset(
+                            widget.imageAsset,
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.medium,
+                            isAntiAlias: true,
+                            cacheWidth: cachePx,
+                            cacheHeight: cachePx,
+                            gaplessPlayback: true,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 36,
+                              color: scheme.primary,
                             ),
-                          ],
+                          ),
                         );
                       },
                     ),
