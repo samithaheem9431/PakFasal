@@ -9,7 +9,6 @@ class DashboardTile extends StatefulWidget {
     required this.title,
     required this.onTap,
     this.imageScale = 1.0,
-    this.showLightBackdrop = false,
   });
 
   final String imageAsset;
@@ -18,9 +17,6 @@ class DashboardTile extends StatefulWidget {
 
   /// Slight zoom for busy icons so they read clearer in small tiles.
   final double imageScale;
-
-  /// Soft white plate behind the icon in light mode (helps bright subjects).
-  final bool showLightBackdrop;
 
   @override
   State<DashboardTile> createState() => _DashboardTileState();
