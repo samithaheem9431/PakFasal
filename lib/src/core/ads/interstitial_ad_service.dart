@@ -41,6 +41,14 @@ class InterstitialAdService {
       return;
     }
     try {
+      // Keep creatives family-safe (no mature / sensitive content).
+      // Category blocks (alcohol, gambling, dating, etc.) are set in
+      // AdMob Console → Blocking controls.
+      await MobileAds.instance.updateRequestConfiguration(
+        RequestConfiguration(
+          maxAdContentRating: MaxAdContentRating.g,
+        ),
+      );
       await MobileAds.instance.initialize();
       _initialized = true;
       unawaited(preload());
