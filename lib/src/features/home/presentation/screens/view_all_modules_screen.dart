@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/ads/interstitial_ad_service.dart';
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
@@ -188,6 +189,28 @@ class ViewAllModulesScreen extends StatelessWidget {
       if (!allowed || !context.mounted) return;
     }
     if (!context.mounted) return;
+
+    if (module.route == AppRoutes.sensor) {
+      await InterstitialAdService.instance.runAfterAdGate(
+        AdPlacement.sensorModule,
+        () {
+          if (!context.mounted) return;
+          Navigator.pushNamed(context, module.route);
+        },
+      );
+      return;
+    }
+    if (module.route == AppRoutes.profitCalculator) {
+      await InterstitialAdService.instance.runAfterAdGate(
+        AdPlacement.profitCalculator,
+        () {
+          if (!context.mounted) return;
+          Navigator.pushNamed(context, module.route);
+        },
+      );
+      return;
+    }
+
     Navigator.pushNamed(context, module.route);
   }
 
@@ -207,6 +230,16 @@ class ViewAllModulesScreen extends StatelessWidget {
       if (!allowed || !context.mounted) return;
     }
     if (!context.mounted) return;
+    if (index == 2) {
+      await InterstitialAdService.instance.runAfterAdGate(
+        AdPlacement.sensorModule,
+        () {
+          if (!context.mounted) return;
+          Navigator.pushReplacementNamed(context, target);
+        },
+      );
+      return;
+    }
     Navigator.pushReplacementNamed(context, target);
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../../../../core/ads/interstitial_ad_service.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
@@ -639,7 +640,7 @@ class _SensorScreenState extends State<SensorScreen>
     );
   }
 
-  void _handleManualSubmit() {
+  Future<void> _handleManualSubmit() async {
     if (_isSubmitting) return;
     final l10n = AppLocalizations.of(context);
     final formState = _manualFormKey.currentState;
@@ -647,27 +648,31 @@ class _SensorScreenState extends State<SensorScreen>
     final moisture = double.tryParse(_moistureController.text.trim());
     final ph = double.tryParse(_phController.text.trim());
     if (moisture == null || ph == null) return;
-    final rainChance = _rainChancePercent ?? 0;
-    final result = _buildRuleBasedRecommendation(
-      moisture: moisture,
-      ph: ph,
-      crop: _selectedCrop,
-      rainChancePercent: rainChance,
-      config: _ruleSet.forCrop(_selectedCrop),
-    );
 
     setState(() => _isSubmitting = true);
-    _sensorRepository
-        .addReading(
-          soilMoisture: moisture,
-          phLevel: ph,
-          crop: _selectedCrop,
-          rainChancePercent: rainChance,
-          recommendationSummary: result.summary,
-          recommendationDetails: result.details,
-          recommendationPriority: result.priority,
-        )
-        .then((_) {
+    try {
+      await InterstitialAdService.instance.runAfterAdGate(
+        AdPlacement.getAdvice,
+        () async {
+          if (!mounted) return;
+          final rainChance = _rainChancePercent ?? 0;
+          final result = _buildRuleBasedRecommendation(
+            moisture: moisture,
+            ph: ph,
+            crop: _selectedCrop,
+            rainChancePercent: rainChance,
+            config: _ruleSet.forCrop(_selectedCrop),
+          );
+
+          await _sensorRepository.addReading(
+            soilMoisture: moisture,
+            phLevel: ph,
+            crop: _selectedCrop,
+            rainChancePercent: rainChance,
+            recommendationSummary: result.summary,
+            recommendationDetails: result.details,
+            recommendationPriority: result.priority,
+          );
           if (!mounted) return;
           setState(() {
             final newReading = SensorReading(
@@ -689,16 +694,17 @@ class _SensorScreenState extends State<SensorScreen>
             _history.add(newReading);
             _moistureController.clear();
             _phController.clear();
-            _isSubmitting = false;
           });
-        })
-        .catchError((_) {
-          if (!mounted) return;
-          setState(() => _isSubmitting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.t('sensorRecommendationText'))),
-          );
-        });
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('sensorRecommendationText'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   _RecommendationResult _buildRuleBasedRecommendation({

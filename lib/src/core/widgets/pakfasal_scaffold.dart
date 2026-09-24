@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../ads/interstitial_ad_service.dart';
 import '../layout/responsive.dart';
 import '../localization/app_localizations.dart';
 import '../routing/app_routes.dart';
@@ -83,6 +84,17 @@ class PakFasalScaffold extends StatelessWidget {
     if (index == 1 || index == 2) {
       final allowed = await ensureRegisteredUser(context);
       if (!allowed || !context.mounted) return;
+    }
+
+    if (index == 2) {
+      await InterstitialAdService.instance.runAfterAdGate(
+        AdPlacement.sensorModule,
+        () {
+          if (!context.mounted) return;
+          Navigator.pushReplacementNamed(context, target);
+        },
+      );
+      return;
     }
 
     Navigator.pushReplacementNamed(context, target);

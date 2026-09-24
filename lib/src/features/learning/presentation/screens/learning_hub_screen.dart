@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/ads/banner_ad_widget.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import 'crop_selection_screen.dart';
@@ -31,7 +32,11 @@ class LearningHubScreen extends StatelessWidget {
             // Banner Section
             _BannerSection(),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            const BannerAdWidget(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+            const SizedBox(height: 12),
             
             // Topics Label
             Padding(

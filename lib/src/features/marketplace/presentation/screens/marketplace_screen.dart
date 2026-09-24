@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/ads/banner_ad_widget.dart';
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
@@ -112,6 +113,9 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
             ),
           ),
           const SizedBox(height: 8),
+          const BannerAdWidget(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 260),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/ads/banner_ad_widget.dart';
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
@@ -236,7 +237,9 @@ class _GovtSchemesViewState extends State<_GovtSchemesView> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const BannerAdWidget(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
                   _FadeSlideIn(
                     animate: _animateIn,
                     delayMs: 150,

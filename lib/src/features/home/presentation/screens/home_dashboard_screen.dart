@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/ads/interstitial_ad_service.dart';
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
@@ -262,7 +263,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         Navigator.pushReplacementNamed(context, AppRoutes.aiQuery);
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, AppRoutes.sensor);
+        await InterstitialAdService.instance.runAfterAdGate(
+          AdPlacement.sensorModule,
+          () {
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(context, AppRoutes.sensor);
+          },
+        );
         break;
       case 3:
         Navigator.pushReplacementNamed(context, AppRoutes.profile);
@@ -273,6 +280,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   Future<void> _openProtectedRoute(String routeName) async {
     final allowed = await ensureRegisteredUser(context);
     if (!allowed || !mounted) return;
+    if (routeName == AppRoutes.sensor) {
+      await InterstitialAdService.instance.runAfterAdGate(
+        AdPlacement.sensorModule,
+        () {
+          if (!mounted) return;
+          Navigator.pushNamed(context, routeName);
+        },
+      );
+      return;
+    }
     Navigator.pushNamed(context, routeName);
   }
 

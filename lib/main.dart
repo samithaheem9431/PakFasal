@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'src/app.dart';
+import 'src/core/ads/interstitial_ad_service.dart';
 import 'src/core/config/app_config.dart';
 import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
@@ -26,6 +27,8 @@ Future<void> main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       await ErrorLogger.instance.init();
+      // AdMob interstitial preload (sensor / get advice / profit calculator).
+      unawaited(InterstitialAdService.instance.init());
 
       await Hive.initFlutter();
       await Hive.openBox('weather_cache');

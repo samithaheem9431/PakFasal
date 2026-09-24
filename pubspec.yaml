@@ -44,6 +44,7 @@ dependencies:
   flutter_local_notifications: ^20.1.0
   timezone: ^0.10.1
   image_picker: ^1.2.1
+  google_mobile_ads: ^5.3.1
 
 dev_dependencies:
   flutter_test:
