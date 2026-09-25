@@ -59,6 +59,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Marketplace products — managed by the admin panel; public read so guests
+    // and signed-out users can browse listings in the app.
+    match /products/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Per-user farmer profiles (photoUrl from Cloudinary, etc.).
     // Document id must match the signed-in user's uid.
     match /users/{userId} {

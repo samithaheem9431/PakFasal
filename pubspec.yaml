@@ -98,3 +98,8 @@ flutter:
     - assets/images/auth/auth_bg.png
     - assets/images/auth/login_hero.png
     - assets/images/auth/signup_hero.png
+    - assets/images/marketplace/header_leaves.png
+    - assets/images/marketplace/filter_field.png
+    - assets/images/marketplace/header_products.png
+    - assets/images/marketplace/filter_dark.png
+    - assets/images/marketplace/filter_crops_light.png

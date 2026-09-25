@@ -380,12 +380,16 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
       ],
       child: Container(
         color: palette.surface,
-        child: Column(
-          children: [
-            Expanded(
-              child: _messages.isEmpty
-                  ? _buildEmptyState(l10n, palette)
-                  : ListView.builder(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: PakFasalFloatingBottomBar.contentClearance(context),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: _messages.isEmpty
+                    ? _buildEmptyState(l10n, palette)
+                    : ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(16),
                 itemCount: _messages.length,
@@ -431,7 +435,8 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
               ),
 
             _buildInputArea(l10n, palette),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -524,9 +529,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
         color: palette.surface,
         border: Border(top: BorderSide(color: palette.outlineSoft)),
       ),
-      child: SafeArea(
-        top: false,
-        child: Row(
+      child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
@@ -610,7 +613,6 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 }

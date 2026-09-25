@@ -95,7 +95,13 @@ class _LearningArticlesScreenState extends State<LearningArticlesScreen> {
 
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+              padding: PakFasalFloatingBottomBar.scrollPadding(
+                context,
+                left: 16,
+                top: 12,
+                right: 16,
+                bottom: 28,
+              ),
               children: [
                 LearningIntro(
                   title: l10n.t('articlesIntroTitle'),

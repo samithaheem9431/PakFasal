@@ -36,7 +36,7 @@ class PakFasalScaffold extends StatelessWidget {
     this.backgroundColor,
     this.transparentChrome = false,
     this.extendBodyBehindAppBar = false,
-    this.extendBehindBottomBar = false,
+    this.extendBehindBottomBar = true,
   });
 
   final String title;
@@ -52,7 +52,7 @@ class PakFasalScaffold extends StatelessWidget {
   final bool transparentChrome;
   /// Lets [child] draw under the app bar (pair with [transparentChrome]).
   final bool extendBodyBehindAppBar;
-  /// Lets [child] paint under the floating bottom bar (no bottom clearance pad).
+  /// Kept for call-site compatibility; body always extends under the floating bar.
   final bool extendBehindBottomBar;
 
   int _selectedNavIndex(BuildContext context) {
@@ -181,30 +181,16 @@ class PakFasalScaffold extends StatelessWidget {
                   child: appBar,
                 ),
         ),
+        extendBody: showBottomNavigation,
         body: Stack(
           children: [
             Positioned.fill(
-              child: Builder(
-                builder: (bodyContext) {
-                  final immersive = transparentChrome || extendBodyBehindAppBar;
-                  // Weather paints sky under the floating bar without a dark strip.
-                  final bottomPad =
-                      (!extendBehindBottomBar &&
-                              !immersive &&
-                              showBottomNavigation)
-                          ? PakFasalFloatingBottomBar.contentClearance(
-                              bodyContext,
-                            )
-                          : 0.0;
-                  return SafeArea(
-                    top: !immersive,
-                    bottom: false,
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: bottomPad),
-                      child: ResponsiveContent(child: child),
-                    ),
-                  );
-                },
+              child: SafeArea(
+                top: !(transparentChrome || extendBodyBehindAppBar),
+                bottom: false,
+                // Page paints edge-to-edge under the floating bar — no reserved
+                // silver/grey band. Scroll screens add contentClearance themselves.
+                child: ResponsiveContent(child: child),
               ),
             ),
             if (showBottomNavigation)
@@ -242,6 +228,22 @@ class PakFasalFloatingBottomBar extends StatelessWidget {
         padBelowBar +
         gapAboveBar +
         MediaQuery.paddingOf(context).bottom;
+  }
+
+  /// Scroll / list padding that clears the floating bar (View All style).
+  static EdgeInsets scrollPadding(
+    BuildContext context, {
+    double left = 0,
+    double top = 0,
+    double right = 0,
+    double bottom = 0,
+  }) {
+    return EdgeInsets.fromLTRB(
+      left,
+      top,
+      right,
+      bottom + contentClearance(context),
+    );
   }
 
   final int selectedIndex;

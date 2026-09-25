@@ -315,7 +315,13 @@ class _SensorScreenState extends State<SensorScreen>
     return PakFasalScaffold(
       title: l10n.t('sensorData'),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: PakFasalFloatingBottomBar.scrollPadding(
+          context,
+          left: 16,
+          top: 16,
+          right: 16,
+          bottom: 16,
+        ),
         children: [
           _ManualInputCard(
             formKey: _manualFormKey,

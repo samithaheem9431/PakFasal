@@ -26,6 +26,9 @@ class LearningHubScreen extends StatelessWidget {
       child: Container(
         color: isDark ? scheme.surface : const Color(0xFFF5F5F5),
         child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: PakFasalFloatingBottomBar.contentClearance(context),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

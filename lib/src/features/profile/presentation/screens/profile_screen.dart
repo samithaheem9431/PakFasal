@@ -188,7 +188,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       title: l10n.t('profile'),
       showBack: false,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: PakFasalFloatingBottomBar.scrollPadding(
+          context,
+          left: 16,
+          top: 16,
+          right: 16,
+          bottom: 16,
+        ),
         children: [
           _FadeSlideIn(
             animate: _animateIn,

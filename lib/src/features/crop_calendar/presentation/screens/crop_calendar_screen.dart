@@ -49,16 +49,24 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
       title: l10n.t('cropCalendar'),
       floatingActionButton: provider.tab == CropCalendarTab.myCrops &&
               provider.canManagePlantings
-          ? FloatingActionButton.extended(
-              onPressed: provider.isMutating
-                  ? null
-                  : () => _openAddSheet(context, provider),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(l10n.t('cropCalAddPlanting')),
+          ? Padding(
+              // Scaffold pins the FAB 16px above the body. The floating nav
+              // sits in that same band, so lift the button clear of the bar.
+              padding: EdgeInsets.only(
+                bottom: PakFasalFloatingBottomBar.contentClearance(context),
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: provider.isMutating
+                    ? null
+                    : () => _openAddSheet(context, provider),
+                icon: const Icon(Icons.add_rounded),
+                label: Text(l10n.t('cropCalAddPlanting')),
+              ),
             )
           : null,
       child: SafeArea(
         top: false,
+        bottom: false,
         child: Column(
           children: [
             CropCalendarTabBar(
@@ -80,6 +88,9 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
         return _MyCropsTab(provider: provider);
       case CropCalendarTab.month:
         return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: PakFasalFloatingBottomBar.contentClearance(context),
+          ),
           child: MonthCalendarGrid(
             visibleMonth: provider.visibleMonth,
             windows: provider.monthWindows,
@@ -187,7 +198,13 @@ class _GuideTab extends StatelessWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            padding: PakFasalFloatingBottomBar.scrollPadding(
+              context,
+              left: 16,
+              top: 0,
+              right: 16,
+              bottom: 32,
+            ),
             sliver: SliverList.builder(
               itemCount: plan.activities.length,
               itemBuilder: (context, index) {
@@ -225,6 +242,16 @@ class _MyCropsTab extends StatelessWidget {
 
   final CropCalendarProvider provider;
 
+  /// Keeps centered empty/error content above the floating bar and Add button.
+  Widget _aboveBottomChrome(BuildContext context, {required Widget child}) {
+    final lift = PakFasalFloatingBottomBar.contentClearance(context) +
+        (provider.canManagePlantings ? 56 : 0);
+    return Padding(
+      padding: EdgeInsets.only(bottom: lift),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -235,43 +262,53 @@ class _MyCropsTab extends StatelessWidget {
     }
 
     if (provider.plantingsError != null && provider.plantings.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            l10n.t('cropCalLoadFailed'),
-            textAlign: TextAlign.center,
-            style: TextStyle(color: scheme.error),
+      return _aboveBottomChrome(
+        context,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              l10n.t('cropCalLoadFailed'),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: scheme.error),
+            ),
           ),
         ),
       );
     }
 
     if (provider.plantings.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.agriculture_rounded, size: 48, color: scheme.primary),
-              const SizedBox(height: 12),
-              Text(
-                l10n.t('cropCalEmptyPlantingsTitle'),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.t('cropCalEmptyPlantingsBody'),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-              ),
-            ],
+      return _aboveBottomChrome(
+        context,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.agriculture_rounded,
+                  size: 48,
+                  color: scheme.primary,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.t('cropCalEmptyPlantingsTitle'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.t('cropCalEmptyPlantingsBody'),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -282,7 +319,14 @@ class _MyCropsTab extends StatelessWidget {
         active == null ? const <DatedStageWindow>[] : provider.windowsForPlanting(active);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      padding: PakFasalFloatingBottomBar.scrollPadding(
+        context,
+        left: 16,
+        top: 8,
+        right: 16,
+        // Extra room so the last card stays above the Add Planting button.
+        bottom: provider.canManagePlantings ? 88 : 24,
+      ),
       children: [
         Text(
           l10n.t('cropCalMyPlantings'),
