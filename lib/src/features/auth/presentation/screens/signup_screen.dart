@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_form_provider.dart';
 import '../providers/auth_session_controller.dart';
+import '../widgets/auth_shared_widgets.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -79,11 +78,11 @@ class _SignupViewState extends State<_SignupView>
   }
 
   Future<void> _submit(
-      BuildContext context,
-      AuthFormProvider form,
-      AuthSessionController session,
-      AppLocalizations l10n,
-      ) async {
+    BuildContext context,
+    AuthFormProvider form,
+    AuthSessionController session,
+    AppLocalizations l10n,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
     form.setLoading(true);
     final err = await session.registerWithEmail(
@@ -100,7 +99,7 @@ class _SignupViewState extends State<_SignupView>
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -113,520 +112,301 @@ class _SignupViewState extends State<_SignupView>
     final l10n = AppLocalizations.of(context);
     final form = context.watch<AuthFormProvider>();
     final session = context.watch<AuthSessionController>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final scheme = Theme.of(context).colorScheme;
-    final accentText =
-        isDark ? AppColors.white : AppTheme.primaryGreen;
-    final accentTextMuted = isDark
-        ? AppColors.white.withValues(alpha: 0.65)
-        : AppTheme.primaryGreen.withValues(alpha: 0.65);
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.0, 0.5, 1.0],
-            colors: [
-              isDark ? AppColors.darkSurface : AppColors.softSurfaceGreen,
-              isDark ? AppColors.darkSurfaceMid : AppColors.paleGreen,
-              isDark ? AppColors.darkSurfaceHigh : AppColors.divider,
-            ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -40,
-              left: -60,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.06),
-                ),
-              ),
+      backgroundColor: AuthBackground.fillColor,
+      resizeToAvoidBottomInset: false,
+      body: AuthBackground(
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.paddingOf(context).bottom,
             ),
-            Positioned(
-              bottom: 30,
-              right: -50,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.05),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Top bar
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                    child: FadeTransition(
-                      opacity: _fadeHeader,
-                      child: Row(
-                        children: [
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: Icon(
-                              Icons.arrow_back_rounded,
-                              color: accentText,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              l10n.t('signup'),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: accentText,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+            child: AuthFitViewport(
+              builder: (context, m) {
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    m.pagePadH,
+                    m.gapSm,
+                    m.pagePadH,
+                    m.gapMd,
                   ),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: context.pagePadding(
-                        horizontal: 22,
-                        top: 10,
-                        bottom: 28,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FadeTransition(
+                        opacity: _fadeHeader,
+                        child: AuthTopBar(
+                          title: l10n.t('signup'),
+                          metrics: m,
+                          showBack: true,
+                          centerTitle: true,
+                        ),
                       ),
-                      child: ResponsiveContent(
-                        maxWidth: 520,
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Header
-                          FadeTransition(
-                            opacity: _fadeHeader,
-                            child: Padding(
-                              padding:
-                              const EdgeInsets.symmetric(vertical: 14),
-                              child: Row(
+                      SizedBox(height: m.gapSm),
+                      FadeTransition(
+                        opacity: _fadeHeader,
+                        child: AuthHeroHeader(
+                          heroAsset: 'assets/images/auth/signup_hero.png',
+                          title: l10n.t('welcome'),
+                          subtitle: l10n.t('createAccountSubtitle'),
+                          metrics: m,
+                        ),
+                      ),
+                      SizedBox(height: m.gapMd),
+                      SlideTransition(
+                        position: _slideCard,
+                        child: FadeTransition(
+                          opacity: _fadeCard,
+                          child: AuthFormCard(
+                            metrics: m,
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: scheme.surface,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppTheme.primaryGreen
-                                              .withValues(alpha: 0.18),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
+                                  AuthFieldLabel(
+                                    l10n.t('username'),
+                                    metrics: m,
+                                  ),
+                                  SizedBox(height: m.gapXs + 1),
+                                  TextFormField(
+                                    controller: _usernameController,
+                                    textInputAction: TextInputAction.next,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
                                     ),
-                                    child: Icon(
-                                      Icons.person_add_alt_1_rounded,
-                                      color: AppTheme.primaryGreen,
-                                      size: 26,
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('usernameHint'),
+                                      prefixIcon:
+                                          Icons.person_outline_rounded,
+                                      metrics: m,
+                                    ),
+                                    validator: (value) {
+                                      final username = value?.trim() ?? '';
+                                      if (username.isEmpty) {
+                                        return l10n.t('usernameRequired');
+                                      }
+                                      if (username.length < 3) {
+                                        return l10n.t('usernameMinLength');
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: m.gapSm + 2),
+                                  AuthFieldLabel(l10n.t('email'), metrics: m),
+                                  SizedBox(height: m.gapXs + 1),
+                                  TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    textInputAction: TextInputAction.next,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
+                                    ),
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('emailHint'),
+                                      prefixIcon: Icons.email_outlined,
+                                      metrics: m,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return l10n.t('emailRequired');
+                                      }
+                                      if (!value.contains('@')) {
+                                        return l10n.t('invalidEmail');
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: m.gapSm + 2),
+                                  AuthFieldLabel(
+                                    l10n.t('password'),
+                                    metrics: m,
+                                  ),
+                                  SizedBox(height: m.gapXs + 1),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: form.obscurePassword,
+                                    textInputAction: TextInputAction.next,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
+                                    ),
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('passwordHint'),
+                                      prefixIcon: Icons.lock_outline_rounded,
+                                      metrics: m,
+                                      suffixIcon: IconButton(
+                                        onPressed:
+                                            form.togglePasswordVisibility,
+                                        icon: Icon(
+                                          form.obscurePassword
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: AuthDesign.mutedLabel,
+                                          size: m.iconSize,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.length < 6) {
+                                        return l10n.t('weakPasswordForm');
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: m.gapSm + 2),
+                                  AuthFieldLabel(
+                                    l10n.t('confirmPassword'),
+                                    metrics: m,
+                                  ),
+                                  SizedBox(height: m.gapXs + 1),
+                                  TextFormField(
+                                    controller: _confirmController,
+                                    obscureText: form.obscureConfirmPassword,
+                                    textInputAction: TextInputAction.next,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
+                                    ),
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('passwordHint'),
+                                      prefixIcon:
+                                          Icons.verified_user_outlined,
+                                      metrics: m,
+                                      suffixIcon: IconButton(
+                                        onPressed: form
+                                            .toggleConfirmPasswordVisibility,
+                                        icon: Icon(
+                                          form.obscureConfirmPassword
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: AuthDesign.mutedLabel,
+                                          size: m.iconSize,
+                                        ),
+                                      ),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return l10n.t(
+                                          'confirmPasswordRequired',
+                                        );
+                                      }
+                                      if (value != _passwordController.text) {
+                                        return l10n.t('passwordsMismatch');
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: m.gapSm + 2),
+                                  AuthFieldLabel(l10n.t('phone'), metrics: m),
+                                  SizedBox(height: m.gapXs + 1),
+                                  TextFormField(
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    textInputAction: TextInputAction.done,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
+                                    ),
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('phoneHint'),
+                                      prefixIcon: Icons.smartphone_rounded,
+                                      metrics: m,
+                                    ),
+                                    validator: (value) {
+                                      final phone = value?.trim() ?? '';
+                                      if (phone.isEmpty) return null;
+                                      final digitsOnly = phone.replaceAll(
+                                        RegExp(r'\D'),
+                                        '',
+                                      );
+                                      if (digitsOnly.length < 10 ||
+                                          digitsOnly.length > 15) {
+                                        return l10n.t('invalidPhone');
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: m.gapLg),
+                                  AuthGradientButton(
+                                    metrics: m,
+                                    isLoading: form.isLoading,
+                                    label: l10n.t('signup'),
+                                    loadingLabel:
+                                        l10n.t('authCreatingAccount'),
+                                    onPressed: () => _submit(
+                                      context,
+                                      form,
+                                      session,
+                                      l10n,
                                     ),
                                   ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          l10n.t('welcome'),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium
-                                              ?.copyWith(
+                                  SizedBox(height: m.gapMd),
+                                  AuthOrDivider(l10n.t('or'), metrics: m),
+                                  SizedBox(height: m.gapSm + 2),
+                                  Wrap(
+                                    alignment: WrapAlignment.center,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      Text(
+                                        l10n.t('alreadyHaveAccount'),
+                                        style: TextStyle(
+                                          color: AuthDesign.mutedLabel,
+                                          fontSize:
+                                              m.s(13).clamp(11.0, 13.0),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor:
+                                              AuthDesign.deepGreen,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: m.gapSm,
+                                            vertical: m.gapXs,
+                                          ),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize
+                                                  .shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          l10n.t('login'),
+                                          style: TextStyle(
                                             fontWeight: FontWeight.w800,
-                                            color: accentText,
+                                            fontSize:
+                                                m.s(13).clamp(11.0, 13.0),
+                                            letterSpacing: 0.2,
                                           ),
                                         ),
-                                        Text(
-                                          l10n.t('authSubtitle'),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                            color: accentTextMuted,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
                           ),
-
-                          // Form card
-                          SlideTransition(
-                            position: _slideCard,
-                            child: FadeTransition(
-                              opacity: _fadeCard,
-                              child: Card(
-                                elevation: 0,
-                                color: scheme.surface,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                  side: BorderSide(
-                                    color: AppTheme.primaryGreen
-                                        .withValues(alpha: 0.14),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Form(
-                                    key: _formKey,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                      children: [
-                                        _FieldLabel(l10n.t('username')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _usernameController,
-                                          textInputAction: TextInputAction.next,
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('usernameHint'),
-                                            prefixIcon: const Icon(
-                                              Icons.person_outline_rounded,
-                                            ),
-                                          ),
-                                          validator: (value) {
-                                            final username = value?.trim() ?? '';
-                                            if (username.isEmpty) {
-                                              return l10n.t('usernameRequired');
-                                            }
-                                            if (username.length < 3) {
-                                              return l10n.t('usernameMinLength');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 16),
-
-                                        _FieldLabel(l10n.t('email')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _emailController,
-                                          keyboardType:
-                                          TextInputType.emailAddress,
-                                          textInputAction:
-                                          TextInputAction.next,
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('emailHint'),
-                                            prefixIcon: const Icon(
-                                                Icons.email_outlined),
-                                          ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.trim().isEmpty) {
-                                              return l10n.t('emailRequired');
-                                            }
-                                            if (!value.contains('@')) {
-                                              return l10n.t('invalidEmail');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 16),
-
-                                        _FieldLabel(l10n.t('password')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _passwordController,
-                                          obscureText: form.obscurePassword,
-                                          textInputAction:
-                                          TextInputAction.next,
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('passwordHint'),
-                                            prefixIcon: const Icon(
-                                                Icons.lock_outline_rounded),
-                                            suffixIcon: IconButton(
-                                              onPressed:
-                                              form.togglePasswordVisibility,
-                                              icon: Icon(
-                                                form.obscurePassword
-                                                    ? Icons
-                                                    .visibility_off_outlined
-                                                    : Icons
-                                                    .visibility_outlined,
-                                              ),
-                                            ),
-                                          ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.length < 6) {
-                                              return l10n
-                                                  .t('weakPasswordForm');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 16),
-
-                                        _FieldLabel(
-                                            l10n.t('confirmPassword')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _confirmController,
-                                          obscureText: form.obscurePassword,
-                                          textInputAction:
-                                          TextInputAction.next,
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('passwordHint'),
-                                            prefixIcon: const Icon(
-                                                Icons.verified_user_outlined),
-                                          ),
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return l10n.t('confirmPasswordRequired');
-                                            }
-                                            if (value != _passwordController.text) {
-                                              return l10n
-                                                  .t('passwordsMismatch');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 16),
-
-                                        _FieldLabel(l10n.t('phone')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _phoneController,
-                                          keyboardType: TextInputType.phone,
-                                          textInputAction:
-                                          TextInputAction.done,
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('phoneHint'),
-                                            prefixIcon: const Icon(
-                                                Icons.phone_android_rounded),
-                                          ),
-                                          validator: (value) {
-                                            final phone = value?.trim() ?? '';
-                                            if (phone.isEmpty) return null;
-                                            final digitsOnly =
-                                                phone.replaceAll(RegExp(r'\D'), '');
-                                            if (digitsOnly.length < 10 ||
-                                                digitsOnly.length > 15) {
-                                              return l10n.t('invalidPhone');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 24),
-
-                                        _GreenButton(
-                                          isLoading: form.isLoading,
-                                          label: l10n.t('signup'),
-                                          loadingLabel:
-                                          l10n.t('authCreatingAccount'),
-                                          onPressed: () => _submit(
-                                              context, form, session, l10n),
-                                        ),
-
-                                        const SizedBox(height: 20),
-
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Divider(
-                                                color: scheme.onSurfaceVariant
-                                                    .withValues(alpha: 0.3),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 12),
-                                              child: Text(
-                                                l10n.t('or'),
-                                                style: TextStyle(
-                                                  color:
-                                                      scheme.onSurfaceVariant,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.6,
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Divider(
-                                                color: scheme.onSurfaceVariant
-                                                    .withValues(alpha: 0.3),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 14),
-
-                                        // Already have account
-                                        Wrap(
-                                          alignment: WrapAlignment.center,
-                                          crossAxisAlignment:
-                                              WrapCrossAlignment.center,
-                                          children: [
-                                            Text(
-                                              l10n.t('alreadyHaveAccount'),
-                                              style: TextStyle(
-                                                color: scheme.onSurfaceVariant,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: accentText,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 6,
-                                                  vertical: 4,
-                                                ),
-                                                minimumSize: Size.zero,
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                              ),
-                                              child: Text(
-                                                l10n.t('signIn'),
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 13,
-                                                  letterSpacing: 0.2,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Shared helpers (copy from login_screen.dart or extract to shared file) ────
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w600,
-      color: Theme.of(context).colorScheme.onSurface,
-      letterSpacing: 0.2,
-    ),
-  );
-}
-
-class _GreenButton extends StatelessWidget {
-  const _GreenButton({
-    required this.isLoading,
-    required this.label,
-    required this.loadingLabel,
-    required this.onPressed,
-  });
-
-  final bool isLoading;
-  final String label;
-  final String loadingLabel;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final disabledBg = scheme.surfaceContainerHighest;
-    final disabledFg = scheme.onSurfaceVariant;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: isLoading
-            ? null
-            : const LinearGradient(
-          colors: [AppColors.lightGreen, AppColors.primaryGreen],
-        ),
-        color: isLoading ? disabledBg : null,
-        boxShadow: isLoading
-            ? []
-            : [
-          BoxShadow(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: AppColors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            child: Center(
-              child: isLoading
-                  ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: disabledFg,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(loadingLabel,
-                      style: TextStyle(color: disabledFg)),
-                ],
-              )
-                  : Text(
-                label,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  letterSpacing: 0.4,
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),

@@ -13,9 +13,11 @@ class LanguageToggleButton extends StatelessWidget {
   const LanguageToggleButton({
     super.key,
     this.variant = LanguageToggleVariant.onPrimary,
+    this.showChevron = false,
   });
 
   final LanguageToggleVariant variant;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class LanguageToggleButton extends StatelessWidget {
       foreground = isDark ? AppColors.white : AppTheme.primaryGreen;
       background = isDark
           ? AppColors.white.withValues(alpha: 0.12)
-          : AppTheme.primaryGreen.withValues(alpha: 0.12);
+          : AppColors.white.withValues(alpha: 0.72);
       border = isDark
           ? AppColors.white.withValues(alpha: 0.35)
           : AppTheme.primaryGreen.withValues(alpha: 0.35);
@@ -69,6 +71,14 @@ class LanguageToggleButton extends StatelessWidget {
                   fontSize: 13,
                 ),
               ),
+              if (showChevron) ...[
+                const SizedBox(width: 2),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: foreground,
+                ),
+              ],
             ],
           ),
         ),

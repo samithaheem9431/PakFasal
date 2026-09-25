@@ -40,9 +40,10 @@ class AppLocalizations {
       'phoneHint': '+92 300 0000000',
       'forgotPassword': 'Forgot Password?',
       'rememberMe': 'Remember Me',
-      'requireBiometricAutofill': 'Require biometric unlock for autofill',
+      'requireBiometricAutofill': 'Use biometric unlock for autofill',
       'rememberMeHint':
           'Credentials are encrypted on this device. Biometric unlock may be required.',
+      'createAccountSubtitle': 'Create your account',
       'resetPassword': 'Reset Password',
       'resetPasswordHint':
           'Enter your email address and we will send you a password reset link.',
@@ -927,7 +928,8 @@ class AppLocalizations {
       'phoneHint': '+92 300 0000000',
       'forgotPassword': 'پاس ورڈ بھول گئے؟',
       'rememberMe': 'مجھے یاد رکھیں',
-      'requireBiometricAutofill': 'آٹو فل کے لیے بایومیٹرک تصدیق لازمی کریں',
+      'requireBiometricAutofill': 'آٹو فل کے لیے بایومیٹرک انلاک استعمال کریں',
+      'createAccountSubtitle': 'اپنا اکاؤنٹ بنائیں',
       'rememberMeHint':
           'لاگ اِن معلومات اس ڈیوائس پر خفیہ انداز میں محفوظ ہوتی ہیں اور بایومیٹرک تصدیق درکار ہو سکتی ہے۔',
       'resetPassword': 'پاس ورڈ ری سیٹ کریں',

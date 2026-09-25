@@ -4,14 +4,12 @@ import 'package:hive/hive.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/layout/responsive.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/language_toggle_button.dart';
 import '../providers/auth_form_provider.dart';
 import '../providers/auth_session_controller.dart';
+import '../widgets/auth_shared_widgets.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -47,7 +45,7 @@ class _LoginViewState extends State<_LoginView>
   final _passwordController = TextEditingController();
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _rememberMe = false;
-  bool _requireBiometricForAutofill = true;
+  bool _requireBiometricForAutofill = false;
 
   late final AnimationController _entryController;
   late final Animation<double> _fadeHeader;
@@ -88,11 +86,10 @@ class _LoginViewState extends State<_LoginView>
         preferences.get(_rememberMeKey, defaultValue: false) as bool;
     final requireBiometric = preferences.get(
       _biometricAutofillKey,
-      defaultValue: true,
+      defaultValue: false,
     ) as bool;
     final legacyEmail =
         preferences.get(_legacyRememberedEmailKey, defaultValue: '') as String;
-    // Safety cleanup for older versions that stored plain-text credentials in Hive.
     await preferences.delete(_legacyRememberedEmailKey);
     await preferences.delete(_legacyRememberedPasswordKey);
 
@@ -101,7 +98,8 @@ class _LoginViewState extends State<_LoginView>
     }
 
     final email = await _secureStorage.read(key: _secureEmailKey) ?? '';
-    final savedPassword = await _secureStorage.read(key: _securePasswordKey) ?? '';
+    final savedPassword =
+        await _secureStorage.read(key: _securePasswordKey) ?? '';
 
     var shouldAutofillPassword = !requireBiometric;
     if (rememberMe && requireBiometric && savedPassword.isNotEmpty) {
@@ -162,7 +160,6 @@ class _LoginViewState extends State<_LoginView>
       return _localAuth.authenticate(
         localizedReason: 'Authenticate to fill your saved login details',
         options: const AuthenticationOptions(
-          // Allow PIN/pattern fallback if biometrics are not enrolled.
           biometricOnly: false,
           stickyAuth: true,
         ),
@@ -191,7 +188,8 @@ class _LoginViewState extends State<_LoginView>
           content: Text(l10n.t(err)),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -208,11 +206,11 @@ class _LoginViewState extends State<_LoginView>
   }
 
   Future<void> _submit(
-      BuildContext context,
-      AuthFormProvider form,
-      AuthSessionController session,
-      AppLocalizations l10n,
-      ) async {
+    BuildContext context,
+    AuthFormProvider form,
+    AuthSessionController session,
+    AppLocalizations l10n,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
     form.setLoading(true);
     final err = await session.signInWithEmail(
@@ -228,7 +226,7 @@ class _LoginViewState extends State<_LoginView>
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -248,272 +246,160 @@ class _LoginViewState extends State<_LoginView>
     final l10n = AppLocalizations.of(context);
     final form = context.watch<AuthFormProvider>();
     final session = context.watch<AuthSessionController>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final scheme = Theme.of(context).colorScheme;
-    final accentText =
-        isDark ? AppColors.white : AppTheme.primaryGreen;
-    final accentTextMuted = isDark
-        ? AppColors.white.withValues(alpha: 0.7)
-        : AppTheme.primaryGreen.withValues(alpha: 0.7);
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            stops: [0.0, 0.6, 1.0],
-            colors: [
-              isDark ? AppColors.darkSurface : AppColors.softSurfaceGreen,
-              isDark ? AppColors.darkSurfaceMid : AppColors.paleGreen,
-              isDark ? AppColors.darkSurfaceHigh : AppColors.divider,
-            ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Decorative background blobs
-            Positioned(
-              top: -50,
-              right: -50,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.07),
-                ),
-              ),
+      backgroundColor: AuthBackground.fillColor,
+      resizeToAvoidBottomInset: false,
+      body: AuthBackground(
+        child: SafeArea(
+          // Keep landscape bg under the system gesture/nav bar (no white strip).
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.paddingOf(context).bottom,
             ),
-            Positioned(
-              bottom: 60,
-              left: -70,
-              child: Container(
-                width: 240,
-                height: 240,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.05),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Column(
-                children: [
-                  // Top bar
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: FadeTransition(
-                      opacity: _fadeHeader,
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryGreen.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              Icons.eco_rounded,
-                              color: AppTheme.primaryGreen,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              l10n.t('login'),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: accentText,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-                          ),
-                          const LanguageToggleButton(
-                            variant: LanguageToggleVariant.onSurface,
-                          ),
-                        ],
-                      ),
-                    ),
+            child: AuthFitViewport(
+              builder: (context, m) {
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    m.pagePadH,
+                    m.gapXs,
+                    m.pagePadH,
+                    m.gapSm,
                   ),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: context.pagePadding(
-                        horizontal: 22,
-                        top: 16,
-                        bottom: 28,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FadeTransition(
+                        opacity: _fadeHeader,
+                        child: AuthTopBar(
+                          title: l10n.t('login'),
+                          metrics: m,
+                        ),
                       ),
-                      child: ResponsiveContent(
-                        maxWidth: 520,
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Hero illustration area
-                          FadeTransition(
-                            opacity: _fadeHeader,
-                            child: Padding(
-                              padding:
-                              EdgeInsets.symmetric(
-                                vertical: context.screenHeight < 700 ? 8 : 18,
-                              ),
+                      SizedBox(height: m.gapSm),
+                      FadeTransition(
+                        opacity: _fadeHeader,
+                        child: AuthHeroHeader(
+                          heroAsset: 'assets/images/auth/login_hero.png',
+                          title: l10n.t('welcome'),
+                          subtitle: l10n.t('authSubtitle'),
+                          metrics: m,
+                        ),
+                      ),
+                      SizedBox(height: m.gapMd),
+                      SlideTransition(
+                        position: _slideCard,
+                        child: FadeTransition(
+                          opacity: _fadeCard,
+                          child: AuthFormCard(
+                            metrics: m,
+                            child: Form(
+                              key: _formKey,
                               child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Container(
-                                    width: context.scale(80, min: 0.85, max: 1.1),
-                                    height: context.scale(80, min: 0.85, max: 1.1),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: scheme.surface,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppTheme.primaryGreen
-                                              .withValues(alpha: 0.20),
-                                          blurRadius: 24,
-                                          offset: const Offset(0, 8),
+                                  AuthFieldLabel(l10n.t('email'), metrics: m),
+                                  SizedBox(height: m.gapSm),
+                                  TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    textInputAction: TextInputAction.next,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
+                                    ),
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    autocorrect: false,
+                                    enableSuggestions: false,
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('emailHint'),
+                                      prefixIcon: Icons.email_outlined,
+                                      metrics: m,
+                                    ),
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return l10n.t('emailRequired');
+                                      }
+                                      if (!value.contains('@')) {
+                                        return l10n.t('invalidEmail');
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  SizedBox(height: m.gapMd),
+                                  AuthFieldLabel(
+                                    l10n.t('password'),
+                                    metrics: m,
+                                  ),
+                                  SizedBox(height: m.gapSm),
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: form.obscurePassword,
+                                    textInputAction: TextInputAction.done,
+                                    style: TextStyle(
+                                      fontSize: m.fieldFontSize,
+                                    ),
+                                    scrollPadding:
+                                        const EdgeInsets.only(bottom: 72),
+                                    autocorrect: false,
+                                    enableSuggestions: false,
+                                    onFieldSubmitted: (_) => _submit(
+                                      context,
+                                      form,
+                                      session,
+                                      l10n,
+                                    ),
+                                    decoration: authInputDecoration(
+                                      hintText: l10n.t('passwordHint'),
+                                      prefixIcon: Icons.lock_outline_rounded,
+                                      metrics: m,
+                                      suffixIcon: IconButton(
+                                        onPressed:
+                                            form.togglePasswordVisibility,
+                                        icon: Icon(
+                                          form.obscurePassword
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: AuthDesign.mutedLabel,
+                                          size: m.iconSize,
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                    child: Icon(
-                                      Icons.agriculture_rounded,
-                                      color: AppTheme.primaryGreen,
-                                      size: context.scale(40, min: 0.85, max: 1.1),
-                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.length < 6) {
+                                        return l10n.t('passwordMin');
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    l10n.t('welcome'),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall
-                                        ?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      color: accentText,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    l10n.t('authSubtitle'),
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                      color: accentTextMuted,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Form card
-                          SlideTransition(
-                            position: _slideCard,
-                            child: FadeTransition(
-                              opacity: _fadeCard,
-                              child: Card(
-                                elevation: 0,
-                                color: scheme.surface,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                  side: BorderSide(
-                                    color: AppTheme.primaryGreen
-                                        .withValues(alpha: 0.14),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Form(
-                                    key: _formKey,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                      children: [
-                                        // Email field
-                                        _FieldLabel(l10n.t('email')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _emailController,
-                                          keyboardType:
-                                          TextInputType.emailAddress,
-                                          textInputAction:
-                                          TextInputAction.next,
-                                          autocorrect: false,
-                                          enableSuggestions: false,
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('emailHint'),
-                                            prefixIcon: const Icon(
-                                                Icons.email_outlined),
-                                          ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.trim().isEmpty) {
-                                              return l10n.t('emailRequired');
-                                            }
-                                            if (!value.contains('@')) {
-                                              return l10n.t('invalidEmail');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 18),
-
-                                        // Password field
-                                        _FieldLabel(l10n.t('password')),
-                                        const SizedBox(height: 6),
-                                        TextFormField(
-                                          controller: _passwordController,
-                                          obscureText: form.obscurePassword,
-                                          textInputAction:
-                                          TextInputAction.done,
-                                          autocorrect: false,
-                                          enableSuggestions: false,
-                                          onFieldSubmitted: (_) => _submit(
-                                            context,
-                                            form,
-                                            session,
-                                            l10n,
-                                          ),
-                                          decoration: InputDecoration(
-                                            hintText: l10n.t('passwordHint'),
-                                            prefixIcon: const Icon(
-                                                Icons.lock_outline_rounded),
-                                            suffixIcon: IconButton(
-                                              onPressed:
-                                              form.togglePasswordVisibility,
-                                              icon: Icon(
-                                                form.obscurePassword
-                                                    ? Icons
-                                                    .visibility_off_outlined
-                                                    : Icons
-                                                    .visibility_outlined,
-                                              ),
-                                            ),
-                                          ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.length < 6) {
-                                              return l10n.t('passwordMin');
-                                            }
-                                            return null;
-                                          },
-                                        ),
-
-                                        const SizedBox(height: 8),
-                                        CheckboxListTile(
+                                  SizedBox(height: m.gapSm + 2),
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        height: m.s(22).clamp(18.0, 24.0),
+                                        width: m.s(22).clamp(18.0, 24.0),
+                                        child: Checkbox(
                                           value: _rememberMe,
+                                          activeColor: AuthDesign.deepGreen,
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize
+                                                  .shrinkWrap,
+                                          visualDensity:
+                                              VisualDensity.compact,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
                                           onChanged: form.isLoading
                                               ? null
                                               : (value) {
                                                   setState(() {
-                                                    _rememberMe = value ?? false;
+                                                    _rememberMe =
+                                                        value ?? false;
                                                     if (!_rememberMe) {
                                                       _requireBiometricForAutofill =
                                                           false;
@@ -523,277 +409,129 @@ class _LoginViewState extends State<_LoginView>
                                                     _persistRememberedCredentials();
                                                   }
                                                 },
-                                          dense: true,
-                                          controlAffinity:
-                                              ListTileControlAffinity.leading,
-                                          contentPadding: EdgeInsets.zero,
-                                          activeColor: AppTheme.primaryGreen,
-                                          title: Text(
-                                            l10n.t('rememberMe'),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
                                         ),
-                                        SwitchListTile(
-                                          value: _requireBiometricForAutofill,
-                                          onChanged: form.isLoading || !_rememberMe
-                                              ? null
-                                              : (value) {
-                                                  setState(() {
-                                                    _requireBiometricForAutofill =
-                                                        value;
-                                                  });
-                                                },
-                                          dense: true,
-                                          contentPadding: EdgeInsets.zero,
-                                          activeColor: AppTheme.primaryGreen,
-                                          title: Text(
-                                            l10n.t('requireBiometricAutofill'),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 12,
-                                            right: 12,
-                                            bottom: 4,
-                                          ),
-                                          child: Text(
-                                            l10n.t('rememberMeHint'),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: scheme.onSurfaceVariant,
+                                      ),
+                                      SizedBox(width: m.gapSm),
+                                      Expanded(
+                                        child: Text(
+                                          l10n.t('rememberMe'),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: m.s(13).clamp(
+                                                  11.0,
+                                                  13.0,
                                                 ),
+                                            color: AuthDesign.labelColor,
                                           ),
                                         ),
-
-                                        // Forgot password
-                                        Align(
-                                          alignment: Alignment.centerRight,
-                                          child: TextButton(
-                                            onPressed: () =>
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  AppRoutes.forgotPassword,
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.forgotPassword,
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor:
+                                              AuthDesign.deepGreen,
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: m.gapXs,
+                                          ),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize
+                                                  .shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          l10n.t('forgotPassword'),
+                                          style: TextStyle(
+                                            fontSize: m.s(13).clamp(
+                                                  11.0,
+                                                  13.0,
                                                 ),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: accentText,
-                                              padding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 4),
-                                            ),
-                                            child: Text(
-                                              l10n.t('forgotPassword'),
-                                              style: const TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600),
-                                            ),
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
-
-                                        const SizedBox(height: 6),
-
-                                        // Login button
-                                        _GreenButton(
-                                          isLoading: form.isLoading,
-                                          label: l10n.t('login'),
-                                          loadingLabel:
-                                          l10n.t('authLoggingIn'),
-                                          onPressed: () => _submit(
-                                              context, form, session, l10n),
-                                        ),
-
-                                        const SizedBox(height: 12),
-
-                                        // Divider
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                                child: Divider(
-                                                    color: scheme.onSurfaceVariant
-                                                        .withValues(alpha: 0.3))),
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 12),
-                                              child: Text(
-                                                l10n.t('or'),
-                                                style: TextStyle(
-                                                  color: scheme.onSurfaceVariant,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                                child: Divider(
-                                                    color: scheme.onSurfaceVariant
-                                                        .withValues(alpha: 0.3))),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 12),
-
-                                        // Sign up button
-                                        OutlinedButton(
-                                          onPressed: form.isLoading
-                                              ? null
-                                              : () => Navigator.pushNamed(
-                                            context,
-                                            AppRoutes.signup,
-                                          ),
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: accentText,
-                                            side: BorderSide(
-                                                color: accentText
-                                                    .withValues(alpha: 0.5)),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.circular(14),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14),
-                                          ),
-                                          child: Text(
-                                            l10n.t('signup'),
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w600),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        TextButton(
-                                          onPressed: form.isLoading
-                                              ? null
-                                              : () => _continueAsGuest(
-                                                    context,
-                                                    session,
-                                                  ),
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: accentText,
-                                          ),
-                                          child: Text(
-                                            l10n.t('continueAsGuest'),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: m.gapMd),
+                                  AuthBiometricTile(
+                                    metrics: m,
+                                    enabled: _requireBiometricForAutofill,
+                                    title:
+                                        l10n.t('requireBiometricAutofill'),
+                                    subtitle: l10n.t('rememberMeHint'),
+                                    onChanged:
+                                        form.isLoading || !_rememberMe
+                                            ? null
+                                            : (value) {
+                                                setState(() {
+                                                  _requireBiometricForAutofill =
+                                                      value;
+                                                });
+                                              },
+                                  ),
+                                  SizedBox(height: m.gapLg),
+                                  AuthGradientButton(
+                                    metrics: m,
+                                    isLoading: form.isLoading,
+                                    label: l10n.t('login'),
+                                    loadingLabel: l10n.t('authLoggingIn'),
+                                    onPressed: () => _submit(
+                                      context,
+                                      form,
+                                      session,
+                                      l10n,
                                     ),
                                   ),
-                                ),
+                                  SizedBox(height: m.gapMd),
+                                  AuthOrDivider(l10n.t('or'), metrics: m),
+                                  SizedBox(height: m.gapMd),
+                                  AuthOutlinedButton(
+                                    metrics: m,
+                                    label: l10n.t('signup'),
+                                    onPressed: form.isLoading
+                                        ? null
+                                        : () => Navigator.pushNamed(
+                                              context,
+                                              AppRoutes.signup,
+                                            ),
+                                  ),
+                                  SizedBox(height: m.gapXs),
+                                  TextButton(
+                                    onPressed: form.isLoading
+                                        ? null
+                                        : () => _continueAsGuest(
+                                              context,
+                                              session,
+                                            ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: AuthDesign.deepGreen,
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: m.gapXs,
+                                      ),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Text(
+                                      l10n.t('continueAsGuest'),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: m.s(14).clamp(12.0, 14.0),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Shared helper widgets ─────────────────────────────────────────────────────
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w600,
-      color: Theme.of(context).colorScheme.onSurface,
-      letterSpacing: 0.2,
-    ),
-  );
-}
-
-class _GreenButton extends StatelessWidget {
-  const _GreenButton({
-    required this.isLoading,
-    required this.label,
-    required this.loadingLabel,
-    required this.onPressed,
-  });
-
-  final bool isLoading;
-  final String label;
-  final String loadingLabel;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final disabledBg = scheme.surfaceContainerHighest;
-    final disabledFg = scheme.onSurfaceVariant;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: isLoading
-            ? null
-            : const LinearGradient(
-          colors: [AppColors.lightGreen, AppColors.primaryGreen],
-        ),
-        color: isLoading ? disabledBg : null,
-        boxShadow: isLoading
-            ? []
-            : [
-          BoxShadow(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: AppColors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            child: Center(
-              child: isLoading
-                  ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: disabledFg,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(loadingLabel,
-                      style: TextStyle(color: disabledFg)),
-                ],
-              )
-                  : Text(
-                label,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  letterSpacing: 0.4,
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
