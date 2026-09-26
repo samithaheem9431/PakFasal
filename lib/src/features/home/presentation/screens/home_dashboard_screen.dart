@@ -781,122 +781,94 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             hPad,
                             bottomClearance,
                           ),
-                          sliver: SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Center(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: AppBreakpoints.maxContentWidth,
-                                  minHeight: minGridHeight,
-                                ),
-                                child: LayoutBuilder(
-                                  builder: (context, gridConstraints) {
-                                    final usableHeight =
-                                        gridConstraints.maxHeight;
-                                    final tileHeight = rows <= 0
-                                        ? usableHeight
-                                        : (usableHeight -
-                                                (rows - 1) * spacing) /
-                                            rows;
-                                    final safeTileHeight = tileHeight > 0
-                                        ? tileHeight
-                                        : minTileHeight;
-                                    final tileWidth =
-                                        (gridConstraints.maxWidth -
-                                                (columns - 1) * spacing) /
-                                            columns;
-                                    return GridView.count(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      padding: EdgeInsets.zero,
-                                      crossAxisCount: columns,
-                                      mainAxisSpacing: spacing,
-                                      crossAxisSpacing: spacing,
-                                      childAspectRatio:
-                                          tileWidth / safeTileHeight,
-                                      children: [
-                                        _FadeSlideIn(
+                          sliver: SliverLayoutBuilder(
+                            builder: (context, sliverConstraints) {
+                              final rawHeight =
+                                  sliverConstraints.viewportMainAxisExtent -
+                                      sliverConstraints.precedingScrollExtent -
+                                      bottomClearance;
+                              final fillHeight = rawHeight < minGridHeight
+                                  ? minGridHeight
+                                  : rawHeight;
+                              return SliverToBoxAdapter(
+                                child: SizedBox(
+                                  height: fillHeight,
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                        maxWidth:
+                                            AppBreakpoints.maxContentWidth,
+                                      ),
+                                      child: _DashboardTileGrid(
+                                      columns: columns,
+                                      spacing: spacing,
+                                      animate: _animateContentIn,
+                                      tiles: [
+                                        _DashboardTileSpec(
                                           delayMs: 160,
-                                          animate: _animateContentIn,
-                                          child: DashboardTile(
-                                            imageAsset:
-                                                'assets/images/dashboard/tile_learning.png',
-                                            title: l10n.t('learning'),
-                                            onTap: () => Navigator.pushNamed(
-                                              context,
-                                              AppRoutes.learning,
-                                            ),
+                                          imageAsset:
+                                              'assets/images/dashboard/tile_learning.png',
+                                          title: l10n.t('learning'),
+                                          onTap: () => Navigator.pushNamed(
+                                            context,
+                                            AppRoutes.learning,
                                           ),
                                         ),
-                                        _FadeSlideIn(
+                                        _DashboardTileSpec(
                                           delayMs: 210,
-                                          animate: _animateContentIn,
-                                          child: DashboardTile(
-                                            imageAsset:
-                                                'assets/images/dashboard/tile_weather.png',
-                                            title: l10n.t('weather'),
-                                            onTap: () => Navigator.pushNamed(
-                                              context,
-                                              AppRoutes.weather,
-                                            ),
+                                          imageAsset:
+                                              'assets/images/dashboard/tile_weather.png',
+                                          title: l10n.t('weather'),
+                                          onTap: () => Navigator.pushNamed(
+                                            context,
+                                            AppRoutes.weather,
                                           ),
                                         ),
-                                        _FadeSlideIn(
+                                        _DashboardTileSpec(
                                           delayMs: 260,
-                                          animate: _animateContentIn,
-                                          child: DashboardTile(
-                                            imageAsset:
-                                                'assets/images/dashboard/tile_ask_ai.png',
-                                            title: l10n.t('askAi'),
-                                            onTap: () => _openProtectedRoute(
-                                              AppRoutes.aiQuery,
-                                            ),
+                                          imageAsset:
+                                              'assets/images/dashboard/tile_ask_ai.png',
+                                          title: l10n.t('askAi'),
+                                          onTap: () => _openProtectedRoute(
+                                            AppRoutes.aiQuery,
                                           ),
                                         ),
-                                        _FadeSlideIn(
+                                        _DashboardTileSpec(
                                           delayMs: 310,
-                                          animate: _animateContentIn,
-                                          child: DashboardTile(
-                                            imageAsset:
-                                                'assets/images/dashboard/tile_sensor.png',
-                                            title: l10n.t('sensorData'),
-                                            onTap: () => _openProtectedRoute(
-                                              AppRoutes.sensor,
-                                            ),
+                                          imageAsset:
+                                              'assets/images/dashboard/tile_sensor.png',
+                                          title: l10n.t('sensorData'),
+                                          onTap: () => _openProtectedRoute(
+                                            AppRoutes.sensor,
                                           ),
                                         ),
-                                        _FadeSlideIn(
+                                        _DashboardTileSpec(
                                           delayMs: 360,
-                                          animate: _animateContentIn,
-                                          child: DashboardTile(
-                                            imageAsset:
-                                                'assets/images/dashboard/tile_marketplace.png',
-                                            title: l10n.t('marketplace'),
-                                            onTap: () => Navigator.pushNamed(
-                                              context,
-                                              AppRoutes.marketplace,
-                                            ),
+                                          imageAsset:
+                                              'assets/images/dashboard/tile_marketplace.png',
+                                          title: l10n.t('marketplace'),
+                                          onTap: () => Navigator.pushNamed(
+                                            context,
+                                            AppRoutes.marketplace,
                                           ),
                                         ),
-                                        _FadeSlideIn(
+                                        _DashboardTileSpec(
                                           delayMs: 410,
-                                          animate: _animateContentIn,
-                                          child: DashboardTile(
-                                            imageAsset:
-                                                'assets/images/dashboard/tile_crop_calendar.png',
-                                            title: l10n.t('cropCalendar'),
-                                            onTap: () => Navigator.pushNamed(
-                                              context,
-                                              AppRoutes.cropCalendar,
-                                            ),
+                                          imageAsset:
+                                              'assets/images/dashboard/tile_crop_calendar.png',
+                                          title: l10n.t('cropCalendar'),
+                                          onTap: () => Navigator.pushNamed(
+                                            context,
+                                            AppRoutes.cropCalendar,
                                           ),
                                         ),
                                       ],
-                                    );
-                                  },
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            );
+                            },
                           ),
                         ),
                       ],
@@ -929,6 +901,85 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final email = auth.userEmail?.trim();
     if (email != null && email.isNotEmpty) return email.split('@').first;
     return 'Farmer';
+  }
+}
+
+class _DashboardTileSpec {
+  const _DashboardTileSpec({
+    required this.delayMs,
+    required this.imageAsset,
+    required this.title,
+    required this.onTap,
+  });
+
+  final int delayMs;
+  final String imageAsset;
+  final String title;
+  final VoidCallback onTap;
+}
+
+/// Flex grid sized by a parent with a bounded height.
+class _DashboardTileGrid extends StatelessWidget {
+  const _DashboardTileGrid({
+    required this.columns,
+    required this.spacing,
+    required this.animate,
+    required this.tiles,
+  });
+
+  final int columns;
+  final double spacing;
+  final bool animate;
+  final List<_DashboardTileSpec> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final rowCount = columns <= 0 ? 0 : (tiles.length / columns).ceil();
+    final rows = <Widget>[];
+
+    for (var rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      if (rowIndex > 0) {
+        rows.add(SizedBox(height: spacing));
+      }
+      final rowChildren = <Widget>[];
+      for (var colIndex = 0; colIndex < columns; colIndex++) {
+        final tileIndex = rowIndex * columns + colIndex;
+        if (colIndex > 0) {
+          rowChildren.add(SizedBox(width: spacing));
+        }
+        if (tileIndex < tiles.length) {
+          final tile = tiles[tileIndex];
+          rowChildren.add(
+            Expanded(
+              child: _FadeSlideIn(
+                delayMs: tile.delayMs,
+                animate: animate,
+                child: DashboardTile(
+                  imageAsset: tile.imageAsset,
+                  title: tile.title,
+                  onTap: tile.onTap,
+                ),
+              ),
+            ),
+          );
+        } else {
+          rowChildren.add(const Expanded(child: SizedBox.shrink()));
+        }
+      }
+      rows.add(
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: rowChildren,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: rows,
+    );
   }
 }
 
