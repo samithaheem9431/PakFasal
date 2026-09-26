@@ -32,6 +32,7 @@ class CropCalendarVisuals {
   static String areaLabelKey(CropArea area) {
     return switch (area) {
       CropArea.multan => 'cropCalAreaMultan',
+      CropArea.faisalabad => 'cropCalAreaFaisalabad',
       CropArea.lahore => 'cropCalAreaLahore',
     };
   }

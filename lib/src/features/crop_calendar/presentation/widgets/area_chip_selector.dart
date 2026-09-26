@@ -4,7 +4,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 import '../utils/crop_calendar_visuals.dart';
 
-/// Wrapping row of area chips ("Multan" / "Lahore" today).
+/// Wrapping row of area chips ("Multan" / "Faisalabad" / "Lahore").
 ///
 /// Mirrors the visual language of [CropChipSelector] so the two selectors
 /// feel like one set of controls.

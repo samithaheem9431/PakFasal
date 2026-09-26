@@ -726,6 +726,7 @@ class AppLocalizations {
       // ── Crop calendar ──
       'cropCalAreasTitle': 'Punjab Areas',
       'cropCalAreaMultan': 'Multan',
+      'cropCalAreaFaisalabad': 'Faisalabad',
       'cropCalAreaLahore': 'Lahore',
       'cropCalAreaLabel': 'Area',
       'cropCalSeasonProgress': 'Season Progress',
@@ -759,44 +760,70 @@ class AppLocalizations {
       'cropCalMonth12': 'Dec',
 
       'cropCalWheatSowingDesc':
-          'Prepare seedbed and sow certified wheat seed; ensure good moisture before sowing.',
+          'Sow certified irrigated wheat 1–20 Nov (strongest target 1–15 Nov); ensure seedbed moisture before sowing.',
       'cropCalWheatIrrigationDesc':
-          'Apply first irrigation 20–25 days after sowing; second around tillering stage.',
+          'Normal irrigated schedule (DAS): 20–25, 40–45, 70–75, 90–95, 110–115, 130–135. After rice use 35–45, 80–90, 125–130 DAS instead.',
+      'cropCalWheatIrrigationRiceWheatDesc':
+          'Rice→wheat common here: 1st water 35–45 DAS, 2nd 80–90 DAS, 3rd 125–130 DAS. Non-rice fields use the normal 6-irrigation DAS schedule.',
       'cropCalWheatFertilizerDesc':
-          'Split-dose urea with second irrigation; balance with DAP at sowing.',
+          'Average irrigated soil reference: N 54, P 34, K 25 kg/acre (nutrient basis). Split N with irrigations; adjust after soil test.',
+      'cropCalWheatPestControlDesc':
+          'Control weeds mainly in the early crop stage. Aphid ETL 25/tiller; treat rust on appearance (monitor Jan–Mar).',
       'cropCalWheatHarvestDesc':
-          'Harvest when grains are firm and moisture is around 14%.',
+          'Official Punjab crop-cut window 1 Apr–5 May; harvest when grains are firm (~14% moisture). Exact day is weather-dependent.',
 
       'cropCalRiceSowingDesc':
-          'Raise nursery in puddled soil and transplant healthy 25–30 day seedlings.',
+          'Raise nursery in puddled soil and transplant healthy seedlings at the recommended age for the variety.',
+      'cropCalRiceSowingCoarseDesc':
+          'Coarse/short-duration (e.g. KSK-706): nursery 20 May–7 Jun; transplant about 15 Jun–15 Jul depending on nursery age.',
+      'cropCalRiceSowingBasmatiDesc':
+          'Basmati (e.g. Sultan Super Basmati): nursery 1–25 Jun; transplant roughly late Jun/early Jul–25 Jul by variety.',
       'cropCalRiceIrrigationDesc':
-          'Maintain 5–7 cm standing water during tillering and panicle formation.',
+          'After transplanting keep about 1–2 inch standing water for the first 20–25 DAT where water allows; then keep soil suitably wet. Stop irrigation 15–20 days before harvest.',
+      'cropCalRiceFertilizerCoarseDesc':
+          'Coarse-rice reference: N 69, P 40, K 25 kg/acre (nutrient basis). Adjust after soil test.',
+      'cropCalRiceFertilizerBasmatiDesc':
+          'Basmati reference: about N 55, P 35, K 25 kg/acre (nutrient basis). Adjust after soil test.',
       'cropCalRicePestControlDesc':
-          'Scout for stem borer and leaf folder; spray only when economic threshold is crossed.',
+          'If using weedicide, apply generally 3–5 DAT. Scout stem borer, leaf folder and plant hoppers mainly Jul–Oct; spray only at threshold.',
       'cropCalRiceHarvestDesc':
-          'Harvest when 80–85% of panicles turn golden; reduce moisture before threshing.',
+          'Official CRS rice crop-cut window 15 Sep–25 Nov. Harvest when ~80–85% of panicles turn golden; dry before threshing.',
 
       'cropCalCottonSowingDesc':
-          'Sow on raised beds in warm dry soil; treat seed against sucking pests.',
+          'Official variety window 1 Apr–31 May; for a timely crop prefer April–mid May (extension often targets completion by ~15 May). Sow in warm soil; treat seed against early sucking pests.',
       'cropCalCottonIrrigationDesc':
-          'Schedule irrigation by canopy and weather; avoid late-season water stress.',
+          'Drill: first irrigation about 30–40 DAS, then roughly every 10–15 days by weather. Ridge/bed: first water about 3–10 DAS, next early irrigations ~6–9 days, later ~15 days as needed.',
+      'cropCalCottonFertilizerCentralDesc':
+          'Medium central-soil Bt reference (e.g. FH-series): approx. N 90, P 35, K 38 kg/acre. Adjust after soil test.',
+      'cropCalCottonFertilizerSouthDesc':
+          'Southern-medium-soil Bt reference: approx. N 80, P 35, K 30 kg/acre. Adjust after soil test.',
+      'cropCalCottonFertilizerLahoreDesc':
+          'Do not use a fixed Lahore NPK rate. Follow soil-test results and local extension advice for your field.',
       'cropCalCottonPestControlDesc':
-          'Monitor whitefly and pink bollworm; use IPM and resistant varieties.',
+          'Scout thrips, jassid and whitefly early; sucking pests through summer; pink bollworm later. Spray only on threshold — avoid calendar spraying.',
+      'cropCalCottonPestControlSouthDesc':
+          'Main monitoring May–Sep: whitefly, jassid/thrips, pink bollworm and mealybug. Treat on threshold/advisory, not fixed dates.',
       'cropCalCottonHarvestDesc':
-          'Pick mature open bolls in dry weather; keep trash low for premium grade.',
+          'Official cotton YES/picking window 1 Sep–30 Nov. Pick mature open bolls in dry weather; keep trash low for grade.',
 
       'cropCalNoteWheatMultan':
-          'South Punjab — sow earlier (mid-October) due to warmer winters; expect harvest 7–10 days sooner.',
+          'Southern cotton–wheat zone — prefer 1–15 Nov (up to 20 Nov). Tighten irrigation if heat rises. CRS harvest 1 Apr–5 May; southern crops often mature earlier in that window (no fixed harvest day).',
+      'cropCalNoteWheatFaisalabad':
+          'Irrigated wheat (Arooj-2022 / Nishan-type) — sow 1–20 Nov (best 1–15). Normal DAS irrigation; after rice use 35–45 / 80–90 / 125–130 DAS. Harvest usually in the April part of the official 1 Apr–5 May window.',
       'cropCalNoteWheatLahore':
-          'Central Punjab — standard late-October to mid-November sowing window works best.',
+          'Irrigated rice→wheat system — sow 1–20 Nov. Prefer post-paddy irrigation 35–45 / 80–90 / 125–130 DAS. Official CRS harvest 1 Apr–5 May (generally April–early May).',
       'cropCalNoteRiceMultan':
-          'Higher heat — irrigate early morning to reduce evapotranspiration losses.',
+          'Short-duration/coarse rice where cultivated (KSK-706-type) — nursery 20 May–7 Jun, transplant ~15 Jun–15 Jul. Heat makes water management critical. Can reach the earlier part of the official 15 Sep–25 Nov CRS window.',
+      'cropCalNoteRiceFaisalabad':
+          'Coarse/short-duration profile (e.g. KSK-706, ~99 days) — nursery 20 May–7 Jun; transplant ~15 Jun–15 Jul. NPK N 69 / P 40 / K 25 kg/acre. CRS harvest window 15 Sep–25 Nov.',
       'cropCalNoteRiceLahore':
-          'Basmati performs best here with cooler nights during ripening.',
+          'Basmati profile (e.g. Sultan Super Basmati, ~124 days) — nursery 1–25 Jun; transplant late Jun–25 Jul. NPK ~N 55 / P 35 / K 25 kg/acre. Practical harvest usually Oct–Nov inside CRS 15 Sep–25 Nov.',
       'cropCalNoteCottonMultan':
-          'Cotton belt — best yields with early sowing in March and disciplined IPM.',
+          'Major cotton belt / South Zone (MNH-1050, MNH-1035, FH-938). Sow 1 Apr–31 May; prefer finish by ~15 May. Hotter/drier — irrigation demand stronger. Picking Sep–Nov within CRS 1 Sep–30 Nov.',
+      'cropCalNoteCottonFaisalabad':
+          'Important cotton district — FH-326 / FH-series (Faisalabad division). Official window 1 Apr–31 May; timely crop: April–mid May. Central Bt NPK ~N 90 / P 35 / K 38 kg/acre. Picking CRS 1 Sep–30 Nov.',
       'cropCalNoteCottonLahore':
-          'Sow after wheat harvest (late April–May) for a shorter cotton season.',
+          'Non-core cotton location (lower priority than Multan/Faisalabad). Official sow 1 Apr–31 May; prefer by 15 May. Use soil-test fertilizer — no Lahore-specific NPK table. Picking CRS 1 Sep–30 Nov.',
       'cropCalTabGuide': 'Guide',
       'cropCalTabMyCrops': 'My Crops',
       'cropCalTabMonth': 'Month',
@@ -1621,6 +1648,7 @@ class AppLocalizations {
       // ── Crop calendar (Urdu) ──
       'cropCalAreasTitle': 'پنجاب کے علاقے',
       'cropCalAreaMultan': 'ملتان',
+      'cropCalAreaFaisalabad': 'فیصل آباد',
       'cropCalAreaLahore': 'لاہور',
       'cropCalAreaLabel': 'علاقہ',
       'cropCalSeasonProgress': 'موسمی پیش رفت',
@@ -1655,44 +1683,70 @@ class AppLocalizations {
       'cropCalMonth12': 'دسمبر',
 
       'cropCalWheatSowingDesc':
-          'بیج بستر تیار کریں اور تصدیق شدہ گندم کا بیج بوئیں؛ بوائی سے پہلے زمین میں مناسب نمی یقینی بنائیں۔',
+          'تصدیق شدہ آبپاش گندم 1 تا 20 نومبر بوئیں (بہترین ہدف 1 تا 15 نومبر)؛ بوائی سے پہلے بیج بستر میں مناسب نمی یقینی بنائیں۔',
       'cropCalWheatIrrigationDesc':
-          'بوائی کے 20 تا 25 دن بعد پہلی آبپاشی کریں؛ دوسری آبپاشی شاخوں کے نکلنے کے وقت کریں۔',
+          'عام آبپاش شیڈول (بوائی کے بعد دن): 20–25، 40–45، 70–75، 90–95، 110–115، 130–135۔ چاول کے بعد بوائی پر 35–45، 80–90، 125–130 دن استعمال کریں۔',
+      'cropCalWheatIrrigationRiceWheatDesc':
+          'یہاں چاول→گندم عام ہے: پہلا پانی 35–45 دن، دوسرا 80–90 دن، تیسرا 125–130 دن۔ غیر چاول والے کھیت پر عام 6 آبپاشی والا شیڈول لگائیں۔',
       'cropCalWheatFertilizerDesc':
-          'یوریا تقسیم خوراک میں دوسری آبپاشی کے ساتھ دیں؛ بوائی پر ڈی اے پی سے توازن قائم کریں۔',
+          'اوسط آبپاش مٹی حوالہ: نائٹروجن 54، فاسفورس 34، پوٹاش 25 کلو/ایکڑ (غذائی عناصر)۔ نائٹروجن آبپاشی کے ساتھ تقسیم کریں؛ مٹی ٹیسٹ کے بعد مقدار درست کریں۔',
+      'cropCalWheatPestControlDesc':
+          'جڑی بوٹیاں خاص طور پر ابتدائی مرحلے میں قابو کریں۔ افڈ کی معاشی حد 25 فی ٹلر؛ زنگ نظر آتے ہی علاج کریں (جنوری تا مارچ نگرانی)۔',
       'cropCalWheatHarvestDesc':
-          'دانے سخت ہو جائیں اور نمی تقریباً 14٪ پر آ جائے تو فصل کاٹ لیں۔',
+          'سرکاری پنجاب کراپ کٹ ونڈو 1 اپریل تا 5 مئی؛ دانے سخت (~14٪ نمی) ہوں تو کاٹیں۔ درست دن موسم پر منحصر ہے۔',
 
       'cropCalRiceSowingDesc':
-          'پانی والی زمین میں نرسری اگائیں اور 25 تا 30 دن کی صحت مند پنیری منتقل کریں۔',
+          'پانی والی زمین میں نرسری اگائیں اور قسم کے مطابق تجویز کردہ عمر کی صحت مند پنیری منتقل کریں۔',
+      'cropCalRiceSowingCoarseDesc':
+          'موٹے/کم مدت والے چاول (جیسے KSK-706): نرسری 20 مئی تا 7 جون؛ منتقلی تقریباً 15 جون تا 15 جولائی (نرسری کی عمر کے مطابق)۔',
+      'cropCalRiceSowingBasmatiDesc':
+          'باسمتی (جیسے سلطان سپر باسمتی): نرسری 1 تا 25 جون؛ منتقلی عموماً جون کے آخر/جولائی شروع تا 25 جولائی (قسم کے مطابق)۔',
       'cropCalRiceIrrigationDesc':
-          'شاخوں اور بالیوں کے بننے کے دوران 5 تا 7 سینٹی میٹر پانی برقرار رکھیں۔',
+          'منتقلی کے بعد پہلی 20 تا 25 دن تقریباً 1 تا 2 انچ کھڑا پانی رکھیں (پانی دستیاب ہو تو)؛ بعد میں زمین مناسب گیلی رکھیں۔ کٹائی سے 15 تا 20 دن پہلے آبپاشی بند کریں۔',
+      'cropCalRiceFertilizerCoarseDesc':
+          'موٹے چاول کا حوالہ: نائٹروجن 69، فاسفورس 40، پوٹاش 25 کلو/ایکڑ۔ مٹی ٹیسٹ کے بعد مقدار درست کریں۔',
+      'cropCalRiceFertilizerBasmatiDesc':
+          'باسمتی حوالہ: تقریباً نائٹروجن 55، فاسفورس 35، پوٹاش 25 کلو/ایکڑ۔ مٹی ٹیسٹ کے بعد مقدار درست کریں۔',
       'cropCalRicePestControlDesc':
-          'تنے کے کیڑے اور پتا لپیٹنے والے کیڑے کی نگرانی کریں؛ صرف معاشی حد عبور ہونے پر اسپرے کریں۔',
+          'اگر ویڈی سائیڈ استعمال کریں تو عموماً منتقلی کے 3 تا 5 دن بعد۔ تنے کا کیڑا، پتا لپیٹنے والا اور ہوپر جولائی تا اکتوبر نگرانی کریں؛ صرف حد پر اسپرے کریں۔',
       'cropCalRiceHarvestDesc':
-          '80 تا 85٪ بالیاں سنہری ہو جائیں تو کٹائی کریں؛ گہائی سے پہلے نمی کم کریں۔',
+          'سرکاری سی آر ایس چاول کٹائی ونڈو 15 ستمبر تا 25 نومبر۔ تقریباً 80 تا 85٪ بالیاں سنہری ہوں تو کاٹیں؛ گہائی سے پہلے خشک کریں۔',
 
       'cropCalCottonSowingDesc':
-          'گرم اور خشک زمین میں اونچی پٹریوں پر بوائی کریں؛ رس چوسنے والے کیڑوں سے بچاؤ کے لیے بیج کا علاج کریں۔',
+          'سرکاری اقسام کی ونڈو 1 اپریل تا 31 مئی؛ بروقت فصل کے لیے اپریل تا وسط مئی ترجیح دیں (محکمہ عموماً تقریباً 15 مئی تک مکمل کرنے کا کہتا ہے)۔ گرم زمین میں بوئیں؛ ابتدائی رس چوسنے والے کیڑوں سے بیج کا علاج کریں۔',
       'cropCalCottonIrrigationDesc':
-          'پودے کی شاخ بندی اور موسم کے مطابق آبپاشی کا شیڈول بنائیں؛ آخری مرحلے میں پانی کی کمی سے بچائیں۔',
+          'ڈرل: پہلی آبپاشی تقریباً 30 تا 40 دن بعد، پھر موسم کے مطابق تقریباً ہر 10 تا 15 دن۔ ريج/بیڈ: پہلا پانی تقریباً 3 تا 10 دن، اگلی ابتدائی آبپاشیاں ~6 تا 9 دن، بعد میں ضرورت پر ~15 دن۔',
+      'cropCalCottonFertilizerCentralDesc':
+          'وسطی درمیانی مٹی بی ٹی حوالہ (جیسے ایف ایچ سیریز): تقریباً نائٹروجن 90، فاسفورس 35، پوٹاش 38 کلو/ایکڑ۔ مٹی ٹیسٹ کے بعد درست کریں۔',
+      'cropCalCottonFertilizerSouthDesc':
+          'جنوبی درمیانی مٹی بی ٹی حوالہ: تقریباً نائٹروجن 80، فاسفورس 35، پوٹاش 30 کلو/ایکڑ۔ مٹی ٹیسٹ کے بعد درست کریں۔',
+      'cropCalCottonFertilizerLahoreDesc':
+          'لاہور کے لیے کوئی مقررہ این پی کے شرح استعمال نہ کریں۔ مٹی ٹیسٹ اور مقامی محکمہ زراعت کی ہدایت پر عمل کریں۔',
       'cropCalCottonPestControlDesc':
-          'سفید مکھی اور گلابی سنڈی کی نگرانی کریں؛ آئی پی ایم اور مزاحم اقسام استعمال کریں۔',
+          'ابتدا میں تھرپس، جیسیڈ اور سفید مکھی کی نگرانی؛ گرمی میں رس چوسنے والے کیڑے؛ بعد میں گلابی سنڈی۔ صرف معاشی حد پر اسپرے کریں — کیلنڈر اسپرے سے گریز کریں۔',
+      'cropCalCottonPestControlSouthDesc':
+          'اہم نگرانی مئی تا ستمبر: سفید مکھی، جیسیڈ/تھرپس، گلابی سنڈی اور میلی بگ۔ علاج حد/ایڈوائزری پر کریں، مقررہ تاریخوں پر نہیں۔',
       'cropCalCottonHarvestDesc':
-          'پکے کھلے ٹنڈے خشک موسم میں چنیں؛ بہترین معیار کے لیے کوڑا کم رکھیں۔',
+          'سرکاری کپاس YES/چنائی ونڈو 1 ستمبر تا 30 نومبر۔ پکے کھلے ٹنڈے خشک موسم میں چنیں؛ گریڈ کے لیے کوڑا کم رکھیں۔',
 
       'cropCalNoteWheatMultan':
-          'جنوبی پنجاب — گرم سردیوں کی وجہ سے وسط اکتوبر میں جلد بوائی کریں؛ کٹائی 7 تا 10 دن پہلے ممکن ہے۔',
+          'جنوبی کپاس–گندم زون — ترجیحاً 1 تا 15 نومبر (20 نومبر تک)۔ گرمی بڑھے تو آبپاشی سخت رکھیں۔ سرکاری کٹائی 1 اپریل تا 5 مئی؛ جنوبی فصل اکثر اس ونڈو کے شروع میں پکتی ہے (کوئی مقررہ تاریخ نہیں)۔',
+      'cropCalNoteWheatFaisalabad':
+          'آبپاش گندم (عروج-2022 / نشان قسم) — بوائی 1 تا 20 نومبر (بہترین 1 تا 15)۔ عام DAS آبپاشی؛ چاول کے بعد 35–45 / 80–90 / 125–130 دن۔ کٹائی عموماً سرکاری ونڈو (1 اپریل تا 5 مئی) کے اپریل حصے میں۔',
       'cropCalNoteWheatLahore':
-          'وسطی پنجاب — اکتوبر کے آخر سے نومبر کے وسط تک معیاری بوائی بہترین نتائج دیتی ہے۔',
+          'آبپاش چاول→گندم نظام — بوائی 1 تا 20 نومبر۔ دھان کے بعد آبپاشی 35–45 / 80–90 / 125–130 دن ترجیح دیں۔ سرکاری کٹائی 1 اپریل تا 5 مئی (عموماً اپریل تا مئی شروع)۔',
       'cropCalNoteRiceMultan':
-          'زیادہ گرمی — تبخیر کم کرنے کے لیے صبح سویرے آبپاشی کریں۔',
+          'کم مدت/موٹے چاول جہاں کاشت ہو (KSK-706 قسم) — نرسری 20 مئی تا 7 جون، منتقلی تقریباً 15 جون تا 15 جولائی۔ گرمی میں پانی کا انتظام اہم۔ سرکاری ونڈو 15 ستمبر تا 25 نومبر کے شروع والے حصے میں کٹائی ممکن۔',
+      'cropCalNoteRiceFaisalabad':
+          'موٹے/کم مدت پروفائل (جیسے KSK-706، ~99 دن) — نرسری 20 مئی تا 7 جون؛ منتقلی ~15 جون تا 15 جولائی۔ NPK نائٹروجن 69 / فاسفورس 40 / پوٹاش 25 کلو/ایکڑ۔ سی آر ایس کٹائی 15 ستمبر تا 25 نومبر۔',
       'cropCalNoteRiceLahore':
-          'باسمتی یہاں بہترین رہتی ہے کیونکہ پکنے کے وقت راتیں ٹھنڈی ہوتی ہیں۔',
+          'باسمتی پروفائل (جیسے سلطان سپر باسمتی، ~124 دن) — نرسری 1 تا 25 جون؛ منتقلی جون آخر تا 25 جولائی۔ NPK ~نائٹروجن 55 / فاسفورس 35 / پوٹاش 25۔ عملی کٹائی عموماً اکتوبر تا نومبر (سی آر ایس 15 ستمبر تا 25 نومبر کے اندر)۔',
       'cropCalNoteCottonMultan':
-          'کپاس کا گڑھ — مارچ میں جلد بوائی اور منظم آئی پی ایم سے بہترین پیداوار۔',
+          'بڑا کپاس گڑھ / جنوبی زون (MNH-1050، MNH-1035، FH-938)۔ بوائی 1 اپریل تا 31 مئی؛ ترجیحاً ~15 مئی تک۔ زیادہ گرمی/خشکی — آبپاشی کی مانگ زیادہ۔ چنائی ستمبر تا نومبر (سی آر ایس 1 ستمبر تا 30 نومبر)۔',
+      'cropCalNoteCottonFaisalabad':
+          'اہم کپاس ضلع — FH-326 / ایف ایچ سیریز (فیصل آباد ڈویژن)۔ سرکاری ونڈو 1 اپریل تا 31 مئی؛ بروقت فصل: اپریل تا وسط مئی۔ وسطی بی ٹی NPK ~نائٹروجن 90 / فاسفورس 35 / پوٹاش 38۔ چنائی سی آر ایس 1 ستمبر تا 30 نومبر۔',
       'cropCalNoteCottonLahore':
-          'گندم کی کٹائی کے بعد (اپریل کے آخر تا مئی) بوائی کریں تاکہ کپاس کا موسم مختصر رہے۔',
+          'غیر مرکزی کپاس علاقہ (ملتان/فیصل آباد سے کم ترجیح)۔ سرکاری بوائی 1 اپریل تا 31 مئی؛ 15 مئی تک ترجیح۔ کھاد مٹی ٹیسٹ سے — لاہور کی کوئی مخصوص این پی کے جدول نہیں۔ چنائی سی آر ایس 1 ستمبر تا 30 نومبر۔',
       'cropCalTabGuide': 'رہنما',
       'cropCalTabMyCrops': 'میری فصلیں',
       'cropCalTabMonth': 'مہینہ',

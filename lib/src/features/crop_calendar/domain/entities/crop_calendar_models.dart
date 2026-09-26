@@ -10,9 +10,9 @@
 enum CropType { wheat, rice, cotton }
 
 /// Punjab regions covered by the catalog. Each crop has area-specific
-/// month windows reflecting climate differences between south (Multan)
-/// and central (Lahore) Punjab.
-enum CropArea { multan, lahore }
+/// month windows reflecting climate differences between south (Multan),
+/// central canal-colony (Faisalabad), and central (Lahore) Punjab.
+enum CropArea { multan, faisalabad, lahore }
 
 /// Lifecycle stages of a crop in field order. Used both for ordering and
 /// for choosing icons / colours in the timeline.
