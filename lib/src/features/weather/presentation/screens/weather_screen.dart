@@ -21,11 +21,11 @@ import '../widgets/weather_skeleton.dart';
 import '../widgets/weather_sky_background.dart';
 import '../widgets/weather_glass_card.dart';
 
-/// Apple Weather–style immersive dashboard.
+/// PakFasal weather dashboard — photo sky, green wash, flat readable cards.
 ///
 /// Composition (top → bottom):
 ///   1. Collapsing hero (city / temp / condition / H-L)
-///   2. Hourly glass strip
+///   2. Hourly forecast strip
 ///   3. 10-day forecast
 ///   4. Detail metric tiles
 ///   5. Crop alerts + farmer advisories
@@ -57,7 +57,8 @@ class _WeatherScreenState extends State<WeatherScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
-      context.read<WeatherProvider>().refreshAll();
+      // Quiet TTL-aware refresh — keeps cached weather on screen.
+      context.read<WeatherProvider>().softRefresh();
     }
   }
 

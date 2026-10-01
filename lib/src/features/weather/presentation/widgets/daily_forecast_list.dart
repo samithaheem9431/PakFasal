@@ -7,7 +7,7 @@ import '../../domain/entities/weather_models.dart';
 import '../utils/weather_view_mapper.dart';
 import 'weather_glass_card.dart';
 
-/// Apple-style multi-day forecast with temperature range bars.
+/// Multi-day forecast with temperature range bars.
 class DailyForecastList extends StatelessWidget {
   const DailyForecastList({
     super.key,

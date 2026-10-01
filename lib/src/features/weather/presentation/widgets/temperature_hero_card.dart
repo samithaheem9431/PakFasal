@@ -5,7 +5,7 @@ import '../../domain/entities/weather_models.dart';
 import '../utils/weather_gradients.dart';
 import '../utils/weather_view_mapper.dart';
 
-/// Apple Weather–style hero — black in light mode, white in dark mode.
+/// Photo-hero temperature block — clear white type over the immersive sky.
 class TemperatureHeroCard extends StatelessWidget {
   const TemperatureHeroCard({
     super.key,
@@ -78,6 +78,14 @@ class _ExpandedHero extends StatelessWidget {
   final Color textColor;
   final Color subColor;
 
+  static List<Shadow> get _shadow => const [
+        Shadow(
+          color: Color(0x66000000),
+          blurRadius: 10,
+          offset: Offset(0, 2),
+        ),
+      ];
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -91,6 +99,7 @@ class _ExpandedHero extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.7,
+              shadows: _shadow,
             ),
           ),
         Text(
@@ -101,8 +110,9 @@ class _ExpandedHero extends StatelessWidget {
           style: TextStyle(
             color: textColor,
             fontWeight: FontWeight.w700,
-            fontSize: 34,
+            fontSize: 30,
             height: 1.1,
+            shadows: _shadow,
           ),
         ),
         const SizedBox(height: 4),
@@ -110,10 +120,11 @@ class _ExpandedHero extends StatelessWidget {
           '$temp°',
           style: TextStyle(
             color: textColor,
-            fontWeight: FontWeight.w200,
-            fontSize: 92,
+            fontWeight: FontWeight.w300,
+            fontSize: 88,
             height: 1,
             letterSpacing: -2,
+            shadows: _shadow,
           ),
         ),
         const SizedBox(height: 2),
@@ -126,6 +137,7 @@ class _ExpandedHero extends StatelessWidget {
             color: textColor,
             fontWeight: FontWeight.w600,
             fontSize: 20,
+            shadows: _shadow,
           ),
         ),
         const SizedBox(height: 4),
@@ -135,6 +147,7 @@ class _ExpandedHero extends StatelessWidget {
             color: subColor,
             fontWeight: FontWeight.w600,
             fontSize: 16,
+            shadows: _shadow,
           ),
         ),
       ],
@@ -170,6 +183,13 @@ class _CompactHero extends StatelessWidget {
             fontWeight: FontWeight.w700,
             fontSize: 22,
             height: 1.1,
+            shadows: const [
+              Shadow(
+                color: Color(0x66000000),
+                blurRadius: 8,
+                offset: Offset(0, 1),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 2),
@@ -182,6 +202,13 @@ class _CompactHero extends StatelessWidget {
             color: textColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
+            shadows: const [
+              Shadow(
+                color: Color(0x66000000),
+                blurRadius: 8,
+                offset: Offset(0, 1),
+              ),
+            ],
           ),
         ),
       ],

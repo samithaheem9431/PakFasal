@@ -16,15 +16,21 @@ import '../../domain/entities/weather_models.dart';
 /// duplicate network calls.
 ///
 /// Behaviour:
+///   * Hydrates from Hive on bootstrap so the weather card paints instantly
+///     on cold start (no spinner flash when cache exists).
 ///   * [ensureLoaded] is a no-op when data already exists; safe to call
 ///     from `initState` of any consumer.
-///   * [refreshAll] forces a network refetch.
+///   * [refreshAll] forces a network refetch (pull-to-refresh).
+///   * [softRefresh] refreshes quietly when TTL expires — keeps showing
+///     cached data; never flips the UI to a loading/retry state.
 ///   * [selectLocation] switches to a user-picked city and refetches.
 ///   * In-flight snapshot loads are de-duplicated.
 ///   * [startAutoRefresh] enables a periodic background refresh.
 class WeatherProvider extends ChangeNotifier {
   WeatherProvider({WeatherRepository? repository})
-      : _repository = repository ?? WeatherRepository();
+      : _repository = repository ?? WeatherRepository() {
+    unawaited(_bootstrap());
+  }
 
   final WeatherRepository _repository;
 
@@ -36,11 +42,13 @@ class WeatherProvider extends ChangeNotifier {
   bool _isSearching = false;
   bool _isFromCache = false;
   bool _isStale = false;
+  bool _bootstrapped = false;
   Object? _error;
   Object? _searchError;
   List<WeatherLocation> _searchResults = const <WeatherLocation>[];
 
   Future<WeatherFetchResult>? _inFlightFetch;
+  Future<void>? _bootstrapFuture;
   Timer? _autoRefreshTimer;
   String? _lastSearchQuery;
   int _searchSequence = 0;
@@ -93,20 +101,46 @@ class WeatherProvider extends ChangeNotifier {
 
   // ── Loaders ────────────────────────────────────────────────────────────
 
-  /// Loads weather data if not already loaded. Safe to call repeatedly.
+  /// Paints cached weather immediately, then refreshes in the background
+  /// only when the TTL has expired. Safe to call repeatedly.
   Future<void> ensureLoaded() async {
-    if (hasSnapshot || _isLoading) return;
+    await _bootstrapFuture;
+    if (_isLoading) return;
+
+    if (hasSnapshot) {
+      if (_isSnapshotExpired) {
+        // Keep showing the card; refresh quietly without a loading flash.
+        unawaited(_loadSnapshot(forceRefresh: false, silent: true));
+      }
+      await _loadSavedLocationsSilently();
+      return;
+    }
+
     await _loadSnapshot(forceRefresh: false);
     await _loadSavedLocationsSilently();
   }
 
-  /// Force-refreshes the snapshot bypassing the cache TTL.
-  Future<void> refreshAll() => _loadSnapshot(forceRefresh: true);
+  /// Force-refreshes the snapshot bypassing the cache TTL (pull-to-refresh).
+  /// Still keeps existing data on screen while the network call runs.
+  Future<void> refreshAll() =>
+      _loadSnapshot(forceRefresh: true, silent: hasSnapshot);
+
+  /// Quiet refresh used on app resume / auto-timer. Skips work when the
+  /// current snapshot is still within TTL so the card never flickers.
+  Future<void> softRefresh() async {
+    await _bootstrapFuture;
+    if (!hasSnapshot) {
+      await ensureLoaded();
+      return;
+    }
+    if (!_isSnapshotExpired && !_isStale) return;
+    await _loadSnapshot(forceRefresh: false, silent: true);
+  }
 
   /// Re-resolves the current location (e.g. user moved) and refetches.
   Future<void> useCurrentLocation() async {
     _activeLocation = await _repository.resolveActiveLocation(forceGps: true);
-    await _loadSnapshot(forceRefresh: true);
+    await _loadSnapshot(forceRefresh: true, silent: hasSnapshot);
   }
 
   /// Switches the active location to [location] and refetches.
@@ -114,7 +148,7 @@ class WeatherProvider extends ChangeNotifier {
     _activeLocation = location;
     await _repository.selectLocation(location);
     await _repository.addSavedLocation(location);
-    await _loadSnapshot(forceRefresh: true);
+    await _loadSnapshot(forceRefresh: true, silent: hasSnapshot);
     await _loadSavedLocationsSilently();
   }
 
@@ -168,15 +202,60 @@ class WeatherProvider extends ChangeNotifier {
 
   // ── Internal ───────────────────────────────────────────────────────────
 
-  Future<void> _loadSnapshot({required bool forceRefresh}) async {
+  bool get _isSnapshotExpired {
+    final fetchedAt = _snapshot?.fetchedAt;
+    if (fetchedAt == null) return true;
+    return DateTime.now().difference(fetchedAt) >=
+        WeatherConstants.currentCacheTtl;
+  }
+
+  Future<void> _bootstrap() {
+    return _bootstrapFuture ??= () async {
+      await _hydrateFromCache();
+      _bootstrapped = true;
+    }();
+  }
+
+  /// Disk → memory before any GPS/network work so the dashboard card can
+  /// render on the first frame after cold start.
+  Future<void> _hydrateFromCache() async {
+    if (hasSnapshot) return;
+    try {
+      final cached = await _repository.loadLastCachedSnapshot();
+      if (cached == null || hasSnapshot) return;
+      _snapshot = cached;
+      _activeLocation = cached.location;
+      _isFromCache = true;
+      _isStale = DateTime.now().difference(cached.fetchedAt) >=
+          WeatherConstants.currentCacheTtl;
+      _error = null;
+      notifyListeners();
+    } catch (error, stack) {
+      ErrorLogger.instance.recordNonFatal(
+        error,
+        stack,
+        context: 'WeatherProvider._hydrateFromCache',
+      );
+    }
+  }
+
+  Future<void> _loadSnapshot({
+    required bool forceRefresh,
+    bool silent = false,
+  }) async {
     if (_inFlightFetch != null && !forceRefresh) {
       await _inFlightFetch;
       return;
     }
 
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    // Only show a loading state when we have nothing to paint. Existing
+    // cached data stays on screen during background / forced refreshes.
+    final showLoading = !silent && !hasSnapshot;
+    if (showLoading) {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+    }
 
     try {
       _activeLocation ??= await _repository.resolveActiveLocation();
@@ -190,12 +269,17 @@ class WeatherProvider extends ChangeNotifier {
       if (result.snapshot != null) {
         _snapshot = result.snapshot;
         _activeLocation = result.snapshot!.location;
+        _isFromCache = result.fromCache;
+        _isStale = result.isStale;
+        // Soft offline: keep the card, never flip to a hard retry state.
+        _error = null;
+      } else if (!hasSnapshot) {
+        _error = result.error;
+      } else {
+        _isStale = true;
       }
-      _isFromCache = result.fromCache;
-      _isStale = result.isStale;
-      _error = result.error;
 
-      if (result.error != null) {
+      if (result.error != null && result.snapshot == null) {
         ErrorLogger.instance.recordNonFatal(
           result.error!,
           StackTrace.current,
@@ -208,7 +292,12 @@ class WeatherProvider extends ChangeNotifier {
         );
       }
     } catch (error, stack) {
-      _error = error;
+      // Never wipe a usable snapshot on a transient failure.
+      if (!hasSnapshot) {
+        _error = error;
+      } else {
+        _isStale = true;
+      }
       ErrorLogger.instance.recordNonFatal(
         error,
         stack,
@@ -237,7 +326,7 @@ class WeatherProvider extends ChangeNotifier {
     Duration interval = WeatherConstants.autoRefreshInterval,
   }) {
     _autoRefreshTimer?.cancel();
-    _autoRefreshTimer = Timer.periodic(interval, (_) => refreshAll());
+    _autoRefreshTimer = Timer.periodic(interval, (_) => softRefresh());
   }
 
   void stopAutoRefresh() {
@@ -255,4 +344,7 @@ class WeatherProvider extends ChangeNotifier {
 
   @visibleForTesting
   String? get debugLastSearchQuery => _lastSearchQuery;
+
+  @visibleForTesting
+  bool get debugBootstrapped => _bootstrapped;
 }

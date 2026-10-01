@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/weather_models.dart';
 import '../utils/weather_gradients.dart';
 
-/// Full-bleed sky behind the weather scroll (theme-aware).
+/// Full-bleed day/night weather photo with a soft green readability wash.
 class WeatherSkyBackground extends StatelessWidget {
   const WeatherSkyBackground({
     super.key,
@@ -12,26 +13,42 @@ class WeatherSkyBackground extends StatelessWidget {
 
   final CurrentWeather current;
 
+  static const _dayBg = 'assets/images/dashboard/weather_bg.jpg';
+  static const _nightBg = 'assets/images/dashboard/weather_bg_night.jpg';
+
   @override
   Widget build(BuildContext context) {
+    final isNight = WeatherGradients.isNightNow(current);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colors = WeatherGradients.forCurrent(current, isDark: isDark);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: colors.length >= 3
-              ? colors
-              : [
-                  colors.first,
-                  Color.lerp(colors.first, colors.last, 0.5) ?? colors.last,
-                  colors.last,
-                ],
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          isNight ? _nightBg : _dayBg,
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
         ),
-      ),
-      child: const SizedBox.expand(),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isNight || isDark
+                  ? [
+                      AppColors.darkGreen.withValues(alpha: 0.55),
+                      AppColors.darkSurface.withValues(alpha: 0.72),
+                      AppColors.darkSurface.withValues(alpha: 0.88),
+                    ]
+                  : [
+                      AppColors.primaryGreen.withValues(alpha: 0.28),
+                      AppColors.darkGreen.withValues(alpha: 0.45),
+                      const Color(0xFF0A1F10).withValues(alpha: 0.78),
+                    ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

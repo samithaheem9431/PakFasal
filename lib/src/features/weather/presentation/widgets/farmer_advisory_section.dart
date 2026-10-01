@@ -4,7 +4,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../utils/farmer_advisor.dart';
 import 'weather_glass_card.dart';
 
-/// Renders the list of [FarmerAdvisory]s as glass cards.
+/// Renders the list of [FarmerAdvisory]s as flat cards.
 class FarmerAdvisorySection extends StatelessWidget {
   const FarmerAdvisorySection({super.key, required this.advisories});
 
@@ -59,9 +59,9 @@ class _AdvisoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+        color: accent.withValues(alpha: isDark ? 0.14 : 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withValues(alpha: 0.35)),
+        border: Border.all(color: accent.withValues(alpha: 0.28)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

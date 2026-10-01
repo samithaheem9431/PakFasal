@@ -53,7 +53,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
-      context.read<WeatherProvider>().refreshAll();
+      // Quiet TTL-aware refresh — keeps cached weather on screen.
+      context.read<WeatherProvider>().softRefresh();
     }
   }
 
@@ -691,7 +692,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                                             isOffline: isOfflineMode,
                                             lastSyncedLabel: lastSyncAt == null
                                                 ? null
-                                                : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',
+                                                : isOfflineMode
+                                                    ? '${l10n.t('offline')} · ${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}'
+                                                    : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(lastSyncAt).format(context)}',
                                           ),
                                         );
                                       },
@@ -817,11 +820,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                                         _DashboardTileSpec(
                                           delayMs: 210,
                                           imageAsset:
-                                              'assets/images/dashboard/tile_weather.png',
-                                          title: l10n.t('weather'),
+                                              'assets/images/dashboard/tile_govt_schemes.png',
+                                          title: l10n.t('govtSchemes'),
                                           onTap: () => Navigator.pushNamed(
                                             context,
-                                            AppRoutes.weather,
+                                            AppRoutes.govtSchemes,
                                           ),
                                         ),
                                         _DashboardTileSpec(

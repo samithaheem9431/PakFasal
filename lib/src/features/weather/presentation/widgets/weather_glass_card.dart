@@ -1,10 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Frosted glass panel — light or dark depending on theme.
+/// Flat PakFasal card for weather sections — readable, no glass blur.
 class WeatherGlassCard extends StatelessWidget {
   const WeatherGlassCard({
     super.key,
@@ -17,40 +15,34 @@ class WeatherGlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
+
+  /// Kept for call-site compatibility; blur is no longer used.
   final double blurSigma;
 
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: dark
-                ? AppColors.darkSurfaceHigh.withValues(alpha: 0.78)
-                : AppColors.white.withValues(alpha: 0.78),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: dark
-                  ? AppColors.lightGreen.withValues(alpha: 0.22)
-                  : AppColors.primaryGreen.withValues(alpha: 0.18),
-              width: 0.8,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: dark ? 0.28 : 0.06),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: padding,
-            child: child,
-          ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: dark ? AppColors.darkSurfaceHigh : AppColors.white,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: dark
+              ? AppColors.lightGreen.withValues(alpha: 0.28)
+              : AppColors.primaryGreen.withValues(alpha: 0.14),
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: dark ? 0.32 : 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: padding,
+        child: child,
       ),
     );
   }
@@ -65,18 +57,18 @@ class WeatherGlassStyle {
 
   static Color label(BuildContext context) => _dark(context)
       ? const Color(0xFFA5D6A7)
-      : const Color(0xFF5A7A62);
+      : AppColors.primaryGreen;
 
   static Color value(BuildContext context) =>
       _dark(context) ? AppColors.white : AppColors.darkText;
 
   static Color muted(BuildContext context) => _dark(context)
       ? AppColors.white.withValues(alpha: 0.65)
-      : const Color(0xFF7A9480);
+      : AppColors.mutedText;
 
   static Color divider(BuildContext context) => _dark(context)
-      ? AppColors.white.withValues(alpha: 0.14)
-      : const Color(0x332A6B3A);
+      ? AppColors.white.withValues(alpha: 0.12)
+      : AppColors.divider;
 
   static Color icon(BuildContext context) =>
       _dark(context) ? AppColors.lightGreen : AppColors.primaryGreen;
@@ -95,7 +87,7 @@ class WeatherGlassStyle {
       TextStyle(
         color: value(context),
         fontSize: size,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         height: 1.05,
       );
 
@@ -116,7 +108,7 @@ class WeatherGlassStyle {
 
   static TextStyle caption(BuildContext context, {double size = 12}) =>
       TextStyle(
-        color: label(context),
+        color: muted(context),
         fontSize: size,
         fontWeight: FontWeight.w500,
         height: 1.3,

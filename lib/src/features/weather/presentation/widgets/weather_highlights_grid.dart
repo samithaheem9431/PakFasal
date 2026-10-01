@@ -9,7 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import 'weather_glass_card.dart';
 import 'weather_metric_tile.dart';
 
-/// Apple Weather detail grid: Feels Like, UV, Wind, Sunrise, Precip,
+/// Detail grid: Feels Like, UV, Wind, Sunrise, Precip,
 /// Visibility, Humidity, Pressure.
 class WeatherHighlightsGrid extends StatelessWidget {
   const WeatherHighlightsGrid({super.key, required this.current});
@@ -268,17 +268,25 @@ class _WindCompass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final accent = dark ? AppColors.lightGreen : AppColors.primaryGreen;
     return SizedBox(
       width: 110,
       height: 110,
       child: CustomPaint(
-        painter: _CompassPainter(degrees: degrees.toDouble()),
+        painter: _CompassPainter(
+          degrees: degrees.toDouble(),
+          accent: accent,
+          labelColor: dark
+              ? AppColors.white.withValues(alpha: 0.7)
+              : AppColors.mutedText,
+        ),
         child: Center(
           child: Text(
             speedLabel,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.primaryGreen,
+            style: TextStyle(
+              color: accent,
               fontWeight: FontWeight.w600,
               fontSize: 13,
               height: 1.15,
@@ -291,9 +299,15 @@ class _WindCompass extends StatelessWidget {
 }
 
 class _CompassPainter extends CustomPainter {
-  _CompassPainter({required this.degrees});
+  _CompassPainter({
+    required this.degrees,
+    required this.accent,
+    required this.labelColor,
+  });
 
   final double degrees;
+  final Color accent;
+  final Color labelColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -303,7 +317,7 @@ class _CompassPainter extends CustomPainter {
     final ring = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
-      ..color = AppColors.primaryGreen.withValues(alpha: 0.35);
+      ..color = accent.withValues(alpha: 0.35);
     canvas.drawCircle(c, r, ring);
 
     final labelStyle = TextPainter(
@@ -312,8 +326,8 @@ class _CompassPainter extends CustomPainter {
     void drawLabel(String t, Offset o) {
       labelStyle.text = TextSpan(
         text: t,
-        style: const TextStyle(
-          color: Color(0x99FFFFFF),
+        style: TextStyle(
+          color: labelColor,
           fontSize: 10,
           fontWeight: FontWeight.w600,
         ),
@@ -334,16 +348,18 @@ class _CompassPainter extends CustomPainter {
     final rad = (degrees - 90) * math.pi / 180;
     final tip = Offset(c.dx + r * 0.72 * math.cos(rad), c.dy + r * 0.72 * math.sin(rad));
     final needle = Paint()
-      ..color = AppColors.primaryGreen
+      ..color = accent
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(c, tip, needle);
-    canvas.drawCircle(tip, 4, Paint()..color = AppColors.primaryGreen);
+    canvas.drawCircle(tip, 4, Paint()..color = accent);
   }
 
   @override
   bool shouldRepaint(covariant _CompassPainter oldDelegate) =>
-      oldDelegate.degrees != degrees;
+      oldDelegate.degrees != degrees ||
+      oldDelegate.accent != accent ||
+      oldDelegate.labelColor != labelColor;
 }
 
 class _SunriseTile extends StatelessWidget {

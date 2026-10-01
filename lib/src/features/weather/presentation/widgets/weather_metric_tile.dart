@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'weather_glass_card.dart';
 
-/// Apple Weather detail tile: uppercase label + icon, large value, subtitle.
+/// Flat detail tile: uppercase label + icon, large value, subtitle.
 class WeatherMetricTile extends StatelessWidget {
   const WeatherMetricTile({
     super.key,

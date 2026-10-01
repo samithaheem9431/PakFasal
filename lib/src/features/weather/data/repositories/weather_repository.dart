@@ -62,9 +62,10 @@ class WeatherRepository {
   /// Resolves the active location for this session.
   ///
   /// Priority:
-  ///   1. User's last manually-selected city (persistent).
-  ///   2. Device GPS (when available).
-  ///   3. Last successfully-used location from cache.
+  ///   1. User's last selected / last-used location (persistent) — returned
+  ///      immediately so cold start never blocks on a GPS fix.
+  ///   2. Device GPS (when no saved location, or [forceGps] is true).
+  ///   3. Last successfully-used location from weather cache.
   ///   4. A safe default (Lahore, Pakistan) so the UI never crashes.
   Future<WeatherLocation> resolveActiveLocation({
     bool forceGps = false,
@@ -75,10 +76,9 @@ class WeatherRepository {
       final raw = prefs.getString(WeatherConstants.prefSelectedLocation);
       if (raw != null && raw.isNotEmpty) {
         try {
-          final selected = WeatherLocation.fromJson(
+          return WeatherLocation.fromJson(
             jsonDecode(raw) as Map<String, dynamic>,
           );
-          if (!selected.isCurrent) return selected;
         } catch (_) {/* fall through to GPS */}
       }
     }
@@ -117,6 +117,25 @@ class WeatherRepository {
       latitude: 31.5204,
       longitude: 74.3587,
     );
+  }
+
+  /// Instantly returns the last persisted snapshot from Hive — no GPS,
+  /// no network. Used to paint the weather card on cold start before a
+  /// background refresh completes.
+  Future<WeatherSnapshot?> loadLastCachedSnapshot() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keyed = _readSnapshotCache(_lastUsedLocationKey(prefs));
+    if (keyed != null) return keyed;
+
+    // Prefs key can drift from GPS rounding; fall back to any snapshot
+    // still sitting in the box so offline launches stay usable.
+    for (final key in _box.keys) {
+      if (key is! String || !key.startsWith('snapshot_')) continue;
+      final locationKey = key.substring('snapshot_'.length);
+      final snapshot = _readSnapshotCache(locationKey);
+      if (snapshot != null) return snapshot;
+    }
+    return null;
   }
 
   /// Fetches a complete [WeatherSnapshot] for [location].
@@ -158,9 +177,10 @@ class WeatherRepository {
     }
 
     // Network/parse failure — fall back to cache if any.
-    if (cached != null) {
+    final fallback = cached ?? await loadLastCachedSnapshot();
+    if (fallback != null) {
       return WeatherFetchResult(
-        snapshot: cached,
+        snapshot: fallback,
         fromCache: true,
         isStale: true,
         error: result.error,

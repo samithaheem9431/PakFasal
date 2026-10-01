@@ -6,7 +6,7 @@ import '../../domain/entities/weather_models.dart';
 import '../utils/weather_view_mapper.dart';
 import 'weather_glass_card.dart';
 
-/// Apple-style hourly strip with a one-line condition summary above.
+/// Hourly strip with a one-line condition summary above.
 class HourlyForecastSlider extends StatelessWidget {
   const HourlyForecastSlider({
     super.key,
