@@ -1,27 +1,24 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart' show rootBundle;
-
-/// Centralised, runtime-aware application configuration.
+/// Centralised, compile-time application configuration.
 ///
-/// Values are resolved with the following precedence (highest first):
+/// Secrets are injected with **`--dart-define`** / **`--dart-define-from-file`**
+/// so they are never shipped as a readable asset JSON in the APK/IPA.
 ///
-/// 1. **`--dart-define` / `--dart-define-from-file`** — compile-time defines.
-///    Used in CI / production builds so secrets can be injected without
-///    shipping them in the asset bundle.
-/// 2. **`config/app_config.json`** — bundled JSON asset, loaded once at
-///    startup via [AppConfig.init]. This is the convenient development flow
-///    where running `flutter run` (or pressing the IDE's Run button) "just
-///    works" without remembering CLI flags.
-/// 3. **Hard-coded defaults** — empty / safe fallbacks so the app degrades
-///    gracefully (e.g. learning module shows demo data when no key is set).
+/// Local development:
+/// ```bash
+/// cp config/app_config.example.json config/dev.json
+/// # fill in keys in config/dev.json (git-ignored)
+/// flutter run --dart-define-from-file=config/dev.json
+/// ```
 ///
-/// Call [AppConfig.init] **before** any feature reads from this class —
-/// `main.dart` does this immediately after `WidgetsFlutterBinding.ensureInitialized()`.
+/// Or use the IDE launch config in `.vscode/launch.json`.
+///
+/// When a key is empty, features degrade gracefully (e.g. learning shows demo
+/// videos, weather falls back to Open-Meteo where possible).
+///
+/// Call [AppConfig.init] early from `main.dart` (no-op today; kept for a stable
+/// startup hook if runtime config is added later).
 class AppConfig {
   AppConfig._();
-
-  // ── Compile-time defines (kept for prod / CI) ────────────────────────────
 
   static const String _envYoutubeApiKey = String.fromEnvironment(
     'YOUTUBE_API_KEY',
@@ -66,112 +63,53 @@ class AppConfig {
     defaultValue: '',
   );
 
-  // ── Runtime overrides loaded from bundled JSON ───────────────────────────
-
-  static Map<String, String> _runtime = const <String, String>{};
-  static bool _initialised = false;
-
-  /// Loads `config/app_config.json` from the bundled assets (if present) so
-  /// development builds don't need `--dart-define-from-file`.
-  ///
-  /// Safe to call multiple times — subsequent calls are no-ops. Failures are
-  /// swallowed so the app keeps working with compile-time / default values.
-  static Future<void> init() async {
-    if (_initialised) return;
-    _initialised = true;
-
-    try {
-      final raw = await rootBundle.loadString('config/app_config.json');
-      final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) {
-        _runtime = <String, String>{
-          for (final entry in decoded.entries)
-            if (entry.value != null && !entry.key.startsWith('_'))
-              entry.key: entry.value.toString(),
-        };
-      }
-    } catch (_) {
-      // Asset missing or malformed — fall back to compile-time defines.
-      _runtime = const <String, String>{};
-    }
-  }
-
-  /// Resolves a value, preferring `--dart-define` (when non-empty), then the
-  /// runtime JSON, then the supplied default.
-  static String _resolve(String key, String envValue, String fallback) {
-    if (envValue.isNotEmpty) return envValue;
-    final fromJson = _runtime[key];
-    if (fromJson != null && fromJson.isNotEmpty) return fromJson;
-    return fallback;
-  }
+  /// Startup hook — intentionally a no-op; defines are compile-time only.
+  static Future<void> init() async {}
 
   // ── YouTube Data API v3 ──────────────────────────────────────────────────
 
   /// API key for the YouTube Data API. When empty, the learning module
   /// silently falls back to local demo videos.
-  static String get youtubeApiKey =>
-      _resolve('YOUTUBE_API_KEY', _envYoutubeApiKey, '');
+  static String get youtubeApiKey => _envYoutubeApiKey;
 
   /// Optional channel filter for YouTube search.
-  static String get youtubeChannelId =>
-      _resolve('YOUTUBE_CHANNEL_ID', _envYoutubeChannelId, '');
+  static String get youtubeChannelId => _envYoutubeChannelId;
 
   /// Base URL for the YouTube Data API. Configurable for testing / proxying.
-  static String get youtubeApiBaseUrl => _resolve(
-        'YOUTUBE_API_BASE_URL',
-        _envYoutubeApiBaseUrl,
-        'https://www.googleapis.com/youtube/v3',
-      );
+  static String get youtubeApiBaseUrl => _envYoutubeApiBaseUrl;
 
   static bool get hasYoutubeApiKey => youtubeApiKey.isNotEmpty;
 
   // ── Weather (Open-Meteo, legacy fallback) ────────────────────────────────
 
-  static String get weatherApiBaseUrl => _resolve(
-        'WEATHER_API_BASE_URL',
-        _envWeatherApiBaseUrl,
-        'https://api.open-meteo.com/v1',
-      );
+  static String get weatherApiBaseUrl => _envWeatherApiBaseUrl;
 
   // ── Weather (OpenWeatherMap — primary provider) ──────────────────────────
 
-  static String get openWeatherApiKey =>
-      _resolve('OPENWEATHER_API_KEY', _envOpenWeatherApiKey, '');
+  static String get openWeatherApiKey => _envOpenWeatherApiKey;
 
-  static String get openWeatherBaseUrl => _resolve(
-        'OPENWEATHER_API_BASE_URL',
-        _envOpenWeatherBaseUrl,
-        'https://api.openweathermap.org',
-      );
-
-  static String get _openWeatherUseOneCallV3 => _resolve(
-        'OPENWEATHER_USE_ONECALL_V3',
-        _envOpenWeatherUseOneCallV3,
-        'false',
-      );
+  static String get openWeatherBaseUrl => _envOpenWeatherBaseUrl;
 
   static bool get hasOpenWeatherApiKey => openWeatherApiKey.isNotEmpty;
+
   static bool get useOneCallV3 =>
-      _openWeatherUseOneCallV3.toLowerCase() == 'true';
+      _envOpenWeatherUseOneCallV3.toLowerCase() == 'true';
 
   // ── Cloudinary (profile image uploads) ───────────────────────────────────
 
   /// Cloud name from the Cloudinary dashboard.
-  static String get cloudinaryCloudName =>
-      _resolve('CLOUDINARY_CLOUD_NAME', _envCloudinaryCloudName, '');
+  static String get cloudinaryCloudName => _envCloudinaryCloudName;
 
   /// Unsigned upload preset restricted to image uploads (e.g. folder
   /// `pakfasal/profiles`). Never put the API secret in the app.
-  static String get cloudinaryUploadPreset =>
-      _resolve('CLOUDINARY_UPLOAD_PRESET', _envCloudinaryUploadPreset, '');
+  static String get cloudinaryUploadPreset => _envCloudinaryUploadPreset;
 
   static bool get hasCloudinaryConfig =>
       cloudinaryCloudName.isNotEmpty && cloudinaryUploadPreset.isNotEmpty;
 
   // ── Build-time environment label ─────────────────────────────────────────
 
-  static String get environment =>
-      _resolve('APP_ENV', _envEnvironment, 'dev');
+  static String get environment => _envEnvironment;
 
   static bool get isProduction => environment == 'prod';
 }

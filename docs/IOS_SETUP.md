@@ -39,11 +39,12 @@ pod install
 cd ..
 ```
 
-Local config (agar use karte ho):
+Local API keys (secrets — see `docs/SECRETS.md`):
 
 ```bash
-cp config/app_config.json config/dev.json
-# edit config/dev.json as needed
+cp config/app_config.example.json config/dev.json
+# edit config/dev.json, then:
+flutter run --dart-define-from-file=config/dev.json
 ```
 
 ---

@@ -21,7 +21,8 @@ migrate_working_dir/
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-.vscode/
+.vscode/*
+!.vscode/launch.json
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -45,7 +46,8 @@ app.*.map.json
 /android/app/release
 
 # Build-time configuration with secrets — DO NOT COMMIT
-# Use config/app_config.json as a template.
+# Template: config/app_config.example.json → copy to config/dev.json
+# See docs/SECRETS.md
 config/*.json
 !config/*.example.json
 .env
