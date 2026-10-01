@@ -23,22 +23,30 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
+      // Critical path only — open Hive boxes in parallel (not one-by-one).
       await AppConfig.init();
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      await ErrorLogger.instance.init();
-      // AdMob interstitial preload (sensor / get advice / profit calculator).
-      unawaited(InterstitialAdService.instance.init());
+      await Future.wait([
+        Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+        Hive.initFlutter(),
+      ]);
 
-      await Hive.initFlutter();
-      await Hive.openBox('weather_cache');
-      await Hive.openBox('learning_cache');
-      await Hive.openBox('govt_schemes_cache');
-      await Hive.openBox(MarketplaceRepository.cacheBoxName);
-      await Hive.openBox('app_preferences');
-      await Hive.openBox(GuestCropPlantingStore.boxName);
-      await Hive.openBox(SeasonCalculationStore.boxName);
+      await Future.wait([
+        Hive.openBox('app_preferences'),
+        Hive.openBox('weather_cache'),
+        Hive.openBox('learning_cache'),
+        Hive.openBox('govt_schemes_cache'),
+        Hive.openBox(MarketplaceRepository.cacheBoxName),
+        Hive.openBox(GuestCropPlantingStore.boxName),
+        Hive.openBox(SeasonCalculationStore.boxName),
+      ]);
+
+      // Crashlytics + AdMob after first frame so they don't block splash paint.
+      unawaited(
+        Future(() async {
+          await ErrorLogger.instance.init();
+          await InterstitialAdService.instance.init();
+        }),
+      );
 
       // Warm Pests & Diseases metadata + images in the background so the
       // Learning module opens from disk cache instead of waiting on network.
@@ -74,9 +82,8 @@ Future<void> main() async {
                 return controller;
               },
             ),
-            ChangeNotifierProvider(
-              create: (_) => WeatherProvider()..startAutoRefresh(),
-            ),
+            // Weather refresh starts when Home mounts — not at cold start.
+            ChangeNotifierProvider(create: (_) => WeatherProvider()),
             ChangeNotifierProvider(
               create: (_) => CropCalendarProvider(),
             ),

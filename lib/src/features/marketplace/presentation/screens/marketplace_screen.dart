@@ -346,6 +346,11 @@ class _MarketplaceHeroHeader extends StatelessWidget {
             _headerAsset,
             fit: BoxFit.cover,
             alignment: const Alignment(0, -0.2),
+            cacheWidth: (MediaQuery.sizeOf(context).width *
+                    MediaQuery.devicePixelRatioOf(context))
+                .round()
+                .clamp(480, 1400),
+            filterQuality: FilterQuality.medium,
             errorBuilder: (_, __, ___) => Container(
               color: isDark
                   ? AppColors.darkSurfaceMid

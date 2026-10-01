@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 /// On-device Machine Learning engine for the sensor DSS.
@@ -26,6 +27,9 @@ class MlDssEngine {
 
   static const String _assetPath = 'assets/ml/dss_model.json';
 
+  static MlDssEngine? _cached;
+  static Future<MlDssEngine>? _inFlight;
+
   final List<String> _featureNames;
   final _Forest _irrigation;
   final _Forest _soil;
@@ -36,32 +40,21 @@ class MlDssEngine {
 
   /// Loads and parses the exported model from bundled assets.
   ///
-  /// Throws if the asset is missing or malformed; callers should catch this
-  /// and fall back to the rule-based engine.
+  /// Parsed once and cached; JSON decode + forest build run off the UI isolate
+  /// so Sensor screen open does not jank. Throws if the asset is missing or
+  /// malformed; callers should fall back to the rule-based engine.
   static Future<MlDssEngine> load() async {
-    final raw = await rootBundle.loadString(_assetPath);
-    final json = jsonDecode(raw) as Map<String, dynamic>;
-
-    final featureNames = (json['featureNames'] as List<dynamic>)
-        .map((e) => e.toString())
-        .toList();
-    final models = json['models'] as Map<String, dynamic>;
-
-    final metricsJson =
-        (json['metrics'] as Map<String, dynamic>?)?['testAccuracy']
-            as Map<String, dynamic>?;
-    final metrics = <String, double>{};
-    metricsJson?.forEach((key, value) {
-      metrics[key] = (value as num).toDouble();
-    });
-
-    return MlDssEngine._(
-      featureNames: featureNames,
-      irrigation: _Forest.fromJson(models['irrigation'] as Map<String, dynamic>),
-      soil: _Forest.fromJson(models['soil'] as Map<String, dynamic>),
-      priority: _Forest.fromJson(models['priority'] as Map<String, dynamic>),
-      metrics: metrics,
-    );
+    if (_cached != null) return _cached!;
+    return _inFlight ??= () async {
+      try {
+        final raw = await rootBundle.loadString(_assetPath);
+        final engine = await compute(_parseEngineFromRaw, raw);
+        _cached = engine;
+        return engine;
+      } finally {
+        _inFlight = null;
+      }
+    }();
   }
 
   /// Runs all three classifiers for a single reading.
@@ -118,6 +111,32 @@ class MlDssEngine {
       }
     }).toList();
   }
+}
+
+/// Top-level entry for [compute] — must not capture UI / instance state.
+MlDssEngine _parseEngineFromRaw(String raw) {
+  final json = jsonDecode(raw) as Map<String, dynamic>;
+
+  final featureNames = (json['featureNames'] as List<dynamic>)
+      .map((e) => e.toString())
+      .toList();
+  final models = json['models'] as Map<String, dynamic>;
+
+  final metricsJson =
+      (json['metrics'] as Map<String, dynamic>?)?['testAccuracy']
+          as Map<String, dynamic>?;
+  final metrics = <String, double>{};
+  metricsJson?.forEach((key, value) {
+    metrics[key] = (value as num).toDouble();
+  });
+
+  return MlDssEngine._(
+    featureNames: featureNames,
+    irrigation: _Forest.fromJson(models['irrigation'] as Map<String, dynamic>),
+    soil: _Forest.fromJson(models['soil'] as Map<String, dynamic>),
+    priority: _Forest.fromJson(models['priority'] as Map<String, dynamic>),
+    metrics: metrics,
+  );
 }
 
 /// Result of a single ML DSS inference.

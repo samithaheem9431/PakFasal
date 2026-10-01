@@ -33,6 +33,8 @@ class InterstitialAdService {
   InterstitialAd? _interstitial;
   bool _isLoading = false;
   bool _initialized = false;
+  SharedPreferences? _prefs;
+  final Map<AdPlacement, int> _clickCounts = {};
 
   Future<void> init() async {
     if (_initialized) return;
@@ -50,6 +52,10 @@ class InterstitialAdService {
         ),
       );
       await MobileAds.instance.initialize();
+      _prefs = await SharedPreferences.getInstance();
+      for (final placement in AdPlacement.values) {
+        _clickCounts[placement] = _prefs?.getInt(placement.prefsKey) ?? 0;
+      }
       _initialized = true;
       unawaited(preload());
     } catch (e, st) {
@@ -111,9 +117,19 @@ class InterstitialAdService {
 
   Future<bool> _shouldShowAndBump(AdPlacement placement) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final next = (prefs.getInt(placement.prefsKey) ?? 0) + 1;
-      await prefs.setInt(placement.prefsKey, next);
+      final next = (_clickCounts[placement] ?? 0) + 1;
+      _clickCounts[placement] = next;
+      // Persist off the critical path so taps don't wait on disk I/O.
+      final prefs = _prefs;
+      if (prefs != null) {
+        unawaited(prefs.setInt(placement.prefsKey, next));
+      } else {
+        unawaited(() async {
+          final p = await SharedPreferences.getInstance();
+          _prefs = p;
+          await p.setInt(placement.prefsKey, next);
+        }());
+      }
       return next % showEveryNthClick == 0;
     } catch (_) {
       return false;

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/layout/responsive.dart';
@@ -51,6 +49,8 @@ class HomeWeatherCard extends StatelessWidget {
     final unitSize = context.scaleFont(24, min: 0.85, max: 1.1);
     final isNarrow = context.screenWidth < 360;
     final contentPad = isNarrow ? 14.0 : 18.0;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (context.screenWidth * dpr).round().clamp(320, 1200);
 
     return Container(
       decoration: BoxDecoration(
@@ -73,6 +73,8 @@ class HomeWeatherCard extends StatelessWidget {
                 bgAsset,
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
+                cacheWidth: cacheWidth,
+                filterQuality: FilterQuality.medium,
               ),
             ),
             const Positioned.fill(
@@ -199,56 +201,51 @@ class HomeWeatherCard extends StatelessWidget {
                     isNarrow ? 8 : 10,
                     12,
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.02),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.14),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            _MetricColumn(
-                              icon: Icons.water_drop_outlined,
-                              value: '${weather.humidity.toStringAsFixed(0)}%',
-                              label: humidityLabel,
-                              compact: isNarrow,
-                            ),
-                            Container(
-                              width: 1,
-                              height: 42,
-                              color: Colors.white.withValues(alpha: 0.35),
-                            ),
-                            _MetricColumn(
-                              icon: Icons.cloudy_snowing,
-                              value: '${weather.rainChancePercent}%',
-                              label: rainChanceLabel,
-                              compact: isNarrow,
-                            ),
-                            Container(
-                              width: 1,
-                              height: 42,
-                              color: Colors.white.withValues(alpha: 0.35),
-                            ),
-                            _MetricColumn(
-                              icon: Icons.air,
-                              value:
-                                  '${weather.windSpeedKmh.toStringAsFixed(0)} km/h',
-                              label: l10n.t('wind'),
-                              compact: isNarrow,
-                            ),
-                          ],
-                        ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      // Solid frosted look — avoids expensive BackdropFilter blur.
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.22),
                       ),
+                    ),
+                    child: Row(
+                      children: [
+                        _MetricColumn(
+                          icon: Icons.water_drop_outlined,
+                          value: '${weather.humidity.toStringAsFixed(0)}%',
+                          label: humidityLabel,
+                          compact: isNarrow,
+                        ),
+                        Container(
+                          width: 1,
+                          height: 42,
+                          color: Colors.white.withValues(alpha: 0.35),
+                        ),
+                        _MetricColumn(
+                          icon: Icons.cloudy_snowing,
+                          value: '${weather.rainChancePercent}%',
+                          label: rainChanceLabel,
+                          compact: isNarrow,
+                        ),
+                        Container(
+                          width: 1,
+                          height: 42,
+                          color: Colors.white.withValues(alpha: 0.35),
+                        ),
+                        _MetricColumn(
+                          icon: Icons.air,
+                          value:
+                              '${weather.windSpeedKmh.toStringAsFixed(0)} km/h',
+                          label: l10n.t('wind'),
+                          compact: isNarrow,
+                        ),
+                      ],
                     ),
                   ),
                 ),

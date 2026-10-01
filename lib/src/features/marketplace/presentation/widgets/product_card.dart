@@ -237,6 +237,7 @@ class _ProductCardState extends State<ProductCard> {
                       ),
                       child: Text(
                         widget.product.priceLabel(),
+                        textDirection: TextDirection.ltr,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14.5,

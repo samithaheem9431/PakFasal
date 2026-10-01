@@ -20,6 +20,9 @@ class WeatherSkyBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final isNight = WeatherGradients.isNightNow(current);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth =
+        (MediaQuery.sizeOf(context).width * dpr).round().clamp(480, 1600);
 
     return Stack(
       fit: StackFit.expand,
@@ -28,6 +31,8 @@ class WeatherSkyBackground extends StatelessWidget {
           isNight ? _nightBg : _dayBg,
           fit: BoxFit.cover,
           alignment: Alignment.center,
+          cacheWidth: cacheWidth,
+          filterQuality: FilterQuality.medium,
         ),
         DecoratedBox(
           decoration: BoxDecoration(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/ads/interstitial_ad_service.dart';
@@ -282,11 +281,15 @@ class _ViewAllHeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    final titleStyle = GoogleFonts.lora(
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth =
+        (MediaQuery.sizeOf(context).width * dpr).round().clamp(480, 1400);
+    final titleStyle = TextStyle(
       fontSize: 34,
       fontWeight: FontWeight.w700,
       height: 1.1,
       color: isDark ? AppColors.white : const Color(0xFF1B4D2E),
+      letterSpacing: -0.4,
     );
 
     return ClipPath(
@@ -308,6 +311,8 @@ class _ViewAllHeroHeader extends StatelessWidget {
                 asset,
                 fit: BoxFit.cover,
                 alignment: const Alignment(0, -0.15),
+                cacheWidth: cacheWidth,
+                filterQuality: FilterQuality.medium,
                 errorBuilder: (_, __, ___) => Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
@@ -548,6 +553,10 @@ class _ViewAllModuleCardState extends State<_ViewAllModuleCard> {
                       module.image,
                       fit: BoxFit.contain,
                       filterQuality: FilterQuality.medium,
+                      // Tile assets are ~1MB PNGs; decode at display size only.
+                      cacheWidth: (160 * MediaQuery.devicePixelRatioOf(context))
+                          .round()
+                          .clamp(120, 400),
                       errorBuilder: (_, __, ___) => Icon(
                         Icons.image_not_supported_outlined,
                         size: 40,

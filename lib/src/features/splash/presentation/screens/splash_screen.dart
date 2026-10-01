@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     final rnd = math.Random();
     _particles = List.generate(
-      18,
+      6,
       (i) => _Particle(
         x: rnd.nextDouble(),
         y: rnd.nextDouble(),
@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 900),
     );
     _fadeLogo = CurvedAnimation(
       parent: _fadeController,
@@ -115,6 +115,8 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _ringController.repeat();
 
+    // Keep controllers for build tree compatibility but do not repeat heavy
+    // loops (shimmer / particles / wheat / scan) — they tank mid-range GPUs.
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3500),
@@ -122,7 +124,6 @@ class _SplashScreenState extends State<SplashScreen>
     _shimmer = Tween<double>(begin: -1.0, end: 2.5).animate(
       CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
     );
-    _shimmerController.repeat();
 
     _dotsController = AnimationController(
       vsync: this,
@@ -137,21 +138,19 @@ class _SplashScreenState extends State<SplashScreen>
     _wheatSway = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _wheatController, curve: Curves.easeInOut),
     );
-    _wheatController.repeat(reverse: true);
 
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
     );
-    _scanController.repeat();
 
     _particleController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
     );
-    _particleController.repeat();
 
-    _navTimer = Timer(const Duration(seconds: 4), _goNext);
+    // Navigate as soon as the short intro finishes (was a hard 4s wait).
+    _navTimer = Timer(const Duration(milliseconds: 1600), _goNext);
   }
 
   Future<void> _goNext() async {

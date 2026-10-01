@@ -42,6 +42,7 @@ class _SensorScreenState extends State<SensorScreen>
   bool _isWeatherLoading = true;
   bool _isSpeakingRecommendation = false;
   bool _isInputValid = false;
+  bool _ttsConfigured = false;
   String? _speakingRecommendationSection;
   String? _expandedRecommendationSection;
   DateTime? _lastWeatherSyncAt;
@@ -53,7 +54,6 @@ class _SensorScreenState extends State<SensorScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _configureTts();
     _loadRuleConfig();
     _loadMlEngine();
     _loadCurrentRainChance();
@@ -211,6 +211,12 @@ class _SensorScreenState extends State<SensorScreen>
         _speakingRecommendationSection = null;
       });
     });
+    _ttsConfigured = true;
+  }
+
+  Future<void> _ensureTtsConfigured() async {
+    if (_ttsConfigured) return;
+    await _configureTts();
   }
 
   Future<void> _toggleSpeakSection({
@@ -218,6 +224,8 @@ class _SensorScreenState extends State<SensorScreen>
     required String text,
   }) async {
     final l10n = AppLocalizations.of(context);
+    await _ensureTtsConfigured();
+    if (!mounted) return;
     if (_isSpeakingRecommendation && _speakingRecommendationSection == sectionKey) {
       await _flutterTts.stop();
       if (!mounted) return;

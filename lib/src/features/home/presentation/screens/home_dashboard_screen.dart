@@ -38,7 +38,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       setState(() => _animateContentIn = true);
-      context.read<WeatherProvider>().ensureLoaded();
+      final weather = context.read<WeatherProvider>();
+      weather.ensureLoaded();
+      weather.startAutoRefresh();
     });
     // Auth-state guarding is handled by AuthGate at the route level.
     // Weather state and its auto-refresh timer live in WeatherProvider.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../data/season_calculation_store.dart';
@@ -13,6 +15,7 @@ class ProfitCalculatorProvider extends ChangeNotifier {
   }
 
   final SeasonCalculationStore _store;
+  Timer? _notifyDebounce;
 
   String _editingId = '';
   String cropName = '';
@@ -60,6 +63,11 @@ class ProfitCalculatorProvider extends ChangeNotifier {
 
   bool get canSave => cropName.trim().isNotEmpty;
 
+  void _notifySoon() {
+    _notifyDebounce?.cancel();
+    _notifyDebounce = Timer(const Duration(milliseconds: 80), notifyListeners);
+  }
+
   Future<void> refreshSaved() async {
     try {
       savedSeasons = await _store.loadAll();
@@ -73,62 +81,62 @@ class ProfitCalculatorProvider extends ChangeNotifier {
 
   void setCropName(String value) {
     cropName = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setAreaAcres(double value) {
     areaAcres = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setSeedCost(double value) {
     seedCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setFertilizerCost(double value) {
     fertilizerCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setPesticideCost(double value) {
     pesticideCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setLabourCost(double value) {
     labourCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setIrrigationCost(double value) {
     irrigationCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setTransportCost(double value) {
     transportCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setOtherCost(double value) {
     otherCost = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setIncomeTotal(double value) {
     incomeTotal = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setYieldAmount(double value) {
     yieldAmount = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setMarketRate(double value) {
     marketRate = value;
-    notifyListeners();
+    _notifySoon();
   }
 
   void setIncomeMode(IncomeMode mode) {
@@ -249,5 +257,11 @@ class ProfitCalculatorProvider extends ChangeNotifier {
       lastError = e.toString();
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _notifyDebounce?.cancel();
+    super.dispose();
   }
 }

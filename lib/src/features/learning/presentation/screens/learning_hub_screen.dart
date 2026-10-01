@@ -195,6 +195,8 @@ class LearningHubScreen extends StatelessWidget {
     return Image.asset(
       'assets/images/learning/farmer_tablet.jpg',
       fit: BoxFit.cover,
+      cacheWidth: 800,
+      filterQuality: FilterQuality.medium,
       errorBuilder: (context, error, stackTrace) {
         return Container(
           color: const Color(0xFF2E7D32),
@@ -211,6 +213,8 @@ class LearningHubScreen extends StatelessWidget {
     return Image.asset(
       'assets/images/learning/farmer_reading.jpg',
       fit: BoxFit.cover,
+      cacheWidth: 800,
+      filterQuality: FilterQuality.medium,
       errorBuilder: (context, error, stackTrace) {
         return Container(
           color: const Color(0xFF1976D2),
@@ -227,6 +231,8 @@ class LearningHubScreen extends StatelessWidget {
     return Image.asset(
       'assets/images/learning/pest_disease.jpg',
       fit: BoxFit.cover,
+      cacheWidth: 800,
+      filterQuality: FilterQuality.medium,
       errorBuilder: (context, error, stackTrace) {
         return Container(
           color: const Color(0xFF558B2F),
@@ -316,11 +322,18 @@ class _BannerSectionState extends State<_BannerSection> {
                   setState(() => _currentPage = index);
                 },
                 itemBuilder: (context, index) {
+                  final dpr = MediaQuery.devicePixelRatioOf(context);
+                  final cacheWidth =
+                      (MediaQuery.sizeOf(context).width * dpr)
+                          .round()
+                          .clamp(400, 1200);
                   return Image.asset(
                     _slides[index],
                     width: double.infinity,
                     fit: BoxFit.cover,
                     alignment: Alignment.center,
+                    cacheWidth: cacheWidth,
+                    filterQuality: FilterQuality.medium,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: isDark

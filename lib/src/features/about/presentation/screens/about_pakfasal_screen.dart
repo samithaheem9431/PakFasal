@@ -612,6 +612,7 @@ class _AboutPakFasalScreenState extends State<AboutPakFasalScreen>
                 icon: Icons.chat_outlined,
                 label: l10n.t('aboutContactWhatsapp'),
                 onTap: () => _openWhatsapp(l10n),
+                forceLtr: true,
               ),
             ],
           ),
@@ -861,11 +862,13 @@ class _ContactRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.forceLtr = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool forceLtr;
 
   @override
   Widget build(BuildContext context) {
@@ -884,6 +887,7 @@ class _ContactRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
+                textDirection: forceLtr ? TextDirection.ltr : null,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: accent,
