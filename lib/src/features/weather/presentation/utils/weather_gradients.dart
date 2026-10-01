@@ -3,17 +3,15 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/weather_models.dart';
 
-/// PakFasal weather theme helpers — green scaffold + photo-hero text.
+/// PakFasal weather theme — soft mint page + green accents.
 class WeatherGradients {
   WeatherGradients._();
 
-  /// Soft green wash used when a photo background is unavailable.
   static List<Color> forCurrent(
     CurrentWeather current, {
     bool isDark = false,
   }) {
-    final isNight = isNightNow(current);
-    if (isDark || isNight) {
+    if (isDark) {
       return const [
         Color(0xFF0F3818),
         Color(0xFF162A1D),
@@ -21,20 +19,19 @@ class WeatherGradients {
       ];
     }
     return const [
-      Color(0xFF1B5E20),
-      Color(0xFF0F3818),
-      Color(0xFF102017),
+      Color(0xFFF1FBF2),
+      Color(0xFFE8F5E9),
+      Color(0xFFF5F5F5),
     ];
   }
 
   static Color scaffoldFallback({required bool isDark}) =>
-      isDark ? AppColors.darkSurface : AppColors.darkGreen;
+      isDark ? AppColors.darkSurface : AppColors.softSurfaceGreen;
 
-  /// White hero text over the photo + green overlay.
   static Color heroText({required bool isDark}) => AppColors.white;
 
   static Color heroSubtext({required bool isDark}) =>
-      AppColors.white.withValues(alpha: 0.88);
+      AppColors.white.withValues(alpha: 0.9);
 
   static bool isNightNow(CurrentWeather c) {
     final now = c.observedAt ?? DateTime.now();

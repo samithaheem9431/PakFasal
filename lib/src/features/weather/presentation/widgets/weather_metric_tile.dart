@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'weather_glass_card.dart';
 
-/// Flat detail tile: uppercase label + icon, large value, subtitle.
+/// Flat detail tile: label + icon, large value, subtitle/footer.
 class WeatherMetricTile extends StatelessWidget {
   const WeatherMetricTile({
     super.key,
@@ -11,7 +11,8 @@ class WeatherMetricTile extends StatelessWidget {
     required this.value,
     this.subtitle,
     this.footer,
-    this.minHeight = 150,
+    this.badge,
+    this.minHeight = 132,
   });
 
   final IconData icon;
@@ -19,6 +20,7 @@ class WeatherMetricTile extends StatelessWidget {
   final String value;
   final String? subtitle;
   final Widget? footer;
+  final Widget? badge;
   final double minHeight;
 
   @override
@@ -32,7 +34,7 @@ class WeatherMetricTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, size: 14, color: WeatherGlassStyle.label(context)),
+                Icon(icon, size: 15, color: WeatherGlassStyle.label(context)),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -45,11 +47,22 @@ class WeatherMetricTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: WeatherGlassStyle.bigValue(context, size: 30),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: WeatherGlassStyle.bigValue(context, size: 28),
+                  ),
+                ),
+                if (badge != null) ...[
+                  const SizedBox(width: 8),
+                  badge!,
+                ],
+              ],
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 6),

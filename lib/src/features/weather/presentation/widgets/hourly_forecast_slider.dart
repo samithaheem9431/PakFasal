@@ -6,7 +6,7 @@ import '../../domain/entities/weather_models.dart';
 import '../utils/weather_view_mapper.dart';
 import 'weather_glass_card.dart';
 
-/// Hourly strip with a one-line condition summary above.
+/// Hourly strip with summary header.
 class HourlyForecastSlider extends StatelessWidget {
   const HourlyForecastSlider({
     super.key,
@@ -38,23 +38,43 @@ class HourlyForecastSlider extends StatelessWidget {
     final summaryText = summary ?? _defaultSummary(l10n, items.first);
 
     return WeatherGlassCard(
-      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            summaryText,
-            style: WeatherGlassStyle.body(context, size: 13),
+          Row(
+            children: [
+              Icon(
+                Icons.schedule_rounded,
+                size: 16,
+                color: WeatherGlassStyle.icon(context),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  summaryText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WeatherGlassStyle.body(context, size: 13),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Divider(height: 1, color: WeatherGlassStyle.divider(context)),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 96,
+            height: 88,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 14),
+              separatorBuilder: (_, __) => VerticalDivider(
+                width: 20,
+                thickness: 1,
+                indent: 8,
+                endIndent: 8,
+                color: WeatherGlassStyle.divider(context),
+              ),
               itemBuilder: (context, index) {
                 final point = items[index];
                 final isNow = index == 0;
@@ -65,7 +85,6 @@ class HourlyForecastSlider extends StatelessWidget {
                   iconCode: point.iconCode,
                   fallbackIcon:
                       WeatherViewMapper.iconForCode(point.conditionCode),
-                  rainProbability: point.rainProbabilityPercent,
                 );
               },
             ),
@@ -96,7 +115,6 @@ class _HourlyColumn extends StatelessWidget {
     required this.isNow,
     required this.iconCode,
     required this.fallbackIcon,
-    required this.rainProbability,
   });
 
   final String label;
@@ -104,13 +122,12 @@ class _HourlyColumn extends StatelessWidget {
   final bool isNow;
   final String? iconCode;
   final IconData fallbackIcon;
-  final int? rainProbability;
 
   @override
   Widget build(BuildContext context) {
     final valueColor = WeatherGlassStyle.value(context);
     return SizedBox(
-      width: 52,
+      width: 48,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -119,22 +136,11 @@ class _HourlyColumn extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12.5,
               fontWeight: isNow ? FontWeight.w700 : FontWeight.w500,
               color: valueColor,
             ),
           ),
-          if (rainProbability != null && rainProbability! >= 20)
-            Text(
-              '$rainProbability%',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF64B5F6),
-              ),
-            )
-          else
-            const SizedBox(height: 14),
           SizedBox(
             width: 28,
             height: 28,
@@ -146,8 +152,8 @@ class _HourlyColumn extends StatelessWidget {
           Text(
             '${tempC.toStringAsFixed(0)}°',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
               color: valueColor,
             ),
           ),

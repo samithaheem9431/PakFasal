@@ -5,7 +5,7 @@ import '../../domain/entities/weather_models.dart';
 import '../utils/weather_gradients.dart';
 import '../utils/weather_view_mapper.dart';
 
-/// Photo-hero temperature block — clear white type over the immersive sky.
+/// Photo hero card matching the PakFasal weather dashboard reference.
 class TemperatureHeroCard extends StatelessWidget {
   const TemperatureHeroCard({
     super.key,
@@ -18,200 +18,140 @@ class TemperatureHeroCard extends StatelessWidget {
   final double collapseProgress;
   final bool isMyLocation;
 
+  static const _dayBg = 'assets/images/dashboard/weather_bg.jpg';
+  static const _nightBg = 'assets/images/dashboard/weather_bg_night.jpg';
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final condition = current.conditionLabel ??
         WeatherViewMapper.localizedCondition(l10n, current.conditionCode);
     final hi = current.maxTempC ?? current.temperatureC;
     final lo = current.minTempC ?? (current.temperatureC - 5);
     final temp = current.temperatureC.toStringAsFixed(0);
-    final compact = collapseProgress >= 0.45;
-    final text = WeatherGradients.heroText(isDark: isDark);
-    final sub = WeatherGradients.heroSubtext(isDark: isDark);
+    final isNight = WeatherGradients.isNightNow(current);
+    final icon = WeatherViewMapper.iconForCode(current.conditionCode);
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      alignment: Alignment.topCenter,
-      child: compact
-          ? _CompactHero(
-              locationLabel: current.locationLabel,
-              temp: temp,
-              condition: condition,
-              textColor: text,
-            )
-          : _ExpandedHero(
-              isMyLocation: isMyLocation,
-              myLocationLabel: l10n.t('myLocation').toUpperCase(),
-              locationLabel: current.locationLabel,
-              temp: temp,
-              condition: condition,
-              hiLo:
-                  'H:${hi.toStringAsFixed(0)}°  L:${lo.toStringAsFixed(0)}°',
-              textColor: text,
-              subColor: sub,
+    return Container(
+      height: 196,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              isNight ? _nightBg : _dayBg,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
             ),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Color(0x99000000),
+                    Color(0x40000000),
+                    Color(0x14000000),
+                  ],
+                  stops: [0.0, 0.55, 1.0],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          current.locationLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      _ConditionGlyph(icon: icon, isNight: isNight),
+                    ],
+                  ),
+                  const Spacer(),
+                  Text(
+                    '$temp°',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 64,
+                      fontWeight: FontWeight.w800,
+                      height: 0.95,
+                      letterSpacing: -1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    condition,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'H:${hi.toStringAsFixed(0)}°  L:${lo.toStringAsFixed(0)}°',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _ExpandedHero extends StatelessWidget {
-  const _ExpandedHero({
-    required this.isMyLocation,
-    required this.myLocationLabel,
-    required this.locationLabel,
-    required this.temp,
-    required this.condition,
-    required this.hiLo,
-    required this.textColor,
-    required this.subColor,
-  });
+class _ConditionGlyph extends StatelessWidget {
+  const _ConditionGlyph({required this.icon, required this.isNight});
 
-  final bool isMyLocation;
-  final String myLocationLabel;
-  final String locationLabel;
-  final String temp;
-  final String condition;
-  final String hiLo;
-  final Color textColor;
-  final Color subColor;
-
-  static List<Shadow> get _shadow => const [
-        Shadow(
-          color: Color(0x66000000),
-          blurRadius: 10,
-          offset: Offset(0, 2),
-        ),
-      ];
+  final IconData icon;
+  final bool isNight;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (isMyLocation)
-          Text(
-            myLocationLabel,
-            style: TextStyle(
-              color: subColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.7,
-              shadows: _shadow,
-            ),
-          ),
-        Text(
-          locationLabel,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w700,
-            fontSize: 30,
-            height: 1.1,
-            shadows: _shadow,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$temp°',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w300,
-            fontSize: 88,
-            height: 1,
-            letterSpacing: -2,
-            shadows: _shadow,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          condition,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            shadows: _shadow,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          hiLo,
-          style: TextStyle(
-            color: subColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            shadows: _shadow,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CompactHero extends StatelessWidget {
-  const _CompactHero({
-    required this.locationLabel,
-    required this.temp,
-    required this.condition,
-    required this.textColor,
-  });
-
-  final String locationLabel;
-  final String temp;
-  final String condition;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          locationLabel,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w700,
-            fontSize: 22,
-            height: 1.1,
-            shadows: const [
-              Shadow(
-                color: Color(0x66000000),
-                blurRadius: 8,
-                offset: Offset(0, 1),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '$temp° | $condition',
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-            shadows: const [
-              Shadow(
-                color: Color(0x66000000),
-                blurRadius: 8,
-                offset: Offset(0, 1),
-              ),
-            ],
-          ),
-        ),
-      ],
+    final color = isNight ? const Color(0xFFE0E0E0) : const Color(0xFFFFC107);
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.18),
+      ),
+      child: Icon(icon, color: color, size: 30),
     );
   }
 }

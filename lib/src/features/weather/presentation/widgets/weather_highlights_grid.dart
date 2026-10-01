@@ -59,7 +59,7 @@ class WeatherHighlightsGrid extends StatelessWidget {
                 icon: Icons.wb_sunny_outlined,
                 label: l10n.t('weatherUVIndex'),
                 value: current.uvIndex.toStringAsFixed(0),
-                subtitle: uvLabel,
+                badge: _UvBadge(label: uvLabel),
                 footer: _UvSpectrumBar(uv: current.uvIndex),
               ),
             ),
@@ -72,23 +72,14 @@ class WeatherHighlightsGrid extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: _SunriseTile(current: current),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
               child: WeatherMetricTile(
                 icon: Icons.water_drop_outlined,
-                label: l10n.t('rainChance'),
-                value: '${current.rainChancePercent}%',
-                subtitle: l10n.t('weatherToday'),
+                label: l10n.t('humidity'),
+                value: '${current.humidity}%',
+                subtitle: humiditySub,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+            const SizedBox(width: 10),
             Expanded(
               child: WeatherMetricTile(
                 icon: Icons.visibility_outlined,
@@ -98,20 +89,61 @@ class WeatherHighlightsGrid extends StatelessWidget {
                 subtitle: visibilityNote,
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: WeatherMetricTile(
-                icon: Icons.water_outlined,
-                label: l10n.t('humidity'),
-                value: '${current.humidity}%',
-                subtitle: humiditySub,
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 10),
         _PressureTile(current: current),
+        const SizedBox(height: 10),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: WeatherMetricTile(
+                icon: Icons.wb_twilight_rounded,
+                label: l10n.t('weatherSunrise'),
+                value: current.sunrise == null
+                    ? '—'
+                    : TimeOfDay.fromDateTime(current.sunrise!).format(context),
+                minHeight: 96,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: WeatherMetricTile(
+                icon: Icons.grain_rounded,
+                label: l10n.t('rainChance'),
+                value: '${current.rainChancePercent}%',
+                minHeight: 96,
+              ),
+            ),
+          ],
+        ),
       ],
+    );
+  }
+}
+
+class _UvBadge extends StatelessWidget {
+  const _UvBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.paleGreen,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.primaryGreen,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }
@@ -360,101 +392,6 @@ class _CompassPainter extends CustomPainter {
       oldDelegate.degrees != degrees ||
       oldDelegate.accent != accent ||
       oldDelegate.labelColor != labelColor;
-}
-
-class _SunriseTile extends StatelessWidget {
-  const _SunriseTile({required this.current});
-
-  final CurrentWeather current;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final sunrise = current.sunrise;
-    final sunset = current.sunset;
-    final value = sunrise == null
-        ? '—'
-        : TimeOfDay.fromDateTime(sunrise).format(context);
-    final sub = sunset == null
-        ? null
-        : '${l10n.t('weatherSunset')} ${TimeOfDay.fromDateTime(sunset).format(context)}';
-
-    return WeatherMetricTile(
-      icon: Icons.wb_twilight_rounded,
-      label: l10n.t('weatherSunrise'),
-      value: value,
-      subtitle: sub,
-      footer: sunrise != null && sunset != null
-          ? SizedBox(
-              height: 36,
-              width: double.infinity,
-              child: CustomPaint(
-                painter: _MiniSunArcPainter(
-                  sunrise: sunrise,
-                  sunset: sunset,
-                  now: current.observedAt ?? DateTime.now(),
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-}
-
-class _MiniSunArcPainter extends CustomPainter {
-  _MiniSunArcPainter({
-    required this.sunrise,
-    required this.sunset,
-    required this.now,
-  });
-
-  final DateTime sunrise;
-  final DateTime sunset;
-  final DateTime now;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final centerY = size.height;
-    final radiusX = size.width / 2 - 2;
-    final radiusY = size.height - 2;
-    final rect = Rect.fromCenter(
-      center: Offset(size.width / 2, centerY),
-      width: radiusX * 2,
-      height: radiusY * 2,
-    );
-
-    canvas.drawArc(
-      rect,
-      math.pi,
-      math.pi,
-      false,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = AppColors.primaryGreen.withValues(alpha: 0.25),
-    );
-
-    final totalMs = sunset.difference(sunrise).inMilliseconds;
-    final progress =
-        ((now.difference(sunrise).inMilliseconds) / (totalMs == 0 ? 1 : totalMs))
-            .clamp(0.0, 1.0);
-    if (progress > 0 && progress < 1) {
-      final angle = math.pi + math.pi * progress;
-      final dx = size.width / 2 + radiusX * math.cos(angle);
-      final dy = centerY + radiusY * math.sin(angle);
-      canvas.drawCircle(
-        Offset(dx, dy),
-        4,
-        Paint()..color = const Color(0xFFFFB74D),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _MiniSunArcPainter oldDelegate) =>
-      oldDelegate.sunrise != sunrise ||
-      oldDelegate.sunset != sunset ||
-      oldDelegate.now != now;
 }
 
 class _PressureTile extends StatelessWidget {

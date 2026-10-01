@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Flat PakFasal card for weather sections — readable, no glass blur.
+/// Flat white/green weather card — soft shadow, no blur.
 class WeatherGlassCard extends StatelessWidget {
   const WeatherGlassCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(14),
-    this.borderRadius = 16,
+    this.borderRadius = 18,
     this.blurSigma = 18,
   });
 
@@ -16,7 +16,7 @@ class WeatherGlassCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final double borderRadius;
 
-  /// Kept for call-site compatibility; blur is no longer used.
+  /// Kept for call-site compatibility; blur is unused.
   final double blurSigma;
 
   @override
@@ -28,14 +28,14 @@ class WeatherGlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: dark
-              ? AppColors.lightGreen.withValues(alpha: 0.28)
-              : AppColors.primaryGreen.withValues(alpha: 0.14),
+              ? AppColors.lightGreen.withValues(alpha: 0.22)
+              : AppColors.primaryGreen.withValues(alpha: 0.08),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: dark ? 0.32 : 0.08),
-            blurRadius: 12,
+            color: Colors.black.withValues(alpha: dark ? 0.28 : 0.06),
+            blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
@@ -68,7 +68,7 @@ class WeatherGlassStyle {
 
   static Color divider(BuildContext context) => _dark(context)
       ? AppColors.white.withValues(alpha: 0.12)
-      : AppColors.divider;
+      : const Color(0xFFE0E8E1);
 
   static Color icon(BuildContext context) =>
       _dark(context) ? AppColors.lightGreen : AppColors.primaryGreen;
@@ -80,14 +80,14 @@ class WeatherGlassStyle {
         color: label(context),
         fontSize: size,
         fontWeight: FontWeight.w700,
-        letterSpacing: 0.7,
+        letterSpacing: 0.5,
       );
 
   static TextStyle bigValue(BuildContext context, {double size = 28}) =>
       TextStyle(
         color: value(context),
         fontSize: size,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         height: 1.05,
       );
 
@@ -103,7 +103,7 @@ class WeatherGlassStyle {
         color: value(context).withValues(alpha: 0.92),
         fontSize: size,
         fontWeight: weight,
-        height: 1.3,
+        height: 1.35,
       );
 
   static TextStyle caption(BuildContext context, {double size = 12}) =>

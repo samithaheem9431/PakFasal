@@ -4,7 +4,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../utils/farmer_advisor.dart';
 import 'weather_glass_card.dart';
 
-/// Renders the list of [FarmerAdvisory]s as flat cards.
+/// Farmer advisory list matching the reference card style.
 class FarmerAdvisorySection extends StatelessWidget {
   const FarmerAdvisorySection({super.key, required this.advisories});
 
@@ -14,7 +14,6 @@ class FarmerAdvisorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (advisories.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
-    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return WeatherGlassCard(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -24,14 +23,14 @@ class FarmerAdvisorySection extends StatelessWidget {
           Row(
             children: [
               Icon(
-                Icons.agriculture_rounded,
-                size: 14,
+                Icons.eco_rounded,
+                size: 16,
                 color: WeatherGlassStyle.label(context),
               ),
               const SizedBox(width: 6),
               Text(
                 l10n.t('farmerAdvisory').toUpperCase(),
-                style: WeatherGlassStyle.sectionLabel(context, size: 11),
+                style: WeatherGlassStyle.sectionLabel(context, size: 12),
               ),
             ],
           ),
@@ -39,7 +38,7 @@ class FarmerAdvisorySection extends StatelessWidget {
           for (var i = 0; i < advisories.length; i++)
             Padding(
               padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
-              child: _AdvisoryCard(advisory: advisories[i], isDark: dark),
+              child: _AdvisoryCard(advisory: advisories[i]),
             ),
         ],
       ),
@@ -48,10 +47,9 @@ class FarmerAdvisorySection extends StatelessWidget {
 }
 
 class _AdvisoryCard extends StatelessWidget {
-  const _AdvisoryCard({required this.advisory, required this.isDark});
+  const _AdvisoryCard({required this.advisory});
 
   final FarmerAdvisory advisory;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -59,19 +57,19 @@ class _AdvisoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: isDark ? 0.14 : 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withValues(alpha: 0.28)),
+        color: accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: accent.withValues(alpha: 0.22)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(11),
+              color: accent.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
             ),
             child: Icon(advisory.icon, color: accent, size: 20),
           ),
@@ -83,7 +81,7 @@ class _AdvisoryCard extends StatelessWidget {
                 Text(
                   advisory.title,
                   style: TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: accent,
                   ),
@@ -91,10 +89,16 @@ class _AdvisoryCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   advisory.body,
-                  style: WeatherGlassStyle.body(context, size: 12),
+                  style: WeatherGlassStyle.body(context, size: 12.5),
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: accent.withValues(alpha: 0.7),
+            size: 22,
           ),
         ],
       ),

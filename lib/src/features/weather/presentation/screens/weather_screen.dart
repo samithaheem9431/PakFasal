@@ -18,17 +18,9 @@ import '../widgets/temperature_hero_card.dart';
 import '../widgets/weather_error_view.dart';
 import '../widgets/weather_highlights_grid.dart';
 import '../widgets/weather_skeleton.dart';
-import '../widgets/weather_sky_background.dart';
 import '../widgets/weather_glass_card.dart';
 
-/// PakFasal weather dashboard — photo sky, green wash, flat readable cards.
-///
-/// Composition (top → bottom):
-///   1. Collapsing hero (city / temp / condition / H-L)
-///   2. Hourly forecast strip
-///   3. 10-day forecast
-///   4. Detail metric tiles
-///   5. Crop alerts + farmer advisories
+/// PakFasal weather dashboard — mint page, photo hero card, flat white cards.
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
 
@@ -57,7 +49,6 @@ class _WeatherScreenState extends State<WeatherScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
-      // Quiet TTL-aware refresh — keeps cached weather on screen.
       context.read<WeatherProvider>().softRefresh();
     }
   }
@@ -109,24 +100,8 @@ class _WeatherScreenState extends State<WeatherScreen>
   }
 }
 
-class _WeatherContent extends StatefulWidget {
+class _WeatherContent extends StatelessWidget {
   const _WeatherContent();
-
-  @override
-  State<_WeatherContent> createState() => _WeatherContentState();
-}
-
-class _WeatherContentState extends State<_WeatherContent> {
-  double _collapse = 0;
-
-  bool _onScroll(ScrollNotification n) {
-    if (n.metrics.axis != Axis.vertical) return false;
-    final next = (n.metrics.pixels / 120).clamp(0.0, 1.0);
-    if ((next - _collapse).abs() > 0.01) {
-      setState(() => _collapse = next);
-    }
-    return false;
-  }
 
   String _hourlySummary(
     AppLocalizations l10n,
@@ -145,64 +120,45 @@ class _WeatherContentState extends State<_WeatherContent> {
     final weather = context.watch<WeatherProvider>();
     final snapshot = weather.snapshot!;
     final current = snapshot.current;
-    final isMyLocation = weather.activeLocation?.isCurrent ?? true;
 
     final advisories = FarmerAdvisor.advise(l10n, snapshot);
     final cropAlerts = FarmerAdvisor.alerts(l10n, snapshot);
 
-    final topInset = 12.0;
-
-    return Stack(
-      fit: StackFit.expand,
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      padding: context.pagePadding(
+        horizontal: 16,
+        top: 12,
+        bottom: 16 + PakFasalFloatingBottomBar.contentClearance(context),
+      ),
       children: [
-        Positioned.fill(
-          child: WeatherSkyBackground(current: current),
+        if (weather.isStale) ...[
+          _OfflineHint(message: l10n.t('weatherOfflineNotice')),
+          const SizedBox(height: 10),
+        ],
+        TemperatureHeroCard(current: current),
+        const SizedBox(height: 12),
+        HourlyForecastSlider(
+          hourly: snapshot.hourly,
+          summary: _hourlySummary(l10n, weather),
         ),
-        NotificationListener<ScrollNotification>(
-          onNotification: _onScroll,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: context.pagePadding(
-              horizontal: 16,
-              top: topInset,
-              bottom: 16 +
-                  PakFasalFloatingBottomBar.contentClearance(context),
-            ),
-            children: [
-              if (weather.isStale) ...[
-                _OfflineHint(message: l10n.t('weatherOfflineNotice')),
-                const SizedBox(height: 10),
-              ],
-              TemperatureHeroCard(
-                current: current,
-                collapseProgress: _collapse,
-                isMyLocation: isMyLocation,
-              ),
-              const SizedBox(height: 8),
-              HourlyForecastSlider(
-                hourly: snapshot.hourly,
-                summary: _hourlySummary(l10n, weather),
-              ),
-              const SizedBox(height: 12),
-              DailyForecastList(
-                forecast: snapshot.daily,
-                currentTempC: current.temperatureC,
-              ),
-              const SizedBox(height: 12),
-              WeatherHighlightsGrid(current: current),
-              if (cropAlerts.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                CropAlertBannerStack(alerts: cropAlerts),
-              ],
-              if (advisories.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                FarmerAdvisorySection(advisories: advisories),
-              ],
-            ],
-          ),
+        const SizedBox(height: 12),
+        DailyForecastList(
+          forecast: snapshot.daily,
+          currentTempC: current.temperatureC,
         ),
+        const SizedBox(height: 12),
+        WeatherHighlightsGrid(current: current),
+        if (cropAlerts.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          CropAlertBannerStack(alerts: cropAlerts),
+        ],
+        if (advisories.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          FarmerAdvisorySection(advisories: advisories),
+        ],
       ],
     );
   }

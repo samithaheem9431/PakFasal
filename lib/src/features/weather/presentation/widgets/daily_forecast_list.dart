@@ -26,7 +26,10 @@ class DailyForecastList extends StatelessWidget {
         child: SizedBox(
           height: 60,
           child: Center(
-            child: Text(l10n.t('loading'), style: WeatherGlassStyle.caption(context)),
+            child: Text(
+              l10n.t('loading'),
+              style: WeatherGlassStyle.caption(context),
+            ),
           ),
         ),
       );
@@ -45,17 +48,19 @@ class DailyForecastList extends StatelessWidget {
             children: [
               Icon(
                 Icons.calendar_month_rounded,
-                size: 14,
+                size: 16,
                 color: WeatherGlassStyle.label(context),
               ),
               const SizedBox(width: 6),
-              Text(
-                l10n.t('weather10DayTitle').toUpperCase(),
-                style: WeatherGlassStyle.sectionLabel(context, size: 11),
+              Expanded(
+                child: Text(
+                  l10n.t('weather10DayTitle').toUpperCase(),
+                  style: WeatherGlassStyle.sectionLabel(context, size: 12),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           for (var i = 0; i < days.length; i++) ...[
             if (i > 0)
               Divider(height: 1, color: WeatherGlassStyle.divider(context)),
@@ -124,7 +129,11 @@ class _DailyRow extends StatelessWidget {
               dayLabel,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: WeatherGlassStyle.value(context)),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: WeatherGlassStyle.value(context),
+              ),
             ),
           ),
           SizedBox(
@@ -135,19 +144,7 @@ class _DailyRow extends StatelessWidget {
               fallback: WeatherViewMapper.iconForCode(forecast.conditionCode),
             ),
           ),
-          SizedBox(
-            width: 40,
-            child: forecast.rainChance > 0
-                ? Text(
-                    '${forecast.rainChance}%',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF64B5F6),
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
+          const SizedBox(width: 4),
           Expanded(
             child: _TempRangeBar(
               min: forecast.minTempC,
@@ -206,11 +203,15 @@ class _TempRangeBar extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 32,
+          width: 30,
           child: Text(
             '${min.toStringAsFixed(0)}°',
             textAlign: TextAlign.right,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: WeatherGlassStyle.label(context)),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: WeatherGlassStyle.muted(context),
+            ),
           ),
         ),
         const SizedBox(width: 8),
@@ -239,7 +240,8 @@ class _TempRangeBar extends StatelessWidget {
                     Container(
                       height: 4,
                       decoration: BoxDecoration(
-                        color: WeatherGlassStyle.value(context).withValues(alpha: 0.18),
+                        color: WeatherGlassStyle.value(context)
+                            .withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -273,13 +275,6 @@ class _TempRangeBar extends StatelessWidget {
                               color: AppColors.primaryGreen,
                               width: 1.5,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primaryGreen
-                                    .withValues(alpha: 0.25),
-                                blurRadius: 4,
-                              ),
-                            ],
                           ),
                         ),
                       ),
@@ -294,7 +289,11 @@ class _TempRangeBar extends StatelessWidget {
           width: 34,
           child: Text(
             '${max.toStringAsFixed(0)}°',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: WeatherGlassStyle.value(context)),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: WeatherGlassStyle.value(context),
+            ),
           ),
         ),
       ],
