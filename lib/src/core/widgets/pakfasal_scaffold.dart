@@ -37,6 +37,8 @@ class PakFasalScaffold extends StatelessWidget {
     this.transparentChrome = false,
     this.extendBodyBehindAppBar = false,
     this.extendBehindBottomBar = true,
+    this.showLanguageToggle = true,
+    this.hideAppBar = false,
   });
 
   final String title;
@@ -54,6 +56,10 @@ class PakFasalScaffold extends StatelessWidget {
   final bool extendBodyBehindAppBar;
   /// Kept for call-site compatibility; body always extends under the floating bar.
   final bool extendBehindBottomBar;
+  /// When false, hides the app-bar language chip (screen provides its own).
+  final bool showLanguageToggle;
+  /// Fully hide the app bar (custom header owns chrome).
+  final bool hideAppBar;
 
   int _selectedNavIndex(BuildContext context) {
     final route = ModalRoute.of(context)?.settings.name;
@@ -140,14 +146,15 @@ class PakFasalScaffold extends StatelessWidget {
       ),
       actions: [
         if (actions != null) ...actions!,
-        Container(
-          margin: const EdgeInsets.only(right: 12),
-          decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
+        if (showLanguageToggle)
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const LanguageToggleButton(),
           ),
-          child: const LanguageToggleButton(),
-        ),
       ],
     );
 
@@ -155,38 +162,44 @@ class PakFasalScaffold extends StatelessWidget {
       value: pakFasalSystemOverlay(context),
       child: Scaffold(
         backgroundColor: bg,
-        extendBodyBehindAppBar: extendBodyBehindAppBar || transparentChrome,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: transparentChrome
-              ? appBar
-              : Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppColors.darkGreen,
-                        AppColors.primaryGreen,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryGreen.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+        extendBodyBehindAppBar:
+            hideAppBar || extendBodyBehindAppBar || transparentChrome,
+        appBar: hideAppBar
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(60),
+                child: transparentChrome
+                    ? appBar
+                    : Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              AppColors.darkGreen,
+                              AppColors.primaryGreen,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryGreen
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: appBar,
                       ),
-                    ],
-                  ),
-                  child: appBar,
-                ),
-        ),
+              ),
         extendBody: showBottomNavigation,
         body: Stack(
           children: [
             Positioned.fill(
               child: SafeArea(
-                top: !(transparentChrome || extendBodyBehindAppBar),
+                top: !(hideAppBar ||
+                    transparentChrome ||
+                    extendBodyBehindAppBar),
                 bottom: false,
                 // Page paints edge-to-edge under the floating bar — no reserved
                 // silver/grey band. Scroll screens add contentClearance themselves.
