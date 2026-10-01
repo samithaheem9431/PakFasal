@@ -74,6 +74,7 @@ flutter:
   assets:
     - assets/icons/PakFASAL.png
     - assets/ml/dss_model.json
+    - config/app_config.json
     - assets/images/learning/farmer_tablet.jpg
     - assets/images/learning/farmer_reading.jpg
     - assets/images/learning/pest_disease.jpg

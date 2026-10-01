@@ -24,7 +24,7 @@ class _AboutPakFasalScreenState extends State<AboutPakFasalScreen>
     with TickerProviderStateMixin {
   static const _appVersion = '1.0.0';
   static const _playStoreUrl =
-      'https://play.google.com/store/apps/details?id=com.example.pakfasal_app';
+      'https://play.google.com/store/apps/details?id=pk.pakfasal.app';
 
   final _scrollController = ScrollController();
   final _actionsKey = GlobalKey();

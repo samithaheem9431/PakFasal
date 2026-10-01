@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '669661525637',
     projectId: 'pakfasalapp',
     storageBucket: 'pakfasalapp.firebasestorage.app',
-    iosBundleId: 'com.example.pakfasalApp',
+    iosBundleId: 'pk.pakfasal.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '669661525637',
     projectId: 'pakfasalapp',
     storageBucket: 'pakfasalapp.firebasestorage.app',
-    iosBundleId: 'com.example.pakfasalApp',
+    iosBundleId: 'pk.pakfasal.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

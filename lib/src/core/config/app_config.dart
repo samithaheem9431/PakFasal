@@ -1,22 +1,19 @@
-/// Centralised, compile-time application configuration.
+import 'dart:convert';
+
+import 'package:flutter/services.dart' show rootBundle;
+
+/// Centralised application configuration.
 ///
-/// Secrets are injected with **`--dart-define`** / **`--dart-define-from-file`**
-/// so they are never shipped as a readable asset JSON in the APK/IPA.
+/// Values resolve in this order (highest first):
 ///
-/// Local development:
-/// ```bash
-/// cp config/app_config.example.json config/dev.json
-/// # fill in keys in config/dev.json (git-ignored)
-/// flutter run --dart-define-from-file=config/dev.json
-/// ```
+/// 1. **`--dart-define` / `--dart-define-from-file`** — preferred for CI /
+///    release (e.g. `flutter run --dart-define-from-file=config/dev.json`).
+/// 2. **`config/app_config.json`** — optional bundled asset for local
+///    `flutter run` without CLI flags. Keep this file git-ignored when it
+///    contains real keys (copy from `config/app_config.example.json`).
+/// 3. **Hard-coded defaults** — empty / safe fallbacks (demo videos, etc.).
 ///
-/// Or use the IDE launch config in `.vscode/launch.json`.
-///
-/// When a key is empty, features degrade gracefully (e.g. learning shows demo
-/// videos, weather falls back to Open-Meteo where possible).
-///
-/// Call [AppConfig.init] early from `main.dart` (no-op today; kept for a stable
-/// startup hook if runtime config is added later).
+/// Call [AppConfig.init] from `main.dart` before any feature reads config.
 class AppConfig {
   AppConfig._();
 
@@ -63,53 +60,95 @@ class AppConfig {
     defaultValue: '',
   );
 
-  /// Startup hook — intentionally a no-op; defines are compile-time only.
-  static Future<void> init() async {}
+  static Map<String, String> _runtime = const <String, String>{};
+  static bool _initialised = false;
+
+  /// Loads optional `config/app_config.json` from assets (if present).
+  static Future<void> init() async {
+    if (_initialised) return;
+    _initialised = true;
+
+    try {
+      final raw = await rootBundle.loadString('config/app_config.json');
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) {
+        _runtime = <String, String>{
+          for (final entry in decoded.entries)
+            if (entry.value != null && !entry.key.startsWith('_'))
+              entry.key: entry.value.toString(),
+        };
+      }
+    } catch (_) {
+      _runtime = const <String, String>{};
+    }
+  }
+
+  static String _resolve(String key, String envValue, String fallback) {
+    if (envValue.isNotEmpty) return envValue;
+    final fromJson = _runtime[key];
+    if (fromJson != null && fromJson.isNotEmpty) return fromJson;
+    return fallback;
+  }
 
   // ── YouTube Data API v3 ──────────────────────────────────────────────────
 
-  /// API key for the YouTube Data API. When empty, the learning module
-  /// silently falls back to local demo videos.
-  static String get youtubeApiKey => _envYoutubeApiKey;
+  static String get youtubeApiKey =>
+      _resolve('YOUTUBE_API_KEY', _envYoutubeApiKey, '');
 
-  /// Optional channel filter for YouTube search.
-  static String get youtubeChannelId => _envYoutubeChannelId;
+  static String get youtubeChannelId =>
+      _resolve('YOUTUBE_CHANNEL_ID', _envYoutubeChannelId, '');
 
-  /// Base URL for the YouTube Data API. Configurable for testing / proxying.
-  static String get youtubeApiBaseUrl => _envYoutubeApiBaseUrl;
+  static String get youtubeApiBaseUrl => _resolve(
+        'YOUTUBE_API_BASE_URL',
+        _envYoutubeApiBaseUrl,
+        'https://www.googleapis.com/youtube/v3',
+      );
 
   static bool get hasYoutubeApiKey => youtubeApiKey.isNotEmpty;
 
-  // ── Weather (Open-Meteo, legacy fallback) ────────────────────────────────
+  // ── Weather ──────────────────────────────────────────────────────────────
 
-  static String get weatherApiBaseUrl => _envWeatherApiBaseUrl;
+  static String get weatherApiBaseUrl => _resolve(
+        'WEATHER_API_BASE_URL',
+        _envWeatherApiBaseUrl,
+        'https://api.open-meteo.com/v1',
+      );
 
-  // ── Weather (OpenWeatherMap — primary provider) ──────────────────────────
+  static String get openWeatherApiKey =>
+      _resolve('OPENWEATHER_API_KEY', _envOpenWeatherApiKey, '');
 
-  static String get openWeatherApiKey => _envOpenWeatherApiKey;
+  static String get openWeatherBaseUrl => _resolve(
+        'OPENWEATHER_API_BASE_URL',
+        _envOpenWeatherBaseUrl,
+        'https://api.openweathermap.org',
+      );
 
-  static String get openWeatherBaseUrl => _envOpenWeatherBaseUrl;
+  static String get _openWeatherUseOneCallV3 => _resolve(
+        'OPENWEATHER_USE_ONECALL_V3',
+        _envOpenWeatherUseOneCallV3,
+        'false',
+      );
 
   static bool get hasOpenWeatherApiKey => openWeatherApiKey.isNotEmpty;
 
   static bool get useOneCallV3 =>
-      _envOpenWeatherUseOneCallV3.toLowerCase() == 'true';
+      _openWeatherUseOneCallV3.toLowerCase() == 'true';
 
-  // ── Cloudinary (profile image uploads) ───────────────────────────────────
+  // ── Cloudinary ───────────────────────────────────────────────────────────
 
-  /// Cloud name from the Cloudinary dashboard.
-  static String get cloudinaryCloudName => _envCloudinaryCloudName;
+  static String get cloudinaryCloudName =>
+      _resolve('CLOUDINARY_CLOUD_NAME', _envCloudinaryCloudName, '');
 
-  /// Unsigned upload preset restricted to image uploads (e.g. folder
-  /// `pakfasal/profiles`). Never put the API secret in the app.
-  static String get cloudinaryUploadPreset => _envCloudinaryUploadPreset;
+  static String get cloudinaryUploadPreset =>
+      _resolve('CLOUDINARY_UPLOAD_PRESET', _envCloudinaryUploadPreset, '');
 
   static bool get hasCloudinaryConfig =>
       cloudinaryCloudName.isNotEmpty && cloudinaryUploadPreset.isNotEmpty;
 
-  // ── Build-time environment label ─────────────────────────────────────────
+  // ── Environment ──────────────────────────────────────────────────────────
 
-  static String get environment => _envEnvironment;
+  static String get environment =>
+      _resolve('APP_ENV', _envEnvironment, 'dev');
 
   static bool get isProduction => environment == 'prod';
 }
