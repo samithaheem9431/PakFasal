@@ -149,8 +149,8 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 10),
     );
 
-    // Navigate as soon as the short intro finishes (was a hard 4s wait).
-    _navTimer = Timer(const Duration(milliseconds: 1600), _goNext);
+    // Hold splash for ~3.5s so branding/animations can land before navigation.
+    _navTimer = Timer(const Duration(milliseconds: 3500), _goNext);
   }
 
   Future<void> _goNext() async {
