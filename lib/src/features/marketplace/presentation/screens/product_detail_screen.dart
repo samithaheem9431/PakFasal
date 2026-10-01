@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +7,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
+import '../../data/marketplace_image_cache.dart';
 import '../../data/marketplace_labels.dart';
 import '../../domain/entities/product.dart';
 
@@ -49,11 +51,20 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
-                      child: Image.network(
-                        url,
+                      child: CachedNetworkImage(
+                        imageUrl: MarketplaceImageCache.detailUrl(url),
+                        cacheManager: MarketplaceImageCache.manager,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        errorBuilder: (_, __, ___) => Container(
+                        memCacheWidth: 900,
+                        fadeInDuration: const Duration(milliseconds: 180),
+                        placeholder: (_, __) => Container(
+                          color: AppColors.success.withValues(alpha: 0.12),
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => Container(
                           color: AppColors.success.withValues(alpha: 0.12),
                           child: const Icon(Icons.image, size: 60),
                         ),
@@ -112,12 +123,6 @@ class ProductDetailScreen extends StatelessWidget {
               icon: const Icon(Icons.call),
               label: Text(l10n.t('callCompany')),
             ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () => _openWhatsapp(context, phone),
-              icon: const Icon(Icons.chat),
-              label: Text(l10n.t('whatsapp')),
-            ),
           ],
         ],
       ),
@@ -131,20 +136,6 @@ class ProductDetailScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).t('couldNotOpenDialer')),
-        ),
-      );
-    }
-  }
-
-  Future<void> _openWhatsapp(BuildContext context, String phone) async {
-    final cleanNumber = phone.replaceAll(RegExp(r'[^\d+]'), '').replaceAll('+', '');
-    final uri = Uri.parse('https://wa.me/$cleanNumber');
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(AppLocalizations.of(context).t('couldNotOpenWhatsapp')),
         ),
       );
     }

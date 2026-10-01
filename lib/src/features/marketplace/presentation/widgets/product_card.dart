@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../data/marketplace_image_cache.dart';
 import '../../data/marketplace_labels.dart';
 import '../../domain/entities/product.dart';
 
@@ -13,7 +15,6 @@ class ProductCard extends StatefulWidget {
     required this.isFavorite,
     required this.onTap,
     required this.onFavoriteTap,
-    this.onContactTap,
   });
 
   final Product product;
@@ -21,7 +22,6 @@ class ProductCard extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onTap;
   final VoidCallback onFavoriteTap;
-  final VoidCallback? onContactTap;
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -40,33 +40,27 @@ class _ProductCardState extends State<ProductCard> {
     final cropLabel = MarketplaceLabels.crop(widget.product.crop, lang);
     final categoryLabel =
         MarketplaceLabels.category(widget.product.category, lang);
-    final phone = widget.product.primaryPhone;
 
     final cardBg = isDark ? AppColors.darkSurfaceMid : Colors.white;
     final titleColor = isDark ? Colors.white : const Color(0xFF152018);
     final muted = isDark ? Colors.white70 : const Color(0xFF6B7A6E);
-    final divider =
-        isDark ? Colors.white12 : const Color(0xFFE8EEE8);
-    final favBg =
-        isDark ? AppColors.darkSurfaceHigh : const Color(0xFFF3F6F3);
-    final priceColor =
-        isDark ? AppColors.lightGreen : const Color(0xFF1B5E20);
-    final phoneBg = isDark
+    final companyColor =
+        isDark ? Colors.white60 : const Color(0xFF5A6B5E);
+    final priceBg = isDark
         ? AppColors.primaryGreen.withValues(alpha: 0.22)
         : const Color(0xFFE7F6EA);
-    final phoneBorder = isDark
-        ? AppColors.lightGreen.withValues(alpha: 0.35)
-        : const Color(0xFFC8E6C9);
+    final priceFg =
+        isDark ? AppColors.lightGreen : const Color(0xFF1B5E20);
     final cropBg = isDark
         ? AppColors.primaryGreen.withValues(alpha: 0.22)
         : const Color(0xFFE7F6EA);
     final cropFg =
         isDark ? AppColors.lightGreen : const Color(0xFF1B5E20);
     final catBg = isDark
-        ? const Color(0xFFB45309).withValues(alpha: 0.25)
-        : const Color(0xFFFFF1E6);
+        ? const Color(0xFFC62828).withValues(alpha: 0.22)
+        : const Color(0xFFFFEBEE);
     final catFg =
-        isDark ? const Color(0xFFFFCC80) : const Color(0xFFB45309);
+        isDark ? const Color(0xFFEF9A9A) : const Color(0xFFC62828);
 
     return AnimatedScale(
       scale: _pressed ? 0.985 : 1,
@@ -74,11 +68,11 @@ class _ProductCardState extends State<ProductCard> {
       curve: Curves.easeOut,
       child: Material(
         color: cardBg,
-        elevation: _pressed ? 1.5 : 4,
-        shadowColor: Colors.black.withValues(alpha: isDark ? 0.35 : 0.14),
-        borderRadius: BorderRadius.circular(20),
+        elevation: _pressed ? 1.5 : 3,
+        shadowColor: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
+        borderRadius: BorderRadius.circular(18),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           onTap: widget.onTap,
           onTapDown: (_) => setState(() => _pressed = true),
           onTapCancel: () => setState(() => _pressed = false),
@@ -91,31 +85,29 @@ class _ProductCardState extends State<ProductCard> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: SizedBox(
-                          width: 88,
-                          height: 112,
-                          child: widget.product.hasImage
-                              ? Image.network(
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: SizedBox(
+                        width: 92,
+                        height: 108,
+                        child: widget.product.hasImage
+                            ? CachedNetworkImage(
+                                imageUrl: MarketplaceImageCache.thumbUrl(
                                   widget.product.imageUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _ImageFallback(isDark: isDark),
-                                )
-                              : _ImageFallback(isDark: isDark),
-                        ),
+                                ),
+                                cacheManager: MarketplaceImageCache.manager,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 240,
+                                fadeInDuration:
+                                    const Duration(milliseconds: 180),
+                                fadeOutDuration:
+                                    const Duration(milliseconds: 100),
+                                placeholder: (_, __) =>
+                                    _ImageFallback(isDark: isDark),
+                                errorWidget: (_, __, ___) =>
+                                    _ImageFallback(isDark: isDark),
+                              )
+                            : _ImageFallback(isDark: isDark),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -140,32 +132,29 @@ class _ProductCardState extends State<ProductCard> {
                                   ),
                                 ),
                               ),
-                              Material(
-                                color: favBg,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: widget.onFavoriteTap,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(7),
-                                    child: AnimatedSwitcher(
-                                      duration:
-                                          const Duration(milliseconds: 220),
-                                      transitionBuilder: (child, animation) =>
-                                          ScaleTransition(
-                                            scale: animation,
-                                            child: child,
-                                          ),
-                                      child: Icon(
-                                        widget.isFavorite
-                                            ? Icons.favorite_rounded
-                                            : Icons.favorite_border_rounded,
-                                        key: ValueKey(widget.isFavorite),
-                                        size: 18,
-                                        color: widget.isFavorite
-                                            ? AppColors.error
-                                            : muted,
-                                      ),
+                              const SizedBox(width: 4),
+                              InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: widget.onFavoriteTap,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: AnimatedSwitcher(
+                                    duration:
+                                        const Duration(milliseconds: 220),
+                                    transitionBuilder: (child, animation) =>
+                                        ScaleTransition(
+                                      scale: animation,
+                                      child: child,
+                                    ),
+                                    child: Icon(
+                                      widget.isFavorite
+                                          ? Icons.favorite_rounded
+                                          : Icons.favorite_border_rounded,
+                                      key: ValueKey(widget.isFavorite),
+                                      size: 20,
+                                      color: widget.isFavorite
+                                          ? AppColors.error
+                                          : muted,
                                     ),
                                   ),
                                 ),
@@ -173,16 +162,28 @@ class _ProductCardState extends State<ProductCard> {
                             ],
                           ),
                           if (widget.product.company.isNotEmpty) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              widget.product.company,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: muted,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12.5,
-                              ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    widget.product.company,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: companyColor,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.verified_rounded,
+                                  size: 14,
+                                  color: Color(0xFF2E7D32),
+                                ),
+                              ],
                             ),
                           ],
                           const SizedBox(height: 8),
@@ -190,19 +191,17 @@ class _ProductCardState extends State<ProductCard> {
                             spacing: 6,
                             runSpacing: 5,
                             children: [
-                              if (cropLabel.isNotEmpty)
-                                _TagPill(
-                                  label: cropLabel,
-                                  icon: Icons.eco_rounded,
-                                  bg: cropBg,
-                                  fg: cropFg,
-                                ),
                               if (categoryLabel.isNotEmpty)
                                 _TagPill(
                                   label: categoryLabel,
-                                  icon: Icons.science_outlined,
                                   bg: catBg,
                                   fg: catFg,
+                                ),
+                              if (cropLabel.isNotEmpty)
+                                _TagPill(
+                                  label: cropLabel,
+                                  bg: cropBg,
+                                  fg: cropFg,
                                 ),
                             ],
                           ),
@@ -214,7 +213,7 @@ class _ProductCardState extends State<ProductCard> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
-                                height: 1.4,
+                                height: 1.35,
                                 color: muted,
                               ),
                             ),
@@ -225,95 +224,60 @@ class _ProductCardState extends State<ProductCard> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Divider(height: 1, color: divider),
-                const SizedBox(height: 12),
                 Row(
                   children: [
-                    Text(
-                      widget.product.priceLabel(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: priceColor,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: priceBg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        widget.product.priceLabel(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14.5,
+                          color: priceFg,
+                        ),
                       ),
                     ),
-                    if (phone != null) ...[
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Container(
+                    const Spacer(),
+                    Material(
+                      color: const Color(0xFF1B5E20),
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: widget.onTap,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: phoneBg,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: phoneBorder),
+                            horizontal: 14,
+                            vertical: 10,
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.phone_rounded,
-                                size: 14,
-                                color: priceColor,
+                              Text(
+                                l10n.t('marketViewDetails'),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12.5,
+                                ),
                               ),
                               const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  phone,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                    color: priceColor,
-                                  ),
-                                ),
+                              const Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 15,
+                                color: Colors.white,
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                    const SizedBox(width: 8),
-                    if (phone != null)
-                      Material(
-                        color: const Color(0xFF1B5E20),
-                        borderRadius: BorderRadius.circular(20),
-                        elevation: 1,
-                        shadowColor: const Color(0xFF1B5E20)
-                            .withValues(alpha: 0.35),
-                        child: InkWell(
-                          onTap: widget.onContactTap,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 9,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.phone_rounded,
-                                  size: 15,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  l10n.t('marketContact'),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                    ),
                   ],
                 ),
               ],
@@ -328,13 +292,11 @@ class _ProductCardState extends State<ProductCard> {
 class _TagPill extends StatelessWidget {
   const _TagPill({
     required this.label,
-    required this.icon,
     required this.bg,
     required this.fg,
   });
 
   final String label;
-  final IconData icon;
   final Color bg;
   final Color fg;
 
@@ -344,22 +306,15 @@ class _TagPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: fg),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: fg,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: fg,
+        ),
       ),
     );
   }

@@ -55,7 +55,8 @@ class Product {
   String description(String lang) => _pick(descriptionEn, descriptionUr, lang);
 
   String priceLabel() {
-    final currency = this.currency.isEmpty ? 'PKR' : this.currency;
+    final raw = this.currency.isEmpty ? 'PKR' : this.currency;
+    final currency = raw.toUpperCase() == 'PKR' ? 'Rs.' : raw;
     final amount = price == price.roundToDouble()
         ? price.toInt().toString()
         : price.toStringAsFixed(2);

@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../data/marketplace_image_cache.dart';
 import '../../data/repositories/marketplace_repository.dart';
 import '../../domain/entities/product.dart';
+
+enum MarketplaceSort { relevant, priceLow, priceHigh, name }
 
 class MarketplaceProvider extends ChangeNotifier {
   MarketplaceProvider({MarketplaceRepository? repository})
@@ -16,6 +21,7 @@ class MarketplaceProvider extends ChangeNotifier {
   String? _selectedCrop;
   String? _selectedCategory;
   String? _selectedCompany;
+  MarketplaceSort _sort = MarketplaceSort.relevant;
 
   List<Product> _products = const [];
   bool _loading = true;
@@ -29,6 +35,7 @@ class MarketplaceProvider extends ChangeNotifier {
   String? get selectedCrop => _selectedCrop;
   String? get selectedCategory => _selectedCategory;
   String? get selectedCompany => _selectedCompany;
+  MarketplaceSort get sort => _sort;
 
   List<String> get crops {
     final seen = <String>{};
@@ -71,7 +78,7 @@ class MarketplaceProvider extends ChangeNotifier {
 
   List<Product> get filteredProducts {
     final query = _searchQuery.trim().toLowerCase();
-    return _products.where((product) {
+    final filtered = _products.where((product) {
       final byCrop =
           _selectedCrop == null || product.crop == _selectedCrop;
       final byCategory =
@@ -93,6 +100,22 @@ class MarketplaceProvider extends ChangeNotifier {
       ].join(' ').toLowerCase();
       return haystack.contains(query);
     }).toList();
+
+    switch (_sort) {
+      case MarketplaceSort.relevant:
+        return filtered;
+      case MarketplaceSort.priceLow:
+        filtered.sort((a, b) => a.price.compareTo(b.price));
+        return filtered;
+      case MarketplaceSort.priceHigh:
+        filtered.sort((a, b) => b.price.compareTo(a.price));
+        return filtered;
+      case MarketplaceSort.name:
+        filtered.sort(
+          (a, b) => a.titleEn.toLowerCase().compareTo(b.titleEn.toLowerCase()),
+        );
+        return filtered;
+    }
   }
 
   bool isFavorite(String productId) => _favorites.contains(productId);
@@ -115,6 +138,8 @@ class MarketplaceProvider extends ChangeNotifier {
           await _repository.fetchProducts(forceRefresh: forceRefresh);
       _products = products;
       _pruneStaleFilters();
+      // Warm image disk cache in the background — don't block UI.
+      unawaited(MarketplaceImageCache.prefetchProducts(products));
     } catch (e) {
       _error = e;
       // Keep whatever we already have on screen (including empty).
@@ -145,6 +170,12 @@ class MarketplaceProvider extends ChangeNotifier {
   void setCompany(String? value) {
     if (_selectedCompany == value) return;
     _selectedCompany = value;
+    notifyListeners();
+  }
+
+  void setSort(MarketplaceSort value) {
+    if (_sort == value) return;
+    _sort = value;
     notifyListeners();
   }
 

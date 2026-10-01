@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/ads/banner_ad_widget.dart';
 import '../../../../core/layout/responsive.dart';
@@ -43,18 +42,6 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
     super.dispose();
   }
 
-  Future<void> _callPhone(BuildContext context, String phone) async {
-    final uri = Uri.parse('tel:$phone');
-    final opened = await launchUrl(uri);
-    if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).t('couldNotOpenDialer')),
-        ),
-      );
-    }
-  }
-
   void _openDetail(Product product) {
     Navigator.push(
       context,
@@ -73,82 +60,39 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
     final products = provider.filteredProducts;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hPad = context.isCompact ? 14.0 : 18.0;
+    final topInset = MediaQuery.paddingOf(context).top;
 
     return PakFasalScaffold(
       title: l10n.t('marketplace'),
+      transparentChrome: true,
+      backgroundColor:
+          isDark ? AppColors.darkSurface : const Color(0xFFF4F7F4),
       child: RefreshIndicator(
         color: AppColors.primaryGreen,
+        edgeOffset: topInset + 56,
         onRefresh: () => provider.load(forceRefresh: true),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: PakFasalFloatingBottomBar.scrollPadding(
             context,
-            left: hPad,
-            top: 12,
-            right: hPad,
             bottom: 20,
           ),
           children: [
-            TextField(
-              controller: _searchController,
-              onChanged: provider.setSearchQuery,
-              style: TextStyle(
-                color: isDark ? Colors.white : AppColors.darkText,
-              ),
-              decoration: InputDecoration(
-                hintText: l10n.t('marketSearchHint'),
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.white54 : AppColors.mutedText,
-                ),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: isDark ? Colors.white70 : AppColors.mutedText,
-                ),
-                filled: true,
-                fillColor: isDark
-                    ? AppColors.darkSurfaceMid
-                    : Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(28),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white24
-                        : const Color(0xFFD5DED5),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(28),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white24
-                        : const Color(0xFFD5DED5),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(28),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? AppColors.lightGreen
-                        : AppColors.primaryGreen,
-                    width: 1.4,
-                  ),
-                ),
-              ),
+            _MarketplaceHeroHeader(
+              topInset: topInset,
+              horizontalPadding: hPad,
+              searchController: _searchController,
+              onSearchChanged: provider.setSearchQuery,
+              hint: l10n.t('marketSearchHint'),
             ),
-            const SizedBox(height: 14),
-            _FilterScenicCard(
+            Padding(
+              padding: EdgeInsets.fromLTRB(hPad, 18, hPad, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SectionLabel(
-                    icon: Icons.eco,
-                    label: l10n.t('marketSelectCrop'),
+                  _FilterSectionHeader(
+                    title: l10n.t('marketSelectCrop'),
                     hint: l10n.t('marketSelectCropHint'),
-                    onImage: true,
                   ),
                   const SizedBox(height: 10),
                   _FilterChipRow(
@@ -160,12 +104,10 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
                     iconColorOf: _cropIconColor,
                     onSelect: provider.setCrop,
                   ),
-                  const SizedBox(height: 16),
-                  _SectionLabel(
-                    icon: Icons.science_outlined,
-                    label: l10n.t('marketSelectCategory'),
+                  const SizedBox(height: 18),
+                  _FilterSectionHeader(
+                    title: l10n.t('marketSelectCategory'),
                     hint: l10n.t('marketSelectCategoryHint'),
-                    onImage: true,
                   ),
                   const SizedBox(height: 10),
                   _FilterChipRow(
@@ -178,68 +120,151 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
                     iconColorOf: (_) => AppColors.primaryGreen,
                     onSelect: provider.setCategory,
                   ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _FilterDropdown<String?>(
+                          icon: Icons.apartment_outlined,
+                          value: provider.selectedCompany,
+                          hint: l10n.t('marketAllCompanies'),
+                          items: [
+                            DropdownMenuItem<String?>(
+                              value: null,
+                              child: Text(l10n.t('marketAllCompanies')),
+                            ),
+                            ...provider.companies.map(
+                              (company) => DropdownMenuItem<String?>(
+                                value: company,
+                                child: Text(company),
+                              ),
+                            ),
+                          ],
+                          onChanged: provider.setCompany,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _FilterDropdown<MarketplaceSort>(
+                          icon: Icons.sort_rounded,
+                          value: provider.sort,
+                          hint: l10n.t('marketSortRelevant'),
+                          items: [
+                            DropdownMenuItem(
+                              value: MarketplaceSort.relevant,
+                              child: Text(l10n.t('marketSortRelevant')),
+                            ),
+                            DropdownMenuItem(
+                              value: MarketplaceSort.priceLow,
+                              child: Text(l10n.t('marketSortPriceLow')),
+                            ),
+                            DropdownMenuItem(
+                              value: MarketplaceSort.priceHigh,
+                              child: Text(l10n.t('marketSortPriceHigh')),
+                            ),
+                            DropdownMenuItem(
+                              value: MarketplaceSort.name,
+                              child: Text(l10n.t('marketSortName')),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) provider.setSort(value);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const BannerAdWidget(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                  ),
+                  const SizedBox(height: 8),
+                  if (provider.isLoading && provider.allProducts.isEmpty)
+                    const LoadingStateCard()
+                  else if (provider.hasError && provider.allProducts.isEmpty)
+                    ErrorStateCard(
+                      onRetry: () => provider.load(forceRefresh: true),
+                    )
+                  else if (products.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Text(
+                          provider.allProducts.isEmpty
+                              ? l10n.t('marketEmpty')
+                              : l10n.t('marketNoProducts'),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color:
+                                isDark ? Colors.white70 : AppColors.mutedText,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    )
+                  else ...[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.t('marketAvailableProducts'),
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF152018),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          l10n.t(
+                            'marketProductsCount',
+                            params: {'count': products.length},
+                          ),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppColors.lightGreen
+                                : AppColors.primaryGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.t('marketProductsSubtitle'),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.35,
+                        color: isDark
+                            ? Colors.white60
+                            : const Color(0xFF6B7A6E),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...List.generate(products.length, (index) {
+                      final product = products[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: index == products.length - 1 ? 0 : 12,
+                        ),
+                        child: ProductCard(
+                          product: product,
+                          languageCode: lang,
+                          isFavorite: provider.isFavorite(product.id),
+                          onFavoriteTap: () =>
+                              provider.toggleFavorite(product.id),
+                          onTap: () => _openDetail(product),
+                        ),
+                      );
+                    }),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-            _SectionLabel(
-              icon: Icons.apartment_outlined,
-              label: l10n.t('marketFilterCompany'),
-            ),
-            const SizedBox(height: 8),
-            _CompanyDropdown(
-              value: provider.selectedCompany,
-              companies: provider.companies,
-              allLabel: l10n.t('marketAllCompanies'),
-              onChanged: provider.setCompany,
-            ),
-            const SizedBox(height: 10),
-            const BannerAdWidget(
-              padding: EdgeInsets.symmetric(vertical: 4),
-            ),
-            const SizedBox(height: 8),
-            if (provider.isLoading && provider.allProducts.isEmpty)
-              const LoadingStateCard()
-            else if (provider.hasError && provider.allProducts.isEmpty)
-              ErrorStateCard(
-                onRetry: () => provider.load(forceRefresh: true),
-              )
-            else if (products.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 48),
-                child: Center(
-                  child: Text(
-                    provider.allProducts.isEmpty
-                        ? l10n.t('marketEmpty')
-                        : l10n.t('marketNoProducts'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : AppColors.mutedText,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-              )
-            else
-              ...List.generate(products.length, (index) {
-                final product = products[index];
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: index == products.length - 1 ? 0 : 12,
-                  ),
-                  child: ProductCard(
-                    product: product,
-                    languageCode: lang,
-                    isFavorite: provider.isFavorite(product.id),
-                    onFavoriteTap: () =>
-                        provider.toggleFavorite(product.id),
-                    onTap: () => _openDetail(product),
-                    onContactTap: product.primaryPhone == null
-                        ? null
-                        : () => _callPhone(context, product.primaryPhone!),
-                  ),
-                );
-              }),
           ],
         ),
       ),
@@ -290,61 +315,106 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
   }
 }
 
-class _FilterScenicCard extends StatelessWidget {
-  const _FilterScenicCard({required this.child});
+class _MarketplaceHeroHeader extends StatelessWidget {
+  const _MarketplaceHeroHeader({
+    required this.topInset,
+    required this.horizontalPadding,
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.hint,
+  });
 
-  final Widget child;
+  final double topInset;
+  final double horizontalPadding;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final String hint;
 
-  static const _fieldAsset =
-      'assets/images/marketplace/filter_crops_light.png';
+  static const _headerAsset =
+      'assets/images/marketplace/header_banner.jpg';
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Material(
-      elevation: 4,
-      shadowColor: Colors.black.withValues(alpha: isDark ? 0.4 : 0.16),
-      borderRadius: BorderRadius.circular(24),
-      clipBehavior: Clip.antiAlias,
+    return SizedBox(
+      height: topInset + 60 + 78,
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              _fieldAsset,
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              errorBuilder: (_, __, ___) => Container(
-                color: isDark
-                    ? AppColors.darkSurfaceMid
-                    : const Color(0xFFC8E6C9),
+          Image.asset(
+            _headerAsset,
+            fit: BoxFit.cover,
+            alignment: const Alignment(0, -0.2),
+            errorBuilder: (_, __, ___) => Container(
+              color: isDark
+                  ? AppColors.darkSurfaceMid
+                  : const Color(0xFF1B5E20),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.45),
+                  Colors.black.withValues(alpha: 0.28),
+                  Colors.black.withValues(alpha: 0.18),
+                ],
               ),
             ),
           ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: isDark
-                      ? [
-                          const Color(0xFF0A160E).withValues(alpha: 0.78),
-                          const Color(0xFF102017).withValues(alpha: 0.72),
-                          const Color(0xFF1B5E20).withValues(alpha: 0.55),
-                        ]
-                      : [
-                          Colors.white.withValues(alpha: 0.38),
-                          const Color(0xFF1B5E20).withValues(alpha: 0.18),
-                          Colors.black.withValues(alpha: 0.22),
-                        ],
+          Positioned(
+            left: horizontalPadding,
+            right: horizontalPadding,
+            bottom: 16,
+            child: Material(
+              color: Colors.white,
+              elevation: 6,
+              shadowColor: Colors.black.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(28),
+              child: TextField(
+                controller: searchController,
+                onChanged: onSearchChanged,
+                style: const TextStyle(
+                  color: AppColors.darkText,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: const TextStyle(
+                    color: AppColors.mutedText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.mutedText,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    borderSide: const BorderSide(
+                      color: AppColors.primaryGreen,
+                      width: 1.4,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-            child: child,
           ),
         ],
       ),
@@ -352,69 +422,41 @@ class _FilterScenicCard extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({
-    required this.icon,
-    required this.label,
-    this.hint,
-    this.onImage = false,
+class _FilterSectionHeader extends StatelessWidget {
+  const _FilterSectionHeader({
+    required this.title,
+    required this.hint,
   });
 
-  final IconData icon;
-  final String label;
-  final String? hint;
-  /// When true, label sits on the crop filter image (use light text in dark).
-  final bool onImage;
+  final String title;
+  final String hint;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // On light image card in light mode keep dark text.
-    final titleColor = onImage
-        ? (isDark ? Colors.white : const Color(0xFF1B2E20))
-        : (isDark ? Colors.white : const Color(0xFF1B2E20));
-    final hintColor = onImage
-        ? (isDark
-            ? Colors.white.withValues(alpha: 0.78)
-            : const Color(0xFF5A6B5E))
-        : (isDark ? Colors.white70 : const Color(0xFF5A6B5E));
-    final iconColor = isDark && onImage
-        ? const Color(0xFF81C784)
-        : AppColors.primaryGreen;
+    final titleColor = isDark ? Colors.white : const Color(0xFF1B2E20);
+    final hintColor =
+        isDark ? Colors.white60 : const Color(0xFF5A6B5E);
 
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 1),
-          child: Icon(icon, size: 18, color: iconColor),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: titleColor,
+          ),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w800,
-                  color: titleColor,
-                ),
-              ),
-              if (hint != null && hint!.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  hint!,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    height: 1.25,
-                    fontWeight: FontWeight.w500,
-                    color: hintColor,
-                  ),
-                ),
-              ],
-            ],
+        const SizedBox(height: 2),
+        Text(
+          hint,
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.3,
+            fontWeight: FontWeight.w500,
+            color: hintColor,
           ),
         ),
       ],
@@ -453,9 +495,13 @@ class _FilterChipRow extends StatelessWidget {
             child: _MarketChip(
               label: allLabel,
               selected: selected == null,
-              leading: selected == null
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                  : null,
+              leading: Icon(
+                Icons.eco_rounded,
+                size: 15,
+                color: selected == null
+                    ? Colors.white
+                    : AppColors.primaryGreen,
+              ),
               onTap: () => onSelect(null),
             ),
           ),
@@ -545,33 +591,34 @@ class _MarketChip extends StatelessWidget {
   }
 }
 
-class _CompanyDropdown extends StatelessWidget {
-  const _CompanyDropdown({
+class _FilterDropdown<T> extends StatelessWidget {
+  const _FilterDropdown({
+    required this.icon,
     required this.value,
-    required this.companies,
-    required this.allLabel,
+    required this.hint,
+    required this.items,
     required this.onChanged,
   });
 
-  final String? value;
-  final List<String> companies;
-  final String allLabel;
-  final ValueChanged<String?> onChanged;
+  final IconData icon;
+  final T? value;
+  final String hint;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurfaceMid : Colors.white;
-    final border =
-        isDark ? Colors.white24 : const Color(0xFFD5DED5);
+    final border = isDark ? Colors.white24 : const Color(0xFFD5DED5);
     final fg = isDark ? Colors.white : const Color(0xFF223028);
     final iconColor = isDark ? Colors.white70 : const Color(0xFF5A6B5E);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
@@ -582,7 +629,7 @@ class _CompanyDropdown extends StatelessWidget {
         ],
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String?>(
+        child: DropdownButton<T>(
           value: value,
           isExpanded: true,
           dropdownColor: bg,
@@ -590,34 +637,51 @@ class _CompanyDropdown extends StatelessWidget {
           style: TextStyle(
             color: fg,
             fontWeight: FontWeight.w600,
-            fontSize: 15,
+            fontSize: 13,
           ),
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
             color: iconColor,
           ),
-          hint: Text(
-            allLabel,
-            style: TextStyle(
-              color: fg,
-              fontWeight: FontWeight.w600,
-            ),
+          hint: Row(
+            children: [
+              Icon(icon, size: 16, color: iconColor),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  hint,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: fg,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
           ),
-          items: [
-            DropdownMenuItem<String?>(
-              value: null,
-              child: Text(
-                allLabel,
-                style: TextStyle(fontWeight: FontWeight.w600, color: fg),
-              ),
-            ),
-            ...companies.map(
-              (company) => DropdownMenuItem<String?>(
-                value: company,
-                child: Text(company, style: TextStyle(color: fg)),
-              ),
-            ),
-          ],
+          selectedItemBuilder: (context) {
+            return items.map((item) {
+              return Row(
+                children: [
+                  Icon(icon, size: 16, color: iconColor),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: DefaultTextStyle(
+                      style: TextStyle(
+                        color: fg,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      child: item.child,
+                    ),
+                  ),
+                ],
+              );
+            }).toList();
+          },
+          items: items,
           onChanged: onChanged,
         ),
       ),
