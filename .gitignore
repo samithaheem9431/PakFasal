@@ -56,4 +56,3 @@ config/app_config.json
 .env.*
 !.env.example
 !config/app_config.example.json
-

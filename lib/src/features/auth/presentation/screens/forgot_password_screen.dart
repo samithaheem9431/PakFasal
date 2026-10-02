@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/auth_form_provider.dart';
 import '../providers/auth_session_controller.dart';
+import '../validators/auth_validators.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -296,18 +297,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                                   prefixIcon: const Icon(
                                                       Icons.email_outlined),
                                                 ),
-                                                validator: (value) {
-                                                  if (value == null ||
-                                                      value.trim().isEmpty) {
-                                                    return l10n
-                                                        .t('emailRequired');
-                                                  }
-                                                  if (!value.contains('@')) {
-                                                    return l10n
-                                                        .t('invalidEmail');
-                                                  }
-                                                  return null;
-                                                },
+                                                validator: (value) =>
+                                                    AuthValidators.email(
+                                                  value,
+                                                  l10n,
+                                                ),
                                               ),
                                               const SizedBox(height: 24),
                                               _GreenButton(

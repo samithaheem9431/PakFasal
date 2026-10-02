@@ -6,6 +6,7 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/auth_form_provider.dart';
 import '../providers/auth_session_controller.dart';
+import '../validators/auth_validators.dart';
 import '../widgets/auth_shared_widgets.dart';
 
 class SignupScreen extends StatelessWidget {
@@ -241,16 +242,8 @@ class _SignupViewState extends State<_SignupView>
                                       prefixIcon: Icons.email_outlined,
                                       metrics: m,
                                     ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return l10n.t('emailRequired');
-                                      }
-                                      if (!value.contains('@')) {
-                                        return l10n.t('invalidEmail');
-                                      }
-                                      return null;
-                                    },
+                                    validator: (value) =>
+                                        AuthValidators.email(value, l10n),
                                   ),
                                   SizedBox(height: m.gapSm + 2),
                                   AuthFieldLabel(
@@ -283,12 +276,11 @@ class _SignupViewState extends State<_SignupView>
                                         ),
                                       ),
                                     ),
-                                    validator: (value) {
-                                      if (value == null || value.length < 6) {
-                                        return l10n.t('weakPasswordForm');
-                                      }
-                                      return null;
-                                    },
+                                    validator: (value) =>
+                                        AuthValidators.signupPassword(
+                                      value,
+                                      l10n,
+                                    ),
                                   ),
                                   SizedBox(height: m.gapSm + 2),
                                   AuthFieldLabel(
@@ -322,17 +314,12 @@ class _SignupViewState extends State<_SignupView>
                                         ),
                                       ),
                                     ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return l10n.t(
-                                          'confirmPasswordRequired',
-                                        );
-                                      }
-                                      if (value != _passwordController.text) {
-                                        return l10n.t('passwordsMismatch');
-                                      }
-                                      return null;
-                                    },
+                                    validator: (value) =>
+                                        AuthValidators.confirmPassword(
+                                      value,
+                                      _passwordController.text,
+                                      l10n,
+                                    ),
                                   ),
                                   SizedBox(height: m.gapSm + 2),
                                   AuthFieldLabel(l10n.t('phone'), metrics: m),

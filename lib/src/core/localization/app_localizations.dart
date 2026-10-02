@@ -750,8 +750,14 @@ class AppLocalizations {
       'emailRequired': 'Email is required',
       'usernameRequired': 'Username is required',
       'usernameMinLength': 'Username must be at least 3 characters',
-      'passwordMin': 'Minimum 6 characters required',
-      'weakPasswordForm': 'Password must be at least 6 characters',
+      'passwordRequired': 'Password is required',
+      'passwordMin': 'Password must be at least 8 characters',
+      'passwordNeedsUpper': 'Password must include an uppercase letter',
+      'passwordNeedsLower': 'Password must include a lowercase letter',
+      'passwordNeedsSpecial':
+          'Password must include a special character (!@#\$%^&* etc.)',
+      'weakPasswordForm':
+          'Password must be at least 8 characters with upper, lower & special character',
       'invalidEmail': 'Enter a valid email address',
       'userDisabled': 'This account has been disabled.',
       'userNotFound': 'No account found for this email.',
@@ -1724,8 +1730,14 @@ class AppLocalizations {
       'emailRequired': 'ای میل درکار ہے',
       'usernameRequired': 'صارف نام درکار ہے',
       'usernameMinLength': 'صارف نام کم از کم 3 حروف کا ہونا چاہیے',
-      'passwordMin': 'کم از کم 6 حروف درکار ہیں',
-      'weakPasswordForm': 'پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے',
+      'passwordRequired': 'پاس ورڈ درکار ہے',
+      'passwordMin': 'پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے',
+      'passwordNeedsUpper': 'پاس ورڈ میں بڑا حرف (A-Z) ضروری ہے',
+      'passwordNeedsLower': 'پاس ورڈ میں چھوٹا حرف (a-z) ضروری ہے',
+      'passwordNeedsSpecial':
+          'پاس ورڈ میں خصوصی نشان (!@#\$%^&* وغیرہ) ضروری ہے',
+      'weakPasswordForm':
+          'پاس ورڈ کم از کم 8 حروف، بڑا/چھوٹا حرف اور خصوصی نشان والا ہونا چاہیے',
       'invalidEmail': 'درست ای میل درج کریں',
       'userDisabled': 'یہ اکاؤنٹ غیر فعال کردیا گیا ہے۔',
       'userNotFound': 'اس ای میل پر کوئی اکاؤنٹ نہیں ملا۔',

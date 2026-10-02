@@ -9,6 +9,7 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/auth_form_provider.dart';
 import '../providers/auth_session_controller.dart';
+import '../validators/auth_validators.dart';
 import '../widgets/auth_shared_widgets.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -345,16 +346,8 @@ class _LoginViewState extends State<_LoginView>
                                       prefixIcon: Icons.email_outlined,
                                       metrics: m,
                                     ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return l10n.t('emailRequired');
-                                      }
-                                      if (!value.contains('@')) {
-                                        return l10n.t('invalidEmail');
-                                      }
-                                      return null;
-                                    },
+                                    validator: (value) =>
+                                        AuthValidators.email(value, l10n),
                                   ),
                                   SizedBox(height: m.gapMd),
                                   AuthFieldLabel(
@@ -395,12 +388,11 @@ class _LoginViewState extends State<_LoginView>
                                         ),
                                       ),
                                     ),
-                                    validator: (value) {
-                                      if (value == null || value.length < 6) {
-                                        return l10n.t('passwordMin');
-                                      }
-                                      return null;
-                                    },
+                                    validator: (value) =>
+                                        AuthValidators.loginPassword(
+                                      value,
+                                      l10n,
+                                    ),
                                   ),
                                   SizedBox(height: m.gapSm + 2),
                                   Row(
