@@ -10,6 +10,6 @@
   "CLOUDINARY_CLOUD_NAME": "",
   "CLOUDINARY_UPLOAD_PRESET": "",
   "GOOGLE_WEB_CLIENT_ID": "",
-  "PRIVACY_POLICY_URL": "https://samithaheem9431.github.io/PakFasal/privacy/",
-  "ACCOUNT_DELETION_URL": "https://samithaheem9431.github.io/PakFasal/delete-account/"
+  "PRIVACY_POLICY_URL": "https://samithaheem9431.github.io/PakFasal/docs/privacy/",
+  "ACCOUNT_DELETION_URL": "https://samithaheem9431.github.io/PakFasal/docs/delete-account/"
 }

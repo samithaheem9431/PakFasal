@@ -3,9 +3,9 @@
 ## Done in the app
 
 - In-app **Privacy Policy** screen: About → Privacy Policy, Profile → Privacy Policy
-- Online defaults (GitHub Pages):
-  - https://samithaheem9431.github.io/PakFasal/privacy/
-  - https://samithaheem9431.github.io/PakFasal/delete-account/
+- Online defaults (GitHub Pages — site published from repo root):
+  - https://samithaheem9431.github.io/PakFasal/docs/privacy/
+  - https://samithaheem9431.github.io/PakFasal/docs/delete-account/
 - Pages files: `docs/privacy/`, `docs/delete-account/`, `docs/index.html`
 - Account delete also wipes **crop plantings** (plus profile + sensor readings)
 - Unused signup **phone** field removed

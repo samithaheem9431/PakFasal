@@ -72,12 +72,13 @@ class AppConfig {
     defaultValue: '',
   );
 
-  /// Default public URLs for Play Console (GitHub Pages on PakFasal repo).
-  /// Override via config if you later move to a custom domain.
+  /// Default public URLs for Play Console (GitHub Pages).
+  /// Repo Pages is published from branch root (`/`), so paths include `/docs/`.
+  /// If you later set Pages folder to `/docs`, drop the `/docs` segment.
   static const String _defaultPrivacyPolicyUrl =
-      'https://samithaheem9431.github.io/PakFasal/privacy/';
+      'https://samithaheem9431.github.io/PakFasal/docs/privacy/';
   static const String _defaultAccountDeletionUrl =
-      'https://samithaheem9431.github.io/PakFasal/delete-account/';
+      'https://samithaheem9431.github.io/PakFasal/docs/delete-account/';
 
   static Map<String, String> _runtime = const <String, String>{};
   static bool _initialised = false;
