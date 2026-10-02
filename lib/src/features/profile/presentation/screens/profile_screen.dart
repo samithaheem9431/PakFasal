@@ -398,11 +398,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     delayMs: 230,
                     child: _AccountActionsCard(
                       isDark: isDark,
-                      privacyPolicyLabel: l10n.t('privacyPolicyButton'),
-                      onPrivacyPolicy: () => Navigator.pushNamed(
-                        context,
-                        AppRoutes.privacyPolicy,
-                      ),
                       signOutLabel: l10n.t('authSignOut'),
                       onSignOut: auth.isBusy
                           ? null
@@ -1114,8 +1109,6 @@ class _SettingsRow extends StatelessWidget {
 class _AccountActionsCard extends StatelessWidget {
   const _AccountActionsCard({
     required this.isDark,
-    required this.privacyPolicyLabel,
-    required this.onPrivacyPolicy,
     required this.signOutLabel,
     required this.onSignOut,
     required this.showDeleteAccount,
@@ -1125,8 +1118,6 @@ class _AccountActionsCard extends StatelessWidget {
   });
 
   final bool isDark;
-  final String privacyPolicyLabel;
-  final VoidCallback onPrivacyPolicy;
   final String signOutLabel;
   final VoidCallback? onSignOut;
   final bool showDeleteAccount;
@@ -1142,15 +1133,6 @@ class _AccountActionsCard extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         child: Column(
           children: [
-            _DangerActionButton(
-              label: privacyPolicyLabel,
-              icon: Icons.privacy_tip_outlined,
-              onPressed: onPrivacyPolicy,
-              isDark: isDark,
-              filled: false,
-              treatAsNeutral: true,
-            ),
-            const SizedBox(height: 10),
             _DangerActionButton(
               label: signOutLabel,
               icon: Icons.logout_rounded,
@@ -1184,7 +1166,6 @@ class _DangerActionButton extends StatelessWidget {
     required this.isDark,
     required this.filled,
     this.showSpinner = false,
-    this.treatAsNeutral = false,
   });
 
   final String label;
@@ -1193,29 +1174,16 @@ class _DangerActionButton extends StatelessWidget {
   final bool isDark;
   final bool filled;
   final bool showSpinner;
-  final bool treatAsNeutral;
 
   @override
   Widget build(BuildContext context) {
-    final fg = treatAsNeutral
-        ? (isDark ? Colors.white : AppColors.primaryGreen)
-        : (isDark ? Colors.white : AppColors.error);
+    final fg = isDark ? Colors.white : AppColors.error;
     final bg = filled
-        ? (isDark
-            ? (treatAsNeutral
-                ? const Color(0xFF1E3A28)
-                : const Color(0xFF3A2222))
-            : (treatAsNeutral
-                ? AppColors.paleGreen
-                : _ProfileScreenState._signOutBg))
+        ? (isDark ? const Color(0xFF3A2222) : _ProfileScreenState._signOutBg)
         : Colors.transparent;
-    final border = treatAsNeutral
-        ? (isDark
-            ? AppColors.primaryGreen.withValues(alpha: 0.45)
-            : AppColors.primaryGreen.withValues(alpha: 0.4))
-        : (isDark
-            ? const Color(0xFF6B3A3A)
-            : _ProfileScreenState._signOutBorder);
+    final border = isDark
+        ? const Color(0xFF6B3A3A)
+        : _ProfileScreenState._signOutBorder;
 
     return SizedBox(
       width: double.infinity,

@@ -27,14 +27,30 @@ class BiometricLockController extends ChangeNotifier
   bool _deviceSupported = false;
   bool _busy = false;
   bool _hasRegisteredSession = false;
+  /// Keeps unlock UI off until splash finishes so branding shows first.
+  bool _suppressUntilSplashEnds = true;
   String? _userId;
   String? _lastError;
 
   bool get isEnabled => _enabled;
-  bool get isLocked => _enabled && _locked && _hasRegisteredSession;
+  bool get isLocked =>
+      _enabled &&
+      _locked &&
+      _hasRegisteredSession &&
+      !_suppressUntilSplashEnds;
   bool get isDeviceSupported => _deviceSupported;
   bool get isBusy => _busy;
   String? get lastError => _lastError;
+
+  /// Call when splash is about to navigate away (cold start only).
+  void releaseSplashGate() {
+    if (!_suppressUntilSplashEnds) return;
+    _suppressUntilSplashEnds = false;
+    // Defer rebuild — may run from SplashScreen.dispose while the tree is locked.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
 
   String _prefKeyFor(String uid) => 'biometric_app_lock_enabled_$uid';
 

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/layout/responsive.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
+import '../../../auth/presentation/providers/biometric_lock_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,6 +45,13 @@ class _SplashScreenState extends State<SplashScreen>
   final Color _primaryNeon = const Color(0xFF4AB74B);
   late final List<_Particle> _particles;
   Timer? _navTimer;
+  BiometricLockController? _biometricLock;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _biometricLock = context.read<BiometricLockController>();
+  }
 
   @override
   void initState() {
@@ -174,6 +182,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _navTimer?.cancel();
+    // Safety: never leave the unlock gate suppressed if splash exits early.
+    _biometricLock?.releaseSplashGate();
     _pulseController.dispose();
     _fadeController.dispose();
     _ringController.dispose();

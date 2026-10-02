@@ -59,5 +59,6 @@ config/app_config.json
 
 # Android release signing (never commit)
 android/key.properties
+android/keystore-credentials.txt
 *.jks
 *.keystore
