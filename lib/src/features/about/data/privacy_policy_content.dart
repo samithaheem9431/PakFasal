@@ -15,7 +15,7 @@ class PrivacyPolicyContent {
     PrivacySection(
       title: 'Who we are',
       body:
-          'PakFasal (package pk.pakfasal.app) helps Pakistani farmers with weather, '
+          'PakFasal helps Pakistani farmers with weather, '
           'soil advice, learning, marketplace discovery, crop calendars, and related tools. '
           'This policy explains what data we collect, why, and how you can control it.',
     ),
@@ -82,7 +82,7 @@ class PrivacyPolicyContent {
     PrivacySection(
       title: 'ہم کون ہیں',
       body:
-          'پاک فصل (pk.pakfasal.app) پاکستانی کسانوں کے لیے موسم، مٹی کی مشورت، تعلیم، '
+          'پاک فصل پاکستانی کسانوں کے لیے موسم، مٹی کی مشورت، تعلیم، '
           'مارکیٹ پلیس، فصل کیلنڈر اور متعلقہ ٹولز فراہم کرتی ہے۔ یہ پالیسی بتاتی ہے کہ ہم کون سا '
           'ڈیٹا جمع کرتے ہیں، کیوں، اور آپ اسے کیسے کنٹرول کر سکتے ہیں۔',
     ),
