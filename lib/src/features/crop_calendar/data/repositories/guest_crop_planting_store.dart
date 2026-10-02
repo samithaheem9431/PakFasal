@@ -116,6 +116,10 @@ class GuestCropPlantingStore {
     await _persist(list);
   }
 
+  Future<void> clearAll() async {
+    await _persist(const []);
+  }
+
   Future<void> _persist(List<CropPlanting> plantings) async {
     final sorted = [...plantings]
       ..sort((a, b) => b.sowingDate.compareTo(a.sowingDate));

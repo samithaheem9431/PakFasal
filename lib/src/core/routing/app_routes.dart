@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/auth_gate.dart';
 import '../../features/about/presentation/screens/about_pakfasal_screen.dart';
+import '../../features/about/presentation/screens/privacy_policy_screen.dart';
 import '../../features/ai_query/presentation/screens/ai_query_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -39,6 +40,7 @@ class AppRoutes {
   static const profitCalculator = '/profit-calculator';
   static const viewAllModules = '/view-all-modules';
   static const about = '/about';
+  static const privacyPolicy = '/privacy-policy';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -94,6 +96,11 @@ class AppRoutes {
       case about:
         return _materialRoute(
           const AuthGate(child: AboutPakFasalScreen()),
+          settings,
+        );
+      case privacyPolicy:
+        return _materialRoute(
+          const AuthGate(child: PrivacyPolicyScreen()),
           settings,
         );
       default:

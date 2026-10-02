@@ -35,7 +35,6 @@ class _SignupViewState extends State<_SignupView>
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
-  final _phoneController = TextEditingController();
 
   late final AnimationController _entryController;
   late final Animation<double> _fadeHeader;
@@ -73,7 +72,6 @@ class _SignupViewState extends State<_SignupView>
     _emailController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
-    _phoneController.dispose();
     _entryController.dispose();
     super.dispose();
   }
@@ -291,7 +289,7 @@ class _SignupViewState extends State<_SignupView>
                                   TextFormField(
                                     controller: _confirmController,
                                     obscureText: form.obscureConfirmPassword,
-                                    textInputAction: TextInputAction.next,
+                                    textInputAction: TextInputAction.done,
                                     style: TextStyle(
                                       fontSize: m.fieldFontSize,
                                     ),
@@ -320,37 +318,6 @@ class _SignupViewState extends State<_SignupView>
                                       _passwordController.text,
                                       l10n,
                                     ),
-                                  ),
-                                  SizedBox(height: m.gapSm + 2),
-                                  AuthFieldLabel(l10n.t('phone'), metrics: m),
-                                  SizedBox(height: m.gapXs + 1),
-                                  TextFormField(
-                                    controller: _phoneController,
-                                    keyboardType: TextInputType.phone,
-                                    textInputAction: TextInputAction.done,
-                                    style: TextStyle(
-                                      fontSize: m.fieldFontSize,
-                                    ),
-                                    scrollPadding:
-                                        const EdgeInsets.only(bottom: 72),
-                                    decoration: authInputDecoration(
-                                      hintText: l10n.t('phoneHint'),
-                                      prefixIcon: Icons.smartphone_rounded,
-                                      metrics: m,
-                                    ),
-                                    validator: (value) {
-                                      final phone = value?.trim() ?? '';
-                                      if (phone.isEmpty) return null;
-                                      final digitsOnly = phone.replaceAll(
-                                        RegExp(r'\D'),
-                                        '',
-                                      );
-                                      if (digitsOnly.length < 10 ||
-                                          digitsOnly.length > 15) {
-                                        return l10n.t('invalidPhone');
-                                      }
-                                      return null;
-                                    },
                                   ),
                                   SizedBox(height: m.gapLg),
                                   AuthGradientButton(

@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 
@@ -402,6 +403,26 @@ class _AboutPakFasalScreenState extends State<AboutPakFasalScreen>
                   style: textTheme.bodySmall?.copyWith(
                     height: 1.45,
                     color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.privacyPolicy,
+                  ),
+                  icon: const Icon(Icons.privacy_tip_outlined, size: 18),
+                  label: Text(l10n.t('privacyPolicyButton')),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor:
+                        isDark ? AppColors.white : AppColors.primaryGreen,
+                    side: BorderSide(
+                      color: (isDark
+                              ? AppColors.white
+                              : AppColors.primaryGreen)
+                          .withValues(alpha: 0.45),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
                 const SizedBox(height: 14),

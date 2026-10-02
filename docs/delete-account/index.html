@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PakFasal — Delete Account</title>
+  <style>
+    :root {
+      --green: #2e7d32;
+      --text: #1b1b1b;
+      --muted: #555;
+      --bg: #f6f8f6;
+      --card: #fff;
+      --danger: #c62828;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #e8f5e9 0%, var(--bg) 180px);
+      line-height: 1.6;
+    }
+    main { max-width: 640px; margin: 0 auto; padding: 28px 18px 64px; }
+    h1 { color: var(--green); margin: 0 0 8px; font-size: 1.6rem; }
+    .meta { color: var(--muted); margin-bottom: 1rem; }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    ol { padding-left: 1.2rem; }
+    a { color: var(--green); }
+    .btn {
+      display: inline-block;
+      margin-top: 12px;
+      background: var(--danger);
+      color: #fff !important;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .ur { direction: rtl; text-align: right; margin-top: 2rem; border-top: 1px solid #dce8dd; padding-top: 1.2rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Delete your PakFasal account</h1>
+      <p class="meta">App: PakFasal · Package: <code>pk.pakfasal.app</code></p>
+
+      <p>
+        If you created an account in PakFasal, you can request permanent deletion of your account
+        and associated app data. Account freezing is not used as a substitute.
+      </p>
+
+      <h2>Option 1 — In the app (fastest)</h2>
+      <ol>
+        <li>Open PakFasal and sign in.</li>
+        <li>Go to <strong>Profile</strong>.</li>
+        <li>Tap <strong>Delete account</strong> and confirm.</li>
+      </ol>
+      <p>
+        This deletes your Firebase Authentication user and cloud data we store for the app
+        (profile document, sensor readings, crop plantings) plus local auth preferences on the device.
+      </p>
+
+      <h2>Option 2 — Request by email (outside the app)</h2>
+      <p>
+        Email us from the address linked to your PakFasal account.
+        We will verify ownership and delete the account and associated data.
+      </p>
+      <p>
+        <strong>To:</strong> <a href="mailto:support@pakfasal.app">support@pakfasal.app</a><br />
+        <strong>Subject:</strong> PakFasal Account Deletion<br />
+        <strong>Include:</strong> the email used to sign up, and (if known) your display name.
+      </p>
+      <a class="btn" href="mailto:support@pakfasal.app?subject=PakFasal%20Account%20Deletion&amp;body=Please%20delete%20my%20PakFasal%20account.%0A%0AAccount%20email%3A%20%0ADisplay%20name%20(optional)%3A%20%0A">
+        Send deletion request
+      </a>
+      <p class="meta" style="margin-top:14px">
+        Typical processing time: within 7 days after we confirm the request.
+        Some backups or third-party logs (e.g. ads/crash providers) may take longer to expire under their policies.
+      </p>
+
+      <p><a href="../privacy/">Read our Privacy Policy</a></p>
+
+      <div class="ur" lang="ur">
+        <h2>اکاؤنٹ حذف کریں</h2>
+        <p>
+          ایپ میں: پروفائل → اکاؤنٹ حذف کریں۔<br />
+          ایپ کے باہر: اپنے رجسٹرڈ ای میل سے
+          <a href="mailto:support@pakfasal.app">support@pakfasal.app</a>
+          پر موضوع “PakFasal Account Deletion” کے ساتھ درخواست بھیجیں۔
+        </p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

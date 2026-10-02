@@ -219,6 +219,32 @@ class CropPlantingRepository {
     await ref.delete();
   }
 
+  /// Deletes every cloud planting owned by the signed-in user (account wipe).
+  Future<void> clearAllPlantingsForCurrentUser() async {
+    final ownerId = currentOwnerId;
+    if (ownerId == null) {
+      await _guestStore.clearAll();
+      return;
+    }
+
+    final snap = await _firestore
+        .collection(_collection)
+        .where('ownerId', isEqualTo: ownerId)
+        .get();
+    if (snap.docs.isEmpty) return;
+
+    // Firestore batches are capped at 500 operations.
+    const chunk = 450;
+    for (var i = 0; i < snap.docs.length; i += chunk) {
+      final batch = _firestore.batch();
+      final end = (i + chunk < snap.docs.length) ? i + chunk : snap.docs.length;
+      for (var j = i; j < end; j++) {
+        batch.delete(snap.docs[j].reference);
+      }
+      await batch.commit();
+    }
+  }
+
   CropPlanting? _fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data();
     if (data == null) return null;

@@ -672,6 +672,11 @@ class AppLocalizations {
           'Quality agricultural products from trusted companies.',
       'marketViewDetails': 'View details',
       'marketOfflineCached': 'Showing cached products while offline.',
+      'marketUpdating': 'Updating products in the background…',
+      'marketClearFilters': 'Clear filters',
+      'marketPreviousPage': 'Previous',
+      'marketNextPage': 'Next',
+      'marketPageOf': 'Page {page} of {total}',
       'marketNoProducts': 'No products match your search or filters.',
       'marketEmpty': 'No marketplace products yet. Check back soon.',
       'marketCompany': 'Company',
@@ -998,7 +1003,15 @@ class AppLocalizations {
       'aboutAppInfoTitle': 'App info',
       'aboutVersionLabel': 'Version {version}',
       'aboutPrivacyNote':
-          'PakFasal uses your account and location only to personalize farming tools. We do not sell your personal data.',
+          'PakFasal uses your account, location, and optional profile data to personalize farming tools. Ads (AdMob) and crash reports may use device identifiers. We do not sell your personal data. See Privacy Policy for details.',
+      'privacyPolicyTitle': 'Privacy Policy',
+      'privacyPolicyIntro':
+          'Please read how PakFasal collects, uses, and shares information.',
+      'privacyPolicyUpdated': 'Last updated: {date}',
+      'privacyPolicyOpenOnline': 'Open online Privacy Policy',
+      'privacyPolicyButton': 'Privacy Policy',
+      'accountDeletionWebLink': 'Account deletion (web)',
+      'aboutCouldNotOpenLink': 'Could not open the link.',
       'aboutShareMessage':
           'Try PakFasal — smart farming for Pakistani farmers. Weather, soil advice, learning, and more.',
       'aboutRateUnavailable': 'Store listing is not available yet.',
@@ -1651,6 +1664,11 @@ class AppLocalizations {
       'marketViewDetails': 'تفصیل دیکھیں',
       'marketOfflineCached':
           'آف لائن حالت میں محفوظ شدہ پروڈکٹس دکھائی جا رہی ہیں۔',
+      'marketUpdating': 'پروڈکٹس پسِ منظر میں اپ ڈیٹ ہو رہی ہیں…',
+      'marketClearFilters': 'فلٹرز صاف کریں',
+      'marketPreviousPage': 'پچھلا',
+      'marketNextPage': 'اگلا',
+      'marketPageOf': 'صفحہ {page} از {total}',
       'marketNoProducts': 'تلاش یا فلٹر کے مطابق کوئی پروڈکٹ نہیں ملی۔',
       'marketEmpty': 'ابھی مارکیٹ پلیس میں کوئی پروڈکٹ نہیں۔ جلد چیک کریں۔',
       'marketCompany': 'کمپنی',
@@ -1979,7 +1997,15 @@ class AppLocalizations {
       'aboutAppInfoTitle': 'ایپ کی معلومات',
       'aboutVersionLabel': 'ورژن {version}',
       'aboutPrivacyNote':
-          'پاک فصل آپ کے اکاؤنٹ اور مقام صرف زرعی ٹولز ذاتی بنانے کے لیے استعمال کرتی ہے۔ ہم آپ کا ذاتی ڈیٹا فروخت نہیں کرتے۔',
+          'پاک فصل آپ کے اکاؤنٹ، مقام اور اختیاری پروفائل ڈیٹا سے زرعی ٹولز ذاتی بناتی ہے۔ اشتہارات (AdMob) اور کریش رپورٹس ڈیوائس شناخت کنندگان استعمال کر سکتی ہیں۔ ہم ذاتی ڈیٹا فروخت نہیں کرتے۔ تفصیل کے لیے رازداری کی پالیسی دیکھیں۔',
+      'privacyPolicyTitle': 'رازداری کی پالیسی',
+      'privacyPolicyIntro':
+          'براہ کرم پڑھیں کہ پاک فصل معلومات کیسے جمع، استعمال اور شیئر کرتی ہے۔',
+      'privacyPolicyUpdated': 'آخری تازہ کاری: {date}',
+      'privacyPolicyOpenOnline': 'آن لائن رازداری کی پالیسی کھولیں',
+      'privacyPolicyButton': 'رازداری کی پالیسی',
+      'accountDeletionWebLink': 'اکاؤنٹ حذف (ویب)',
+      'aboutCouldNotOpenLink': 'لنک نہیں کھل سکا۔',
       'aboutShareMessage':
           'پاک فصل آزمائیں — پاکستانی کسانوں کے لیے اسمارٹ فارمنگ۔ موسم، مٹی کی مشورت، تعلیم اور مزید۔',
       'aboutRateUnavailable': 'اسٹور لسٹنگ ابھی دستیاب نہیں۔',

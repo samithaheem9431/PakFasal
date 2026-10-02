@@ -56,3 +56,8 @@ config/app_config.json
 .env.*
 !.env.example
 !config/app_config.example.json
+
+# Android release signing (never commit)
+android/key.properties
+*.jks
+*.keystore

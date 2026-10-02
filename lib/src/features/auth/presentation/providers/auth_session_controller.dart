@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
 
 import '../../../../core/config/app_config.dart';
+import '../../../crop_calendar/data/repositories/crop_planting_repository.dart';
 import '../../../profile/data/cloudinary_upload_service.dart';
 import '../../../profile/data/user_profile_repository.dart';
 import '../../../sensor/data/repositories/sensor_repository.dart';
@@ -21,12 +22,15 @@ class AuthSessionController extends ChangeNotifier {
     UserProfileRepository? profileRepository,
     CloudinaryUploadService? cloudinaryUploadService,
     SensorRepository? sensorRepository,
+    CropPlantingRepository? cropPlantingRepository,
     GoogleSignIn? googleSignIn,
     FlutterSecureStorage? secureStorage,
   })  : _profileRepository = profileRepository ?? UserProfileRepository(),
         _cloudinaryUploadService =
             cloudinaryUploadService ?? CloudinaryUploadService(),
         _sensorRepository = sensorRepository ?? SensorRepository(),
+        _cropPlantingRepository =
+            cropPlantingRepository ?? CropPlantingRepository(),
         _googleSignIn = googleSignIn ??
             GoogleSignIn(
               scopes: const ['email', 'profile'],
@@ -66,6 +70,7 @@ class AuthSessionController extends ChangeNotifier {
   final UserProfileRepository _profileRepository;
   final CloudinaryUploadService _cloudinaryUploadService;
   final SensorRepository _sensorRepository;
+  final CropPlantingRepository _cropPlantingRepository;
   final GoogleSignIn _googleSignIn;
   final FlutterSecureStorage _secureStorage;
   StreamSubscription<User?>? _authStateSubscription;
@@ -400,6 +405,11 @@ class AuthSessionController extends ChangeNotifier {
         await _sensorRepository.clearAllReadings();
       } catch (e, st) {
         debugPrint('Sensor readings delete failed: $e\n$st');
+      }
+      try {
+        await _cropPlantingRepository.clearAllPlantingsForCurrentUser();
+      } catch (e, st) {
+        debugPrint('Crop plantings delete failed: $e\n$st');
       }
       try {
         await _profileRepository.deleteProfile(uid);

@@ -63,6 +63,21 @@ class AppConfig {
     'GOOGLE_WEB_CLIENT_ID',
     defaultValue: '',
   );
+  static const String _envPrivacyPolicyUrl = String.fromEnvironment(
+    'PRIVACY_POLICY_URL',
+    defaultValue: '',
+  );
+  static const String _envAccountDeletionUrl = String.fromEnvironment(
+    'ACCOUNT_DELETION_URL',
+    defaultValue: '',
+  );
+
+  /// Default public URLs for Play Console (GitHub Pages on PakFasal repo).
+  /// Override via config if you later move to a custom domain.
+  static const String _defaultPrivacyPolicyUrl =
+      'https://samithaheem9431.github.io/PakFasal/privacy/';
+  static const String _defaultAccountDeletionUrl =
+      'https://samithaheem9431.github.io/PakFasal/delete-account/';
 
   static Map<String, String> _runtime = const <String, String>{};
   static bool _initialised = false;
@@ -161,6 +176,22 @@ class AppConfig {
       _resolve('GOOGLE_WEB_CLIENT_ID', _envGoogleWebClientId, '');
 
   static bool get hasGoogleWebClientId => googleWebClientId.isNotEmpty;
+
+  // ── Legal / Play Store ───────────────────────────────────────────────────
+
+  /// Public Privacy Policy URL (Play Console + in-app “open online”).
+  static String get privacyPolicyUrl => _resolve(
+        'PRIVACY_POLICY_URL',
+        _envPrivacyPolicyUrl,
+        _defaultPrivacyPolicyUrl,
+      );
+
+  /// Public account-deletion request URL (Data safety form).
+  static String get accountDeletionUrl => _resolve(
+        'ACCOUNT_DELETION_URL',
+        _envAccountDeletionUrl,
+        _defaultAccountDeletionUrl,
+      );
 
   // ── Environment ──────────────────────────────────────────────────────────
 

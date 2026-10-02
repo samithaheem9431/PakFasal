@@ -9,5 +9,7 @@
   "OPENWEATHER_USE_ONECALL_V3": "false",
   "CLOUDINARY_CLOUD_NAME": "",
   "CLOUDINARY_UPLOAD_PRESET": "",
-  "GOOGLE_WEB_CLIENT_ID": ""
+  "GOOGLE_WEB_CLIENT_ID": "",
+  "PRIVACY_POLICY_URL": "https://samithaheem9431.github.io/PakFasal/privacy/",
+  "ACCOUNT_DELETION_URL": "https://samithaheem9431.github.io/PakFasal/delete-account/"
 }
