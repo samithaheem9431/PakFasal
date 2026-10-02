@@ -59,6 +59,10 @@ class AppConfig {
     'CLOUDINARY_UPLOAD_PRESET',
     defaultValue: '',
   );
+  static const String _envGoogleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '',
+  );
 
   static Map<String, String> _runtime = const <String, String>{};
   static bool _initialised = false;
@@ -144,6 +148,19 @@ class AppConfig {
 
   static bool get hasCloudinaryConfig =>
       cloudinaryCloudName.isNotEmpty && cloudinaryUploadPreset.isNotEmpty;
+
+  // ── Google Sign-In ───────────────────────────────────────────────────────
+
+  /// OAuth 2.0 Web client ID from Firebase Console → Project settings →
+  /// Your apps → Web app (or Google Cloud → Credentials).
+  ///
+  /// On Android this is passed as `serverClientId` so Google returns an
+  /// `idToken` that Firebase Auth can verify. Leave empty only for local
+  /// experiments — production Android builds need this value.
+  static String get googleWebClientId =>
+      _resolve('GOOGLE_WEB_CLIENT_ID', _envGoogleWebClientId, '');
+
+  static bool get hasGoogleWebClientId => googleWebClientId.isNotEmpty;
 
   // ── Environment ──────────────────────────────────────────────────────────
 

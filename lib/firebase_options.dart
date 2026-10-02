@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAZ_nJ5l2Rak_aAd7inOJJpqOqNzwz4UN0',
-    appId: '1:669661525637:android:0d3cf53360771c130f1bec',
+    appId: '1:669661525637:android:e44dc255be4d8c8d0f1bec',
     messagingSenderId: '669661525637',
     projectId: 'pakfasalapp',
     storageBucket: 'pakfasalapp.firebasestorage.app',

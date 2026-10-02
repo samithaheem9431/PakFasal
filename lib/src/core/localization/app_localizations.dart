@@ -43,6 +43,39 @@ class AppLocalizations {
       'requireBiometricAutofill': 'Use biometric unlock for autofill',
       'rememberMeHint':
           'Credentials are encrypted on this device. Biometric unlock may be required.',
+      'continueWithGoogle': 'Continue with Google',
+      'googleSignInCancelled': 'Google sign-in was cancelled.',
+      'googleSignInFailed': 'Google sign-in failed. Please try again.',
+      'googleSignInMisconfigured':
+          'Google sign-in is not configured. In Firebase add SHA-1 for pk.pakfasal.app, re-download google-services.json, then restart the app.',
+      'biometricAppLock': 'App lock',
+      'biometricAppLockHint':
+          'Require fingerprint or Face ID when reopening the app',
+      'biometricEnableReason': 'Confirm biometrics to enable app lock',
+      'biometricUnlockReason': 'Unlock PakFasal',
+      'biometricNotAvailable':
+          'Biometric unlock is not available on this device.',
+      'biometricFailed': 'Biometric authentication failed. Try again.',
+      'appLockedTitle': 'PakFasal is locked',
+      'appLockedSubtitle':
+          'Use fingerprint, Face ID, or device PIN to continue.',
+      'unlockWithBiometric': 'Unlock',
+      'deleteAccount': 'Delete account',
+      'deleteAccountTitle': 'Delete your account?',
+      'deleteAccountMessage':
+          'This permanently deletes your PakFasal account, profile, and sensor data. This cannot be undone.',
+      'deleteAccountConfirm': 'Delete permanently',
+      'deleteAccountPasswordRequired':
+          'Enter your password to confirm account deletion.',
+      'accountDeleteRequiresRecentLogin':
+          'Please sign in again, then delete your account.',
+      'accountDeleteFailed': 'Could not delete account. Please try again.',
+      'accountDeleted': 'Your account has been deleted.',
+      'deletingAccount': 'Deleting account...',
+      'profilePhotoTooLarge':
+          'Photo is too large. Please choose an image under 5 MB.',
+      'profilePhotoInvalidType':
+          'Only JPG, PNG, or WEBP images are allowed.',
       'createAccountSubtitle': 'Create your account',
       'resetPassword': 'Reset Password',
       'resetPasswordHint':
@@ -991,6 +1024,39 @@ class AppLocalizations {
       'createAccountSubtitle': 'اپنا اکاؤنٹ بنائیں',
       'rememberMeHint':
           'لاگ اِن معلومات اس ڈیوائس پر خفیہ انداز میں محفوظ ہوتی ہیں اور بایومیٹرک تصدیق درکار ہو سکتی ہے۔',
+      'continueWithGoogle': 'Google کے ساتھ جاری رکھیں',
+      'googleSignInCancelled': 'Google سائن اِن منسوخ کر دیا گیا۔',
+      'googleSignInFailed': 'Google سائن اِن ناکام۔ دوبارہ کوشش کریں۔',
+      'googleSignInMisconfigured':
+          'Google سائن اِن سیٹ نہیں۔ Firebase میں pk.pakfasal.app کے لیے SHA-1 شامل کریں، google-services.json دوبارہ ڈاؤن لوڈ کریں، پھر ایپ ری اسٹارٹ کریں۔',
+      'biometricAppLock': 'ایپ لاک',
+      'biometricAppLockHint':
+          'ایپ دوبارہ کھولتے وقت فنگر پرنٹ یا Face ID درکار ہو',
+      'biometricEnableReason': 'ایپ لاک آن کرنے کے لیے بایومیٹرک تصدیق کریں',
+      'biometricUnlockReason': 'PakFasal انلاک کریں',
+      'biometricNotAvailable':
+          'اس ڈیوائس پر بایومیٹرک انلاک دستیاب نہیں۔',
+      'biometricFailed': 'بایومیٹرک تصدیق ناکام۔ دوبارہ کوشش کریں۔',
+      'appLockedTitle': 'PakFasal لاک ہے',
+      'appLockedSubtitle':
+          'جاری رکھنے کے لیے فنگر پرنٹ، Face ID یا ڈیوائس PIN استعمال کریں۔',
+      'unlockWithBiometric': 'انلاک',
+      'deleteAccount': 'اکاؤنٹ حذف کریں',
+      'deleteAccountTitle': 'اپنا اکاؤنٹ حذف کریں؟',
+      'deleteAccountMessage':
+          'یہ آپ کا PakFasal اکاؤنٹ، پروفائل اور سینسر ڈیٹا مستقل طور پر حذف کر دے گا۔ یہ واپس نہیں ہو سکتا۔',
+      'deleteAccountConfirm': 'مستقل حذف کریں',
+      'deleteAccountPasswordRequired':
+          'اکاؤنٹ حذف کی تصدیق کے لیے اپنا پاس ورڈ درج کریں۔',
+      'accountDeleteRequiresRecentLogin':
+          'براہ کرم دوبارہ سائن اِن کریں، پھر اکاؤنٹ حذف کریں۔',
+      'accountDeleteFailed': 'اکاؤنٹ حذف نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
+      'accountDeleted': 'آپ کا اکاؤنٹ حذف کر دیا گیا۔',
+      'deletingAccount': 'اکاؤنٹ حذف ہو رہا ہے...',
+      'profilePhotoTooLarge':
+          'تصویر بہت بڑی ہے۔ براہ کرم 5 MB سے چھوٹی تصویر منتخب کریں۔',
+      'profilePhotoInvalidType':
+          'صرف JPG، PNG یا WEBP تصاویر کی اجازت ہے۔',
       'resetPassword': 'پاس ورڈ ری سیٹ کریں',
       'resetPasswordHint':
           'اپنا ای میل درج کریں، ہم آپ کو پاس ورڈ ری سیٹ لنک بھیجیں گے۔',

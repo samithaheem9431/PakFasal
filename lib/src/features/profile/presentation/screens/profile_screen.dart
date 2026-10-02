@@ -14,6 +14,7 @@ import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/widgets/auth_required_dialog.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
+import '../../../auth/presentation/providers/biometric_lock_controller.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -178,12 +179,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ).showSnackBar(SnackBar(content: Text(l10n.t('profilePhotoUpdated'))));
   }
 
+  Future<void> _toggleBiometricLock(
+    BiometricLockController lock,
+    AppLocalizations l10n,
+    bool enable,
+  ) async {
+    final ok = await lock.setEnabled(
+      enable,
+      reason: l10n.t('biometricEnableReason'),
+    );
+    if (!mounted) return;
+    if (!ok && lock.lastError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t(lock.lastError!))),
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteAccount(
+    AuthSessionController auth,
+    AppLocalizations l10n,
+  ) async {
+    final passwordController = TextEditingController();
+    final needsPassword = auth.isPasswordUser && !auth.isGoogleUser;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(l10n.t('deleteAccountTitle')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l10n.t('deleteAccountMessage')),
+              if (needsPassword) ...[
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.t('password'),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(l10n.t('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: _signOutFg,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(l10n.t('deleteAccountConfirm')),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      passwordController.dispose();
+      return;
+    }
+
+    final err = await auth.deleteAccount(
+      password: needsPassword ? passwordController.text : null,
+    );
+    passwordController.dispose();
+    if (!mounted) return;
+
+    if (err == 'googleSignInCancelled') return;
+    if (err != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t(err))),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.t('accountDeleted'))),
+    );
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final auth = context.watch<AuthSessionController>();
     final themeController = context.watch<ThemeController>();
     final localizationController = context.watch<LocalizationController>();
+    final biometricLock = context.watch<BiometricLockController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final topInset = MediaQuery.paddingOf(context).top;
 
@@ -195,6 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final photoUrl = auth.userPhotoUrl;
     final uploading = auth.isUploadingPhoto;
     final pageBg = isDark ? AppColors.darkSurface : _pageBg;
+    final isRegistered = auth.currentUser != null && !auth.isGuestUser;
 
     return PakFasalScaffold(
       title: l10n.t('profile'),
@@ -279,6 +377,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       languageCode:
                           localizationController.isUrdu ? 'اردو' : 'EN',
                       onToggleLanguage: localizationController.toggleLanguage,
+                      showBiometricLock: isRegistered &&
+                          biometricLock.isDeviceSupported,
+                      biometricLockEnabled: biometricLock.isEnabled,
+                      biometricLockTitle: l10n.t('biometricAppLock'),
+                      biometricLockHint: l10n.t('biometricAppLockHint'),
+                      onToggleBiometricLock: biometricLock.isBusy
+                          ? null
+                          : (value) => _toggleBiometricLock(
+                                biometricLock,
+                                l10n,
+                                value,
+                              ),
                       isDark: isDark,
                     ),
                   ),
@@ -286,40 +396,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _FadeSlideIn(
                     animate: _animateIn,
                     delayMs: 230,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          await auth.signOut();
-                          if (!context.mounted) return;
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            AppRoutes.login,
-                            (_) => false,
-                          );
-                        },
-                        icon: const Icon(Icons.logout_rounded, size: 20),
-                        label: Text(l10n.t('authSignOut')),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _signOutFg,
-                          backgroundColor: isDark
-                              ? const Color(0xFF3A2222)
-                              : _signOutBg,
-                          side: BorderSide(
-                            color: isDark
-                                ? const Color(0xFF6B3A3A)
-                                : _signOutBorder,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
+                    child: _AccountActionsCard(
+                      isDark: isDark,
+                      signOutLabel: l10n.t('authSignOut'),
+                      onSignOut: auth.isBusy
+                          ? null
+                          : () async {
+                              await auth.signOut();
+                              if (!context.mounted) return;
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                AppRoutes.login,
+                                (_) => false,
+                              );
+                            },
+                      showDeleteAccount: isRegistered,
+                      deleteAccountLabel: auth.isDeletingAccount
+                          ? l10n.t('deletingAccount')
+                          : l10n.t('deleteAccount'),
+                      isDeletingAccount: auth.isDeletingAccount,
+                      onDeleteAccount: auth.isDeletingAccount
+                          ? null
+                          : () => _confirmDeleteAccount(auth, l10n),
                     ),
                   ),
                 ],
@@ -816,6 +914,11 @@ class _SettingsCard extends StatelessWidget {
     required this.languageHint,
     required this.languageCode,
     required this.onToggleLanguage,
+    required this.showBiometricLock,
+    required this.biometricLockEnabled,
+    required this.biometricLockTitle,
+    required this.biometricLockHint,
+    required this.onToggleBiometricLock,
     required this.isDark,
   });
 
@@ -827,6 +930,11 @@ class _SettingsCard extends StatelessWidget {
   final String languageHint;
   final String languageCode;
   final VoidCallback onToggleLanguage;
+  final bool showBiometricLock;
+  final bool biometricLockEnabled;
+  final String biometricLockTitle;
+  final String biometricLockHint;
+  final ValueChanged<bool>? onToggleBiometricLock;
   final bool isDark;
 
   @override
@@ -901,6 +1009,28 @@ class _SettingsCard extends StatelessWidget {
               ),
             ),
           ),
+          if (showBiometricLock) ...[
+            Divider(
+              height: 1,
+              indent: 68,
+              endIndent: 16,
+              color: isDark ? Colors.white12 : const Color(0xFFE8EEE9),
+            ),
+            _SettingsRow(
+              icon: Icons.fingerprint_rounded,
+              title: biometricLockTitle,
+              subtitle: biometricLockHint,
+              isDark: isDark,
+              trailing: Switch(
+                value: biometricLockEnabled,
+                activeColor: AppColors.primaryGreen,
+                activeTrackColor: AppColors.lightGreen,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFBDBDBD),
+                onChanged: onToggleBiometricLock,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -971,6 +1101,142 @@ class _SettingsRow extends StatelessWidget {
           ),
           trailing,
         ],
+      ),
+    );
+  }
+}
+
+class _AccountActionsCard extends StatelessWidget {
+  const _AccountActionsCard({
+    required this.isDark,
+    required this.signOutLabel,
+    required this.onSignOut,
+    required this.showDeleteAccount,
+    required this.deleteAccountLabel,
+    required this.isDeletingAccount,
+    required this.onDeleteAccount,
+  });
+
+  final bool isDark;
+  final String signOutLabel;
+  final VoidCallback? onSignOut;
+  final bool showDeleteAccount;
+  final String deleteAccountLabel;
+  final bool isDeletingAccount;
+  final VoidCallback? onDeleteAccount;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProfileSurfaceCard(
+      isDark: isDark,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        child: Column(
+          children: [
+            _DangerActionButton(
+              label: signOutLabel,
+              icon: Icons.logout_rounded,
+              onPressed: onSignOut,
+              isDark: isDark,
+              filled: true,
+            ),
+            if (showDeleteAccount) ...[
+              const SizedBox(height: 10),
+              _DangerActionButton(
+                label: deleteAccountLabel,
+                icon: Icons.delete_forever_rounded,
+                onPressed: onDeleteAccount,
+                isDark: isDark,
+                filled: false,
+                showSpinner: isDeletingAccount,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DangerActionButton extends StatelessWidget {
+  const _DangerActionButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    required this.isDark,
+    required this.filled,
+    this.showSpinner = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isDark;
+  final bool filled;
+  final bool showSpinner;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = isDark ? Colors.white : AppColors.error;
+    final bg = filled
+        ? (isDark ? const Color(0xFF3A2222) : _ProfileScreenState._signOutBg)
+        : Colors.transparent;
+    final border = isDark
+        ? const Color(0xFF6B3A3A)
+        : _ProfileScreenState._signOutBorder;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(14),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: border, width: filled ? 1.2 : 1.4),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: fg.withValues(alpha: isDark ? 0.18 : 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: showSpinner
+                        ? Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: fg,
+                            ),
+                          )
+                        : Icon(icon, size: 18, color: fg),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

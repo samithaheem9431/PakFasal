@@ -11,6 +11,7 @@ import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
 import 'src/core/theme/theme_controller.dart';
 import 'src/features/auth/presentation/providers/auth_session_controller.dart';
+import 'src/features/auth/presentation/providers/biometric_lock_controller.dart';
 import 'src/features/crop_calendar/data/repositories/guest_crop_planting_store.dart';
 import 'src/features/crop_calendar/presentation/providers/crop_calendar_provider.dart';
 import 'src/features/learning/data/repositories/crop_diseases_repository.dart';
@@ -53,6 +54,7 @@ Future<void> main() async {
       unawaited(_warmLearningPestsDiseasesCache());
 
       final authController = AuthSessionController();
+      final biometricLockController = BiometricLockController();
       // Mirror the signed-in user id into Crashlytics so reports are grouped
       // per user. Fires immediately for the current state and on each change.
       void syncCrashlyticsUser() {
@@ -60,11 +62,17 @@ Future<void> main() async {
       }
       authController.addListener(syncCrashlyticsUser);
       syncCrashlyticsUser();
+      biometricLockController.onSessionChanged(
+        hasRegisteredUser:
+            authController.currentUser != null && !authController.isGuestUser,
+        userId: authController.userId,
+      );
 
       runApp(
         MultiProvider(
           providers: [
             ChangeNotifierProvider.value(value: authController),
+            ChangeNotifierProvider.value(value: biometricLockController),
             ChangeNotifierProxyProvider<AuthSessionController, LocalizationController>(
               create: (_) => LocalizationController(),
               update: (_, auth, localizationController) {

@@ -8,5 +8,6 @@
   "OPENWEATHER_API_BASE_URL": "https://api.openweathermap.org",
   "OPENWEATHER_USE_ONECALL_V3": "false",
   "CLOUDINARY_CLOUD_NAME": "",
-  "CLOUDINARY_UPLOAD_PRESET": ""
+  "CLOUDINARY_UPLOAD_PRESET": "",
+  "GOOGLE_WEB_CLIENT_ID": ""
 }

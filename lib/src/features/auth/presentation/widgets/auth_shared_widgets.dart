@@ -598,6 +598,78 @@ class AuthOutlinedButton extends StatelessWidget {
   }
 }
 
+/// Google Sign-In button matching the auth card style.
+class AuthGoogleButton extends StatelessWidget {
+  const AuthGoogleButton({
+    super.key,
+    required this.metrics,
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+  });
+
+  final AuthLayoutMetrics metrics;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: metrics.outlinedHeight,
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AuthDesign.labelColor,
+          backgroundColor: Colors.white,
+          side: const BorderSide(color: Color(0xFFD0D7D2), width: 1.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: isLoading
+            ? SizedBox(
+                width: metrics.s(20).clamp(16.0, 22.0),
+                height: metrics.s(20).clamp(16.0, 22.0),
+                child: const CircularProgressIndicator(strokeWidth: 2.2),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: metrics.s(22).clamp(18.0, 24.0),
+                    height: metrics.s(22).clamp(18.0, 24.0),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F3F4),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'G',
+                      style: TextStyle(
+                        color: const Color(0xFF4285F4),
+                        fontWeight: FontWeight.w800,
+                        fontSize: metrics.s(14).clamp(12.0, 15.0),
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: metrics.gapSm + 2),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: metrics.s(15).clamp(13.0, 15.0),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
 class AuthBiometricTile extends StatelessWidget {
   const AuthBiometricTile({
     super.key,

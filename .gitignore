@@ -45,6 +45,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# JVM heap dumps (too large for GitHub)
+*.hprof
+
 # Secrets — DO NOT COMMIT (see docs/SECRETS.md)
 # Template: config/app_config.example.json
 config/dev.json

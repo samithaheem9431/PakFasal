@@ -8,6 +8,7 @@ import 'core/localization/localization_controller.dart';
 import 'core/routing/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/widgets/app_lock_gate.dart';
 import 'core/widgets/pakfasal_scaffold.dart';
 
 class PakFasalApp extends StatelessWidget {
@@ -35,7 +36,7 @@ class PakFasalApp extends StatelessWidget {
       builder: (context, child) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: pakFasalSystemOverlay(context),
-          child: child ?? const SizedBox.shrink(),
+          child: AppLockGate(child: child ?? const SizedBox.shrink()),
         );
       },
       initialRoute: AppRoutes.splash,

@@ -107,6 +107,32 @@ class _SignupViewState extends State<_SignupView>
     Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
   }
 
+  Future<void> _signInWithGoogle(
+    BuildContext context,
+    AuthFormProvider form,
+    AuthSessionController session,
+    AppLocalizations l10n,
+  ) async {
+    form.setLoading(true);
+    final err = await session.signInWithGoogle();
+    form.setLoading(false);
+    if (!context.mounted) return;
+    if (err == 'googleSignInCancelled') return;
+    if (err != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.t(err)),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -355,6 +381,18 @@ class _SignupViewState extends State<_SignupView>
                                   ),
                                   SizedBox(height: m.gapMd),
                                   AuthOrDivider(l10n.t('or'), metrics: m),
+                                  SizedBox(height: m.gapMd),
+                                  AuthGoogleButton(
+                                    metrics: m,
+                                    isLoading: form.isLoading,
+                                    label: l10n.t('continueWithGoogle'),
+                                    onPressed: () => _signInWithGoogle(
+                                      context,
+                                      form,
+                                      session,
+                                      l10n,
+                                    ),
+                                  ),
                                   SizedBox(height: m.gapSm + 2),
                                   Wrap(
                                     alignment: WrapAlignment.center,

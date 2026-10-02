@@ -53,4 +53,9 @@ class UserProfileRepository {
       SetOptions(merge: true),
     );
   }
+
+  /// Deletes the entire `users/{uid}` profile document (Play account deletion).
+  Future<void> deleteProfile(String uid) async {
+    await _doc(uid).delete();
+  }
 }
