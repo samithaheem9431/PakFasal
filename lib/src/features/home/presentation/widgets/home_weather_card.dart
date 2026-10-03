@@ -28,11 +28,13 @@ class HomeWeatherCard extends StatelessWidget {
   static const _nightBg = 'assets/images/dashboard/weather_bg_night.jpg';
 
   bool get _isNight {
-    final now = DateTime.now();
+    final now = DateTime.now().toLocal();
     final sunrise = weather.sunrise;
     final sunset = weather.sunset;
     if (sunrise != null && sunset != null) {
-      return now.isBefore(sunrise) || now.isAfter(sunset);
+      final rise = sunrise.toLocal();
+      final set = sunset.toLocal();
+      return now.isBefore(rise) || !now.isBefore(set);
     }
     final hour = now.hour;
     return hour < 6 || hour >= 19;

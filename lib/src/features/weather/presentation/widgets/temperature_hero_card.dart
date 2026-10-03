@@ -30,7 +30,8 @@ class TemperatureHeroCard extends StatelessWidget {
     final lo = current.minTempC ?? (current.temperatureC - 5);
     final temp = current.temperatureC.toStringAsFixed(0);
     final isNight = WeatherGradients.isNightNow(current);
-    final icon = WeatherViewMapper.iconForCode(current.conditionCode);
+    final icon =
+        WeatherViewMapper.iconForCode(current.conditionCode, isNight: isNight);
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final cacheWidth =
         (MediaQuery.sizeOf(context).width * dpr).round().clamp(400, 1200);

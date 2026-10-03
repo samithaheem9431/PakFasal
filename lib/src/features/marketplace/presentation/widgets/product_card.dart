@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/performance/device_performance.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/marketplace_image_cache.dart';
 import '../../data/marketplace_labels.dart';
@@ -97,7 +98,8 @@ class _ProductCardState extends State<ProductCard> {
                                 ),
                                 cacheManager: MarketplaceImageCache.manager,
                                 fit: BoxFit.cover,
-                                memCacheWidth: 240,
+                                memCacheWidth:
+                                    DevicePerformance.isLowEnd ? 160 : 240,
                                 fadeInDuration:
                                     const Duration(milliseconds: 180),
                                 fadeOutDuration:

@@ -18,6 +18,12 @@ class AppLocalizations {
     return localizations ?? AppLocalizations(const Locale('en'));
   }
 
+  /// Urdu is right-to-left; English (and fallbacks) are LTR.
+  bool get isRtl => locale.languageCode == 'ur';
+
+  TextDirection get textDirection =>
+      isRtl ? TextDirection.rtl : TextDirection.ltr;
+
   static const Map<String, Map<String, String>> _localizedValues = {
     'en': {
       'appName': 'PakFasal',

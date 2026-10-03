@@ -7,50 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:669661525637:android:0d3cf53360771c130f1bec",
-        "android_client_info": {
-          "package_name": "com.example.pakfasal_app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "669661525637-upmjo8lhbhgvo5e7gcc78q66go9s7vq1.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.pakfasal_app",
-            "certificate_hash": "eb30a9b0beb9c5d090bcfda64a2b73769a2991a5"
-          }
-        },
-        {
-          "client_id": "669661525637-kjhmdjoqbhrv0ubpq06ofa982c6ep62i.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAZ_nJ5l2Rak_aAd7inOJJpqOqNzwz4UN0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "669661525637-kjhmdjoqbhrv0ubpq06ofa982c6ep62i.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "669661525637-f3pni9dh1lomcsndoisa32f8i5ktin3v.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.pakfasalApp"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:669661525637:android:e44dc255be4d8c8d0f1bec",
         "android_client_info": {
           "package_name": "pk.pakfasal.app"

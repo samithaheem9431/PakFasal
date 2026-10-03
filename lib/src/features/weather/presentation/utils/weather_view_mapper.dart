@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/performance/device_performance.dart';
 import '../../constants/weather_constants.dart';
 
 /// Maps weather codes/icon codes to view-layer data (icons, labels, colors).
@@ -39,7 +40,9 @@ class WeatherViewMapper {
   /// can fall back to [iconForCode].
   static String? networkIconUrl(String? iconCode) {
     if (iconCode == null || iconCode.isEmpty) return null;
-    return '${WeatherConstants.owmIconUrlPrefix}$iconCode@4x.png';
+    // @4x is heavy for low-end phones; @2x is enough for forecast chips.
+    final scale = DevicePerformance.isLowEnd ? '2x' : '4x';
+    return '${WeatherConstants.owmIconUrlPrefix}$iconCode@$scale.png';
   }
 
   // ── Localized labels ───────────────────────────────────────────────────

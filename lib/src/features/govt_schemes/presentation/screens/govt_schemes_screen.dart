@@ -255,13 +255,10 @@ class _GovtSchemesViewState extends State<_GovtSchemesView> {
                   ),
                   const SizedBox(height: 10),
                   if (provider.isLoading && provider.allSchemes.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryGreen,
-                        ),
-                      ),
+                    const AppListSkeleton(
+                      itemCount: 4,
+                      itemHeight: 110,
+                      featuredHeight: 120,
                     )
                   else if (provider.hasError && provider.allSchemes.isEmpty)
                     ErrorStateCard(

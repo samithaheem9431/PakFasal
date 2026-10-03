@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../domain/entities/weather_models.dart';
 import '../providers/weather_provider.dart';
@@ -248,19 +249,17 @@ class _SearchBody extends StatelessWidget {
 
     if (showSearchResults) {
       if (provider.isSearching) {
-        return const Center(child: CircularProgressIndicator());
+        return const Padding(
+          padding: EdgeInsets.all(24),
+          child: LoadingStateCard(),
+        );
       }
       if (provider.searchError != null) {
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              l10n.t('weatherSearchError'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: ErrorStateCard(
+            message: l10n.t('weatherSearchError'),
+            onRetry: () => provider.searchCities(query),
           ),
         );
       }

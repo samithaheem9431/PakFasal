@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/layout/responsive.dart';
+import '../../../../core/performance/device_performance.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../auth/presentation/providers/auth_session_controller.dart';
 import '../../../auth/presentation/providers/biometric_lock_controller.dart';
@@ -57,9 +58,10 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
+    final lowEnd = DevicePerformance.reduceMotion;
     final rnd = math.Random();
     _particles = List.generate(
-      6,
+      lowEnd ? 0 : 6,
       (i) => _Particle(
         x: rnd.nextDouble(),
         y: rnd.nextDouble(),
@@ -76,11 +78,15 @@ class _SplashScreenState extends State<SplashScreen>
     _pulse = Tween<double>(begin: 0.97, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _pulseController.repeat(reverse: true);
+    if (!lowEnd) {
+      _pulseController.repeat(reverse: true);
+    } else {
+      _pulseController.value = 1;
+    }
 
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: Duration(milliseconds: lowEnd ? 450 : 900),
     );
     _fadeLogo = CurvedAnimation(
       parent: _fadeController,
@@ -121,7 +127,12 @@ class _SplashScreenState extends State<SplashScreen>
         curve: const Interval(0.50, 1.0, curve: Curves.easeOut),
       ),
     );
-    _ringController.repeat();
+    // Rings + dots are continuous GPU work — skip loops on low-end phones.
+    if (!lowEnd) {
+      _ringController.repeat();
+    } else {
+      _ringController.value = 0.55;
+    }
 
     // Keep controllers for build tree compatibility but do not repeat heavy
     // loops (shimmer / particles / wheat / scan) — they tank mid-range GPUs.
@@ -137,7 +148,11 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1100),
     );
-    _dotsController.repeat(reverse: true);
+    if (!lowEnd) {
+      _dotsController.repeat(reverse: true);
+    } else {
+      _dotsController.value = 1;
+    }
 
     _wheatController = AnimationController(
       vsync: this,
@@ -157,8 +172,11 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 10),
     );
 
-    // Hold splash for ~3.5s so branding/animations can land before navigation.
-    _navTimer = Timer(const Duration(milliseconds: 3500), _goNext);
+    // Shorter splash on low-end so farmers reach content sooner.
+    _navTimer = Timer(
+      Duration(milliseconds: lowEnd ? 1800 : 3500),
+      _goNext,
+    );
   }
 
   Future<void> _goNext() async {

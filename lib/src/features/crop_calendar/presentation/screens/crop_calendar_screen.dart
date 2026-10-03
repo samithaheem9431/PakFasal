@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/widgets/common_states.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../domain/entities/crop_calendar_models.dart';
 import '../providers/crop_calendar_provider.dart';
@@ -258,20 +259,27 @@ class _MyCropsTab extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     if (provider.plantingsLoading && provider.plantings.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return _aboveBottomChrome(
+        context,
+        child: const Padding(
+          padding: EdgeInsets.all(24),
+          child: AppListSkeleton(
+            showFeatured: false,
+            itemCount: 3,
+            itemHeight: 100,
+          ),
+        ),
+      );
     }
 
     if (provider.plantingsError != null && provider.plantings.isEmpty) {
       return _aboveBottomChrome(
         context,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              l10n.t('cropCalLoadFailed'),
-              textAlign: TextAlign.center,
-              style: TextStyle(color: scheme.error),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: ErrorStateCard(
+            message: l10n.t('cropCalLoadFailed'),
+            onRetry: provider.retryPlantingsWatch,
           ),
         ),
       );

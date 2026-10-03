@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../../../../core/performance/device_performance.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 
@@ -12,18 +13,31 @@ class WeatherSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final bottom = PakFasalFloatingBottomBar.contentClearance(context);
+    final reduceMotion = DevicePerformance.reduceMotion;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(16, 16, 16, bottom + 16),
       children: [
-        _HeroSkeleton(isDark: dark),
+        _HeroSkeleton(isDark: dark, animate: !reduceMotion),
         const SizedBox(height: 14),
-        Center(
-          child: SpinKitPulse(
-            color: dark ? AppColors.lightGreen : AppColors.primaryGreen,
-            size: 32,
+        if (!reduceMotion)
+          Center(
+            child: SpinKitPulse(
+              color: dark ? AppColors.lightGreen : AppColors.primaryGreen,
+              size: 32,
+            ),
+          )
+        else
+          const SizedBox(
+            height: 32,
+            child: Center(
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              ),
+            ),
           ),
-        ),
         const SizedBox(height: 14),
         _BarSkeleton(height: 110, isDark: dark),
         const SizedBox(height: 12),
@@ -42,9 +56,10 @@ class WeatherSkeleton extends StatelessWidget {
 }
 
 class _HeroSkeleton extends StatefulWidget {
-  const _HeroSkeleton({required this.isDark});
+  const _HeroSkeleton({required this.isDark, required this.animate});
 
   final bool isDark;
+  final bool animate;
 
   @override
   State<_HeroSkeleton> createState() => _HeroSkeletonState();
@@ -52,47 +67,48 @@ class _HeroSkeleton extends StatefulWidget {
 
 class _HeroSkeletonState extends State<_HeroSkeleton>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  AnimationController? _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1400),
-      vsync: this,
-    )..repeat(reverse: true);
+    if (widget.animate) {
+      _controller = AnimationController(
+        duration: const Duration(milliseconds: 1400),
+        vsync: this,
+      )..repeat(reverse: true);
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final base = widget.isDark ? AppColors.darkSurfaceHigh : AppColors.white;
+    final border = (widget.isDark ? AppColors.lightGreen : AppColors.primaryGreen)
+        .withValues(alpha: 0.12);
+
+    Widget box(double alpha) {
+      return Container(
+        height: 180,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: base.withValues(alpha: alpha),
+          border: Border.all(color: border),
+        ),
+      );
+    }
+
+    final controller = _controller;
+    if (controller == null) return box(0.7);
+
     return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final base = widget.isDark
-            ? AppColors.darkSurfaceHigh
-            : AppColors.white;
-        return Container(
-          height: 180,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: base.withValues(
-              alpha: 0.45 + 0.25 * _controller.value,
-            ),
-            border: Border.all(
-              color: (widget.isDark
-                      ? AppColors.lightGreen
-                      : AppColors.primaryGreen)
-                  .withValues(alpha: 0.12),
-            ),
-          ),
-        );
-      },
+      animation: controller,
+      builder: (context, _) => box(0.45 + 0.25 * controller.value),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/layout/responsive.dart';
+import '../../../../core/performance/device_performance.dart';
 
 class DashboardTile extends StatefulWidget {
   const DashboardTile({
@@ -85,7 +86,8 @@ class _DashboardTileState extends State<DashboardTile> {
                         // Decode near display size so icons stay sharp when
                         // downscaled into small tiles (esp. light-mode edges).
                         final dpr = MediaQuery.devicePixelRatioOf(context);
-                        final cachePx = (side * dpr).round().clamp(64, 512);
+                        final maxPx = DevicePerformance.isLowEnd ? 256 : 512;
+                        final cachePx = (side * dpr).round().clamp(64, maxPx);
                         return Transform.scale(
                           scale: widget.imageScale,
                           child: Image.asset(

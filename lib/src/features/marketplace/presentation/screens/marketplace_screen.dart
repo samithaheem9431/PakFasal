@@ -234,7 +234,7 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
                   ),
                   const SizedBox(height: 8),
                   if (provider.isLoading && provider.allProducts.isEmpty)
-                    const LoadingStateCard()
+                    const AppListSkeleton(itemCount: 5, itemHeight: 120)
                   else if (provider.hasError && provider.allProducts.isEmpty)
                     ErrorStateCard(
                       onRetry: () => provider.load(forceRefresh: true),

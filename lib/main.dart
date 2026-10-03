@@ -9,6 +9,7 @@ import 'src/core/ads/interstitial_ad_service.dart';
 import 'src/core/config/app_config.dart';
 import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
+import 'src/core/performance/device_performance.dart';
 import 'src/core/theme/theme_controller.dart';
 import 'src/features/auth/presentation/providers/auth_session_controller.dart';
 import 'src/features/auth/presentation/providers/biometric_lock_controller.dart';
@@ -23,6 +24,7 @@ Future<void> main() async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      DevicePerformance.init();
 
       // Critical path only — open Hive boxes in parallel (not one-by-one).
       await AppConfig.init();

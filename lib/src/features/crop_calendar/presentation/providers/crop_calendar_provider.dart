@@ -153,6 +153,17 @@ class CropCalendarProvider extends ChangeNotifier {
   /// Starts listening to plantings (Firestore for registered, Hive for guests).
   void startWatchingPlantings() {
     if (_plantingsSub != null) return;
+    _attachPlantingsWatch();
+  }
+
+  /// Cancels a failed watch and reconnects (used by ErrorStateCard retry).
+  void retryPlantingsWatch() {
+    _plantingsSub?.cancel();
+    _plantingsSub = null;
+    _attachPlantingsWatch();
+  }
+
+  void _attachPlantingsWatch() {
     _plantingsLoading = true;
     _plantingsError = null;
     notifyListeners();

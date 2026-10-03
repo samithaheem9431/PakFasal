@@ -33,12 +33,18 @@ class WeatherGradients {
   static Color heroSubtext({required bool isDark}) =>
       AppColors.white.withValues(alpha: 0.9);
 
+  /// Day/night for hero backgrounds — always uses wall-clock time, not
+  /// [CurrentWeather.observedAt] (which freezes at the last API fetch).
   static bool isNightNow(CurrentWeather c) {
-    final now = c.observedAt ?? DateTime.now();
+    final now = DateTime.now();
     final sunrise = c.sunrise;
     final sunset = c.sunset;
     if (sunrise != null && sunset != null) {
-      return now.isBefore(sunrise) || now.isAfter(sunset);
+      // Normalize so UTC-cached epochs and local ISO parses compare correctly.
+      final n = now.toLocal();
+      final rise = sunrise.toLocal();
+      final set = sunset.toLocal();
+      return n.isBefore(rise) || !n.isBefore(set);
     }
     final hour = now.hour;
     return hour < 6 || hour >= 19;

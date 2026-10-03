@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/config/app_version.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -23,7 +24,6 @@ class AboutPakFasalScreen extends StatefulWidget {
 
 class _AboutPakFasalScreenState extends State<AboutPakFasalScreen>
     with TickerProviderStateMixin {
-  static const _appVersion = '1.0.0';
   static const _playStoreUrl =
       'https://play.google.com/store/apps/details?id=pk.pakfasal.app';
 
@@ -390,7 +390,7 @@ class _AboutPakFasalScreenState extends State<AboutPakFasalScreen>
                 Text(
                   l10n.t(
                     'aboutVersionLabel',
-                    params: {'version': _appVersion},
+                    params: {'version': AppVersion.name},
                   ),
                   style: textTheme.bodyMedium?.copyWith(
                     color: scheme.onSurfaceVariant,
