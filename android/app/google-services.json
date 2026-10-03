@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "669661525637-n6olbdeve9qnrq2aeeitmrup5uenj8av.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pk.pakfasal.app",
+            "certificate_hash": "36454a44dfa641fda53eb33588fe721becb3bf59"
+          }
+        },
+        {
           "client_id": "669661525637-uqmuhejv16o6n45d0qot7tt86rvs7lq8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
