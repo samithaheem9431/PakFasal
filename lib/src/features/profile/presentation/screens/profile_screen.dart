@@ -490,38 +490,45 @@ class _ProfileScenicHeader extends StatelessWidget {
             left: 20,
             right: 16,
             top: topInset + 10,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
-                          letterSpacing: -0.3,
-                        ),
+            // Pin language pill on the physical right in Urdu (RTL) too.
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Directionality(
+                      textDirection: Directionality.of(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              height: 1.1,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.92),
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w500,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                languageButton,
-              ],
+                  languageButton,
+                ],
+              ),
             ),
           ),
         ],

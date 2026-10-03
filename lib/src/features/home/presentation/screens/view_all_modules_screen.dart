@@ -351,24 +351,28 @@ class _ViewAllHeroHeader extends StatelessWidget {
               left: 16,
               right: 16,
               top: topInset + 10,
-              child: Row(
-                children: [
-                  _HeroCircleButton(
-                    onTap: () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                        return;
-                      }
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.home,
-                        (_) => false,
-                      );
-                    },
-                  ),
-                  const Spacer(),
-                  const _HeroLanguagePill(),
-                ],
+              // Keep back + language pinned LTR so UR chip stays on-screen right.
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  children: [
+                    _HeroCircleButton(
+                      onTap: () {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                          return;
+                        }
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes.home,
+                          (_) => false,
+                        );
+                      },
+                    ),
+                    const Spacer(),
+                    const _HeroLanguagePill(),
+                  ],
+                ),
               ),
             ),
             Positioned(

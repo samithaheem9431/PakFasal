@@ -110,52 +110,61 @@ class PakFasalScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bg = backgroundColor ?? theme.scaffoldBackgroundColor;
+    // Keep app-bar chrome LTR so back + language stay pinned (EN/UR),
+    // while the title still renders with the active content direction.
+    final contentDirection = Directionality.of(context);
 
-    final appBar = AppBar(
-      automaticallyImplyLeading: false,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      systemOverlayStyle: pakFasalSystemOverlay(context),
-      leading: showBack
-          ? IconButton(
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                  return;
-                }
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.home,
-                  (_) => false,
-                );
-              },
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: AppColors.white,
-              ),
-            )
-          : null,
-      title: Text(
-        title,
-        style: TextStyle(
-          color: AppColors.white,
-          fontWeight: transparentChrome ? FontWeight.w600 : FontWeight.w700,
-          fontSize: transparentChrome ? 16 : 18,
-        ),
-      ),
-      actions: [
-        if (actions != null) ...actions!,
-        if (showLanguageToggle)
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
+    final appBar = Directionality(
+      textDirection: TextDirection.ltr,
+      child: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: pakFasalSystemOverlay(context),
+        leading: showBack
+            ? IconButton(
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                    return;
+                  }
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.home,
+                    (_) => false,
+                  );
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.white,
+                ),
+              )
+            : null,
+        title: Directionality(
+          textDirection: contentDirection,
+          child: Text(
+            title,
+            style: TextStyle(
+              color: AppColors.white,
+              fontWeight: transparentChrome ? FontWeight.w600 : FontWeight.w700,
+              fontSize: transparentChrome ? 16 : 18,
             ),
-            child: const LanguageToggleButton(),
           ),
-      ],
+        ),
+        actions: [
+          if (actions != null) ...actions!,
+          if (showLanguageToggle)
+            Container(
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const LanguageToggleButton(),
+            ),
+        ],
+      ),
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(

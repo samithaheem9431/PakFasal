@@ -651,7 +651,7 @@ class AppLocalizations {
       'learningResultCount': '{count} videos',
       'learningClearSearch': 'Clear',
       'learningDemoMode':
-          'Demo videos are shown. Add YOUTUBE_API_KEY using --dart-define to load live YouTube data.',
+          'Curated farming videos are shown. Add YOUTUBE_API_KEY in config/app_config.json for live YouTube search.',
       'marketSearchHint': 'Search products, company, crop...',
       'marketFilterCompany': 'Company',
       'marketSubtitle': 'Quality agri inputs for a better tomorrow',
@@ -1642,7 +1642,7 @@ class AppLocalizations {
       'learningResultCount': '{count} ویڈیوز',
       'learningClearSearch': 'صاف کریں',
       'learningDemoMode':
-          'ڈیمو ویڈیوز دکھائی جا رہی ہیں۔ لائیو یوٹیوب ڈیٹا کے لیے --dart-define کے ساتھ YOUTUBE_API_KEY شامل کریں۔',
+          'منتخب زرعی ویڈیوز دکھائی جا رہی ہیں۔ لائیو یوٹیوب سرچ کے لیے config/app_config.json میں YOUTUBE_API_KEY شامل کریں۔',
       'marketSearchHint': 'پروڈکٹ، کمپنی، فصل تلاش کریں...',
       'marketFilterCompany': 'کمپنی',
       'marketSubtitle': 'بہتر کل کے لیے معیاری زرعی اشیاء',

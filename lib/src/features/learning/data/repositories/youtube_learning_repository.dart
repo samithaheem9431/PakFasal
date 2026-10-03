@@ -52,24 +52,26 @@ class YouTubeLearningRepository {
 
     final box = Hive.box('learning_cache');
     final normalized = trimmed.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-    final cacheKey = 'search_$normalized';
+    final cacheKey = 'search_v2_$normalized';
     final cached = box.get(cacheKey) as String?;
     final cachedPayload = cached != null ? _decodePayload(cached) : null;
     final cachedVideos = cachedPayload?.videos ?? const <LearningVideo>[];
     final cachedSource = cachedPayload?.source ?? 'live';
 
-    if (!forceRefresh && cached != null && cached.isNotEmpty) {
-      final shouldUseCachedImmediately =
-          _apiKey.isEmpty || cachedSource == 'live';
-      if (shouldUseCachedImmediately && cachedVideos.isNotEmpty) {
-        return cachedVideos;
-      }
-    }
-
+    // Without an API key, always serve the curated offline catalog so farmers
+    // still get real agriculture videos (and stale meme demos are never kept).
     if (_apiKey.isEmpty) {
       final demo = _demoSearchVideos(trimmed);
       box.put(cacheKey, _toJson(demo, source: 'demo'));
       return demo;
+    }
+
+    if (!forceRefresh &&
+        cached != null &&
+        cached.isNotEmpty &&
+        cachedSource == 'live' &&
+        cachedVideos.isNotEmpty) {
+      return cachedVideos;
     }
 
     try {
@@ -115,25 +117,25 @@ class YouTubeLearningRepository {
     bool forceRefresh = false,
   }) async {
     final box = Hive.box('learning_cache');
-    final cacheKey = 'videos_$category';
+    final cacheKey = 'videos_v2_$category';
     final cached = box.get(cacheKey) as String?;
     final cachedPayload = cached != null ? _decodePayload(cached) : null;
     final cachedVideos = cachedPayload?.videos ?? const <LearningVideo>[];
     final cachedSource = cachedPayload?.source ?? 'live';
 
-    if (!forceRefresh && cached != null && cached.isNotEmpty) {
-      // If API key exists but cached content is demo, try live fetch again.
-      final shouldUseCachedImmediately =
-          _apiKey.isEmpty || cachedSource == 'live';
-      if (shouldUseCachedImmediately && cachedVideos.isNotEmpty) {
-        return cachedVideos;
-      }
-    }
-
+    // Offline curated catalog — skip Hive so updated video IDs ship immediately.
     if (_apiKey.isEmpty) {
       final demo = _demoVideos(category);
       box.put(cacheKey, _toJson(demo, source: 'demo'));
       return demo;
+    }
+
+    if (!forceRefresh &&
+        cached != null &&
+        cached.isNotEmpty &&
+        cachedSource == 'live' &&
+        cachedVideos.isNotEmpty) {
+      return cachedVideos;
     }
 
     try {
@@ -208,65 +210,139 @@ class YouTubeLearningRepository {
         .toList();
   }
 
+  /// Curated Pakistan-agriculture videos used when [YOUTUBE_API_KEY] is missing.
+  /// Thumbnails use YouTube's public image CDN (no API key required).
+  static String _thumb(String videoId) =>
+      'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
+
   List<LearningVideo> _demoSearchVideos(String query) {
-    final now = DateTime.now();
-    return [
-      LearningVideo(
-        videoId: 'dQw4w9WgXcQ',
-        title: '$query — Complete Guide for Pakistani Farmers',
-        channelTitle: 'PakFasal Learning (Demo)',
-        publishedAt: now.subtract(const Duration(days: 8)),
-        thumbnailUrl: '',
-        description:
-            'Demo search result for "$query". Add YOUTUBE_API_KEY to load live videos.',
-      ),
-      LearningVideo(
-        videoId: 'J---aiyznGQ',
-        title: '$query — Expert Tips & Treatment',
-        channelTitle: 'PakFasal Learning (Demo)',
-        publishedAt: now.subtract(const Duration(days: 21)),
-        thumbnailUrl: '',
-        description: 'Configure YOUTUBE_API_KEY to load live search results.',
-      ),
-      LearningVideo(
-        videoId: '9bZkp7q19f0',
-        title: '$query — Step by Step in Urdu',
-        channelTitle: 'PakFasal Learning (Demo)',
-        publishedAt: now.subtract(const Duration(days: 40)),
-        thumbnailUrl: '',
-        description: 'This is fallback local demo data for your search.',
-      ),
+    final q = query.toLowerCase();
+    final all = <LearningVideo>[
+      ..._demoVideos('Wheat'),
+      ..._demoVideos('Rice'),
+      ..._demoVideos('Cotton'),
+      ..._demoVideos('Sugarcane'),
+      ..._demoVideos('Maize'),
     ];
+
+    final matched = all.where((v) {
+      final hay = '${v.title} ${v.description} ${v.channelTitle}'.toLowerCase();
+      return q.split(RegExp(r'\s+')).where((t) => t.length > 2).any(hay.contains);
+    }).toList();
+
+    if (matched.isNotEmpty) return matched;
+    // Fall back to wheat catalog so search never looks empty offline.
+    return _demoVideos('Wheat');
   }
 
   List<LearningVideo> _demoVideos(String category) {
     final now = DateTime.now();
-    return [
-      LearningVideo(
-        videoId: 'dQw4w9WgXcQ',
-        title: '$category Farming Basics for Pakistan',
-        channelTitle: 'PakFasal Learning (Demo)',
-        publishedAt: now.subtract(const Duration(days: 15)),
-        thumbnailUrl: '',
-        description: 'Demo content shown because YouTube API key is not set.',
-      ),
-      LearningVideo(
-        videoId: 'J---aiyznGQ',
-        title: '$category Water Management Tips',
-        channelTitle: 'PakFasal Learning (Demo)',
-        publishedAt: now.subtract(const Duration(days: 32)),
-        thumbnailUrl: '',
-        description: 'Configure YOUTUBE_API_KEY to load live videos.',
-      ),
-      LearningVideo(
-        videoId: '9bZkp7q19f0',
-        title: '$category Pest Control Guide',
-        channelTitle: 'PakFasal Learning (Demo)',
-        publishedAt: now.subtract(const Duration(days: 56)),
-        thumbnailUrl: '',
-        description: 'This is fallback local demo data.',
-      ),
-    ];
+    switch (category) {
+      case 'Rice':
+        return [
+          LearningVideo(
+            videoId: 'MGH5IEf830Q',
+            title: 'Direct Seeded Rice Farming — Dryland Paddy Technique',
+            channelTitle: 'Agriculture Learning',
+            publishedAt: now.subtract(const Duration(days: 40)),
+            thumbnailUrl: _thumb('MGH5IEf830Q'),
+            description: 'Rice / dhan cultivation method for higher yield.',
+          ),
+          LearningVideo(
+            videoId: 'jt5Yr9jZcOQ',
+            title: 'Pakistan Agriculture Reforms — Farmer Perspective',
+            channelTitle: 'PIDE Official',
+            publishedAt: now.subtract(const Duration(days: 90)),
+            thumbnailUrl: _thumb('jt5Yr9jZcOQ'),
+            description: 'Crop planning context for Pakistani farmers.',
+          ),
+        ];
+      case 'Cotton':
+        return [
+          LearningVideo(
+            videoId: '3fKkQREo_mQ',
+            title: 'Cotton Crop — How We Can Improve Cotton Yield',
+            channelTitle: 'Agri Intel',
+            publishedAt: now.subtract(const Duration(days: 55)),
+            thumbnailUrl: _thumb('3fKkQREo_mQ'),
+            description: 'Cotton / kapas management tips for Pakistan.',
+          ),
+          LearningVideo(
+            videoId: 'jt5Yr9jZcOQ',
+            title: 'Pakistan Agriculture Reforms — Cotton & Water',
+            channelTitle: 'PIDE Official',
+            publishedAt: now.subtract(const Duration(days: 90)),
+            thumbnailUrl: _thumb('jt5Yr9jZcOQ'),
+            description: 'Water and crop choice discussion for farmers.',
+          ),
+        ];
+      case 'Sugarcane':
+        return [
+          LearningVideo(
+            videoId: 'P3huKJqy6Xs',
+            title: 'How to Grow Sugarcane in Pakistan — Management Guide',
+            channelTitle: 'Agriculture Learning',
+            publishedAt: now.subtract(const Duration(days: 70)),
+            thumbnailUrl: _thumb('P3huKJqy6Xs'),
+            description: 'Ganna / sugarcane cultivation steps.',
+          ),
+          LearningVideo(
+            videoId: 'WhyDitkbmjA',
+            title: 'Ganne Ki Kheti — Sugarcane Farming in Village Pakistan',
+            channelTitle: 'Agriculture Learning',
+            publishedAt: now.subtract(const Duration(days: 120)),
+            thumbnailUrl: _thumb('WhyDitkbmjA'),
+            description: 'Field-level sugarcane farming walkthrough.',
+          ),
+        ];
+      case 'Maize':
+        return [
+          LearningVideo(
+            videoId: 'O0KSZn5QuX0',
+            title: 'Maize Growing Methods — Corn Cultivation Guide',
+            channelTitle: 'Nature N Agriculture',
+            publishedAt: now.subtract(const Duration(days: 60)),
+            thumbnailUrl: _thumb('O0KSZn5QuX0'),
+            description: 'Makai / maize cultivation techniques (Urdu/Hindi).',
+          ),
+          LearningVideo(
+            videoId: 'jt5Yr9jZcOQ',
+            title: 'Pakistan Agriculture Reforms — Crop Choices',
+            channelTitle: 'PIDE Official',
+            publishedAt: now.subtract(const Duration(days: 90)),
+            thumbnailUrl: _thumb('jt5Yr9jZcOQ'),
+            description: 'Broader farming economics for Pakistani growers.',
+          ),
+        ];
+      case 'Wheat':
+      default:
+        return [
+          LearningVideo(
+            videoId: 'DAUHaMb2IW4',
+            title: 'Effective Use of Potash in Wheat Crop',
+            channelTitle: 'Crop Reformer',
+            publishedAt: now.subtract(const Duration(days: 25)),
+            thumbnailUrl: _thumb('DAUHaMb2IW4'),
+            description: 'Wheat fertilizer guidance for Pakistani farmers.',
+          ),
+          LearningVideo(
+            videoId: 'FOw9pfTMvcE',
+            title: 'Wheat Production Plan — Complete Guide',
+            channelTitle: 'Agriculture Learning',
+            publishedAt: now.subtract(const Duration(days: 45)),
+            thumbnailUrl: _thumb('FOw9pfTMvcE'),
+            description: 'End-to-end wheat / gandum production planning.',
+          ),
+          LearningVideo(
+            videoId: 'jZckwIwvQjU',
+            title: 'How to Grow Wheat — Cultivation Basics',
+            channelTitle: 'Agriculture Learning',
+            publishedAt: now.subtract(const Duration(days: 80)),
+            thumbnailUrl: _thumb('jZckwIwvQjU'),
+            description: 'Sowing and crop care fundamentals for wheat.',
+          ),
+        ];
+    }
   }
 
   String _toJson(List<LearningVideo> videos, {required String source}) {

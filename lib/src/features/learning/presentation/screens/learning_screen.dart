@@ -228,6 +228,10 @@ class _LearningScreenState extends State<LearningScreen> {
                   title: l10n.t('learningIntroTitle'),
                   hint: l10n.t('learningIntroHint'),
                 ),
+                if (!_repository.isConfigured) ...[
+                  const SizedBox(height: 12),
+                  _DemoModeBanner(palette: palette),
+                ],
                 const SizedBox(height: 16),
                 LearningSearchField(
                   controller: _searchController,
@@ -433,6 +437,15 @@ class _LearningVideoCard extends StatelessWidget {
                       : Image.network(
                           video.thumbnailUrl,
                           fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: gradientColors,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                          ),
                         ),
                 ),
                 Positioned.fill(
@@ -834,11 +847,57 @@ String _localizedCropName(AppLocalizations l10n, String crop) {
   };
 }
 
+/// Shown only when [YOUTUBE_API_KEY] is missing so farmers know why the
+/// catalog is curated/offline instead of live search results.
+class _DemoModeBanner extends StatelessWidget {
+  const _DemoModeBanner({required this.palette});
+
+  final _LearningPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: palette.primaryContainer.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: palette.primary.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, size: 18, color: palette.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n.t('learningDemoMode'),
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+                color: palette.onPrimaryContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 Future<void> _openYoutube(BuildContext context, String url) async {
-  final uri = Uri.tryParse(url);
-  if (uri == null) {
+  final primary = Uri.tryParse(url);
+  if (primary == null) {
     if (context.mounted) _showCouldNotOpen(context);
     return;
+  }
+
+  final candidates = <Uri>[primary];
+  final videoId = primary.queryParameters['v'];
+  if (videoId != null && videoId.isNotEmpty) {
+    candidates.add(Uri.parse('https://youtu.be/$videoId'));
   }
 
   // Try, in order: external app (YouTube / browser), in-app web view, and
@@ -851,11 +910,13 @@ Future<void> _openYoutube(BuildContext context, String url) async {
     LaunchMode.platformDefault,
   ];
 
-  for (final mode in modes) {
-    try {
-      if (await launchUrl(uri, mode: mode)) return;
-    } catch (_) {
-      // Try the next mode.
+  for (final uri in candidates) {
+    for (final mode in modes) {
+      try {
+        if (await launchUrl(uri, mode: mode)) return;
+      } catch (_) {
+        // Try the next mode / URL shape.
+      }
     }
   }
 

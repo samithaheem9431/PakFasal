@@ -240,6 +240,7 @@ class AuthTopBar extends StatelessWidget {
             children: [
               Align(alignment: Alignment.centerLeft, child: leadingWidget),
               Text(title, style: titleStyle),
+              // Keep language chip on the physical right in both EN and UR.
               const Align(alignment: Alignment.centerRight, child: language),
             ],
           ),
@@ -251,13 +252,22 @@ class AuthTopBar extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, metrics.gapXs, 16, 0),
       child: SizedBox(
         height: metrics.topBarHeight,
-        child: Row(
-          children: [
-            leadingWidget,
-            SizedBox(width: metrics.gapSm + 2),
-            Expanded(child: Text(title, style: titleStyle)),
-            language,
-          ],
+        // LTR row so the language chip stays on the right in Urdu too.
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            children: [
+              leadingWidget,
+              SizedBox(width: metrics.gapSm + 2),
+              Expanded(
+                child: Directionality(
+                  textDirection: Directionality.of(context),
+                  child: Text(title, style: titleStyle),
+                ),
+              ),
+              language,
+            ],
+          ),
         ),
       ),
     );
