@@ -66,13 +66,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       title: l10n.t('marketDetail'),
       backgroundColor: pageBg,
       child: ListView(
-        padding: PakFasalFloatingBottomBar.scrollPadding(
-          context,
-          left: 16,
-          top: 12,
-          right: 16,
-          bottom: 24,
-        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           _ImageGallery(
             images: images,

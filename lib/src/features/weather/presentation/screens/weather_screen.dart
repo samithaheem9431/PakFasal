@@ -131,7 +131,7 @@ class _WeatherContent extends StatelessWidget {
       padding: context.pagePadding(
         horizontal: 16,
         top: 12,
-        bottom: 16 + PakFasalFloatingBottomBar.contentClearance(context),
+        bottom: 24,
       ),
       children: [
         if (weather.isStale) ...[

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <!-- Keep system nav white with dark icons in night mode too. -->
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@color/system_navigation_bar</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@color/system_navigation_bar_scrim</item>
         <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:enforceNavigationBarContrast">false</item>
-        <item name="android:enforceStatusBarContrast">false</item>
     </style>
 </resources>

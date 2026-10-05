@@ -95,8 +95,7 @@ class _GovtSchemesViewState extends State<_GovtSchemesView> {
         color: AppColors.primaryGreen,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: PakFasalFloatingBottomBar.scrollPadding(
-            context,
+          padding: EdgeInsets.only(
             bottom: context.pagePadding(bottom: 20).bottom,
           ),
           children: [

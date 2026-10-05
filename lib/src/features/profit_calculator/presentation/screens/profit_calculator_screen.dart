@@ -109,13 +109,7 @@ class _ProfitCalculatorViewState extends State<_ProfitCalculatorView> {
     return PakFasalScaffold(
       title: l10n.t('profitCalculator'),
       child: ListView(
-        padding: PakFasalFloatingBottomBar.scrollPadding(
-          context,
-          left: hPad,
-          top: 16,
-          right: hPad,
-          bottom: 24,
-        ),
+        padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 24),
         children: [
           Text(
             l10n.t('profitCalculatorHint'),

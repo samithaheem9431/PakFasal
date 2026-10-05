@@ -9,7 +9,6 @@ import '../../../../core/localization/localization_controller.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/auth_required_dialog.dart';
-import '../../../../core/widgets/pakfasal_scaffold.dart';
 
 /// View All modules — scenic hero + pastel module cards matching design mock.
 class ViewAllModulesScreen extends StatelessWidget {
@@ -24,8 +23,7 @@ class ViewAllModulesScreen extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hPad = context.isCompact ? 14.0 : 18.0;
-    final bottomClearance =
-        PakFasalFloatingBottomBar.contentClearance(context);
+    final bottomClearance = MediaQuery.paddingOf(context).bottom + 24;
 
     final modules = <_ModuleItem>[
       _ModuleItem(
@@ -116,9 +114,10 @@ class ViewAllModulesScreen extends StatelessWidget {
         statusBarIconBrightness:
             isDark ? Brightness.light : Brightness.dark,
         statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness:
-            isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: AppColors.white,
+        systemNavigationBarDividerColor: AppColors.white,
+        systemNavigationBarContrastEnforced: false,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
         backgroundColor: isDark ? scheme.surface : Colors.white,
@@ -167,15 +166,6 @@ class ViewAllModulesScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: PakFasalFloatingBottomBar(
-                selectedIndex: 0,
-                onTap: (index) => _onBottomNavTap(context, index),
-              ),
-            ),
           ],
         ),
       ),
@@ -211,35 +201,6 @@ class ViewAllModulesScreen extends StatelessWidget {
     }
 
     Navigator.pushNamed(context, module.route);
-  }
-
-  Future<void> _onBottomNavTap(BuildContext context, int index) async {
-    final target = switch (index) {
-      1 => AppRoutes.aiQuery,
-      2 => AppRoutes.sensor,
-      3 => AppRoutes.profile,
-      _ => AppRoutes.home,
-    };
-    if (index == 0) {
-      Navigator.popUntil(context, (route) => route.isFirst);
-      return;
-    }
-    if (index == 1 || index == 2) {
-      final allowed = await ensureRegisteredUser(context);
-      if (!allowed || !context.mounted) return;
-    }
-    if (!context.mounted) return;
-    if (index == 2) {
-      await InterstitialAdService.instance.runAfterAdGate(
-        AdPlacement.sensorModule,
-        () {
-          if (!context.mounted) return;
-          Navigator.pushReplacementNamed(context, target);
-        },
-      );
-      return;
-    }
-    Navigator.pushReplacementNamed(context, target);
   }
 }
 

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#2E7D32</color>
+    <!-- Opaque surface behind Flutter (window). Nav bar is transparent so
+         photo screens can draw edge-to-edge under the system buttons. -->
+    <color name="system_navigation_bar">#FFFFFF</color>
+    <color name="system_navigation_bar_scrim">#00000000</color>
 </resources>

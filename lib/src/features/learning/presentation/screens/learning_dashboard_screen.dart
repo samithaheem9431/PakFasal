@@ -124,13 +124,7 @@ class _LearningDashboardScreenState extends State<LearningDashboardScreen>
           final aspect = columns == 1 ? 1.6 : (columns >= 3 ? 0.95 : 0.88);
 
           return SingleChildScrollView(
-            padding: PakFasalFloatingBottomBar.scrollPadding(
-              context,
-              left: hPad,
-              top: 8,
-              right: hPad,
-              bottom: 28,
-            ),
+            padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 28),
             child: ConstrainedBox(
               constraints:
               BoxConstraints(minHeight: constraints.maxHeight - 16),

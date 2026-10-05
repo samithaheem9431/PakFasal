@@ -60,13 +60,7 @@ class _CropSelectionScreenState extends State<CropSelectionScreen> {
 
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: PakFasalFloatingBottomBar.scrollPadding(
-                context,
-                left: 20,
-                top: 8,
-                right: 20,
-                bottom: 24,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               children: [
                 LearningIntro(
                   title: l10n.t('cropDiseasePickCrop'),

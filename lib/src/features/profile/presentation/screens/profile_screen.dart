@@ -296,6 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return PakFasalScaffold(
       title: l10n.t('profile'),
+      showBottomNavigation: true,
       showBack: false,
       hideAppBar: true,
       showLanguageToggle: false,

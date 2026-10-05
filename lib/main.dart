@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -10,6 +11,7 @@ import 'src/core/config/app_config.dart';
 import 'src/core/error/error_logger.dart';
 import 'src/core/localization/localization_controller.dart';
 import 'src/core/performance/device_performance.dart';
+import 'src/core/theme/app_colors.dart';
 import 'src/core/theme/theme_controller.dart';
 import 'src/features/auth/presentation/providers/auth_session_controller.dart';
 import 'src/features/auth/presentation/providers/biometric_lock_controller.dart';
@@ -24,6 +26,17 @@ Future<void> main() async {
   await runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: AppColors.white,
+          systemNavigationBarDividerColor: AppColors.white,
+          systemNavigationBarContrastEnforced: false,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+      );
       DevicePerformance.init();
 
       // Critical path only — open Hive boxes in parallel (not one-by-one).

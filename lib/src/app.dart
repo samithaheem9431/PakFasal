@@ -10,7 +10,6 @@ import 'core/routing/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/widgets/app_lock_gate.dart';
-import 'core/widgets/pakfasal_scaffold.dart';
 
 class PakFasalApp extends StatelessWidget {
   const PakFasalApp({super.key});
@@ -64,7 +63,17 @@ class PakFasalApp extends StatelessWidget {
         }
 
         return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: pakFasalSystemOverlay(context),
+          // Transparent by default so photo screens (auth/splash) fill under
+          // the nav bar. PakFasalScaffold / home restore opaque white.
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarDividerColor: Colors.transparent,
+            systemNavigationBarContrastEnforced: false,
+            systemNavigationBarIconBrightness: Brightness.dark,
+          ),
           child: content,
         );
       },

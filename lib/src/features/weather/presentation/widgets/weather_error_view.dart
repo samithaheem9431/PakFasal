@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/pakfasal_scaffold.dart';
 
 /// Empty / error state — light / dark aware.
 class WeatherErrorView extends StatelessWidget {
@@ -23,7 +22,6 @@ class WeatherErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final bottom = PakFasalFloatingBottomBar.contentClearance(context);
     final textColor = dark ? AppColors.white : AppColors.darkText;
     final muted = dark
         ? AppColors.white.withValues(alpha: 0.7)
@@ -31,7 +29,7 @@ class WeatherErrorView extends StatelessWidget {
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(20, 24, 20, bottom + 16),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       children: [
         Container(
           width: 96,

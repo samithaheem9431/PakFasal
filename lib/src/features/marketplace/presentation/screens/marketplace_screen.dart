@@ -91,10 +91,7 @@ class _MarketplaceViewState extends State<_MarketplaceView> {
         onRefresh: () => provider.load(forceRefresh: true),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: PakFasalFloatingBottomBar.scrollPadding(
-            context,
-            bottom: 20,
-          ),
+          padding: const EdgeInsets.only(bottom: 20),
           children: [
             _MarketplaceHeroHeader(
               topInset: topInset,

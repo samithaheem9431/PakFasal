@@ -51,12 +51,11 @@ class SchemeDetailScreen extends StatelessWidget {
     return PakFasalScaffold(
       title: l10n.t('schemeDetailTitle'),
       child: ListView(
-        padding: PakFasalFloatingBottomBar.scrollPadding(
-          context,
-          left: context.pagePadding(horizontal: 16).left,
-          top: 12,
-          right: context.pagePadding(horizontal: 16).right,
-          bottom: 24,
+        padding: EdgeInsets.fromLTRB(
+          context.pagePadding(horizontal: 16).left,
+          12,
+          context.pagePadding(horizontal: 16).right,
+          24,
         ),
         children: [
           ClipRRect(

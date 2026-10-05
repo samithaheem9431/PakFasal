@@ -231,13 +231,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     return PakFasalScaffold(
       title: article.category(languageCode),
       child: ListView(
-        padding: PakFasalFloatingBottomBar.scrollPadding(
-          context,
-          left: 20,
-          top: 12,
-          right: 20,
-          bottom: 28,
-        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
         children: [
           LearningDetailHeader(
             icon: article.icon,

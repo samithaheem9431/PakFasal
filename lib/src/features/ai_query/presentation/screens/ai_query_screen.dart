@@ -370,6 +370,7 @@ class _AiQueryScreenState extends State<AiQueryScreen> {
 
     return PakFasalScaffold(
       title: l10n.t('askAi'),
+      showBottomNavigation: true,
       showBack: true,
       actions: [
         IconButton(

@@ -34,13 +34,7 @@ class CropDiseaseDetailScreen extends StatelessWidget {
     return PakFasalScaffold(
       title: cropName,
       child: ListView.builder(
-        padding: PakFasalFloatingBottomBar.scrollPadding(
-          context,
-          left: 16,
-          top: 8,
-          right: 16,
-          bottom: 24,
-        ),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         itemCount: crop.diseases.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {

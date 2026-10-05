@@ -50,20 +50,13 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
       title: l10n.t('cropCalendar'),
       floatingActionButton: provider.tab == CropCalendarTab.myCrops &&
               provider.canManagePlantings
-          ? Padding(
-              // Scaffold pins the FAB 16px above the body. The floating nav
-              // sits in that same band, so lift the button clear of the bar.
-              padding: EdgeInsets.only(
-                bottom: PakFasalFloatingBottomBar.contentClearance(context),
-              ),
-              child: FloatingActionButton.extended(
+          ? FloatingActionButton.extended(
                 onPressed: provider.isMutating
                     ? null
                     : () => _openAddSheet(context, provider),
                 icon: const Icon(Icons.add_rounded),
                 label: Text(l10n.t('cropCalAddPlanting')),
-              ),
-            )
+              )
           : null,
       child: SafeArea(
         top: false,
@@ -89,9 +82,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen> {
         return _MyCropsTab(provider: provider);
       case CropCalendarTab.month:
         return SingleChildScrollView(
-          padding: EdgeInsets.only(
-            bottom: PakFasalFloatingBottomBar.contentClearance(context),
-          ),
+          padding: const EdgeInsets.only(bottom: 24),
           child: MonthCalendarGrid(
             visibleMonth: provider.visibleMonth,
             windows: provider.monthWindows,
@@ -199,13 +190,7 @@ class _GuideTab extends StatelessWidget {
             ),
           ),
           SliverPadding(
-            padding: PakFasalFloatingBottomBar.scrollPadding(
-              context,
-              left: 16,
-              top: 0,
-              right: 16,
-              bottom: 32,
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList.builder(
               itemCount: plan.activities.length,
               itemBuilder: (context, index) {
@@ -243,10 +228,9 @@ class _MyCropsTab extends StatelessWidget {
 
   final CropCalendarProvider provider;
 
-  /// Keeps centered empty/error content above the floating bar and Add button.
+  /// Keeps centered empty/error content above the Add button.
   Widget _aboveBottomChrome(BuildContext context, {required Widget child}) {
-    final lift = PakFasalFloatingBottomBar.contentClearance(context) +
-        (provider.canManagePlantings ? 56 : 0);
+    final lift = provider.canManagePlantings ? 56.0 : 0.0;
     return Padding(
       padding: EdgeInsets.only(bottom: lift),
       child: child,
@@ -327,13 +311,12 @@ class _MyCropsTab extends StatelessWidget {
         active == null ? const <DatedStageWindow>[] : provider.windowsForPlanting(active);
 
     return ListView(
-      padding: PakFasalFloatingBottomBar.scrollPadding(
-        context,
-        left: 16,
-        top: 8,
-        right: 16,
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
         // Extra room so the last card stays above the Add Planting button.
-        bottom: provider.canManagePlantings ? 88 : 24,
+        provider.canManagePlantings ? 88 : 24,
       ),
       children: [
         Text(

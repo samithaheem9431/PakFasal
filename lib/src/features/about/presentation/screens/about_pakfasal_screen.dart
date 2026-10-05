@@ -242,13 +242,7 @@ class _AboutPakFasalScreenState extends State<AboutPakFasalScreen>
       title: l10n.t(_isHelpMode ? 'aboutHelpSupport' : 'aboutPakFasal'),
       child: ListView(
         controller: _scrollController,
-        padding: PakFasalFloatingBottomBar.scrollPadding(
-          context,
-          left: 16,
-          top: 12,
-          right: 16,
-          bottom: 28,
-        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: _isHelpMode
             ? _buildHelpChildren(
                 l10n: l10n,

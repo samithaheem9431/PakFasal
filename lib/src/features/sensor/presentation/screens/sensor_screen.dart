@@ -322,6 +322,7 @@ class _SensorScreenState extends State<SensorScreen>
 
     return PakFasalScaffold(
       title: l10n.t('sensorData'),
+      showBottomNavigation: true,
       child: ListView(
         padding: PakFasalFloatingBottomBar.scrollPadding(
           context,

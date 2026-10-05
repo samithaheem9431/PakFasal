@@ -10,16 +10,16 @@ import 'auth_required_dialog.dart';
 import 'language_toggle_button.dart';
 
 SystemUiOverlayStyle pakFasalSystemOverlay(BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  return SystemUiOverlayStyle(
+  // [context] kept so call sites stay theme-ready; nav chrome is fixed white.
+  return const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
     statusBarBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
+    // Match scaffold/home surface (scheme.surface / AppColors.white).
+    systemNavigationBarColor: AppColors.white,
+    systemNavigationBarDividerColor: AppColors.white,
     systemNavigationBarContrastEnforced: false,
-    systemNavigationBarIconBrightness:
-        isDark ? Brightness.light : Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.dark,
   );
 }
 
@@ -32,7 +32,7 @@ class PakFasalScaffold extends StatelessWidget {
     this.isOffline = false,
     this.actions,
     this.floatingActionButton,
-    this.showBottomNavigation = true,
+    this.showBottomNavigation = false,
     this.backgroundColor,
     this.transparentChrome = false,
     this.extendBodyBehindAppBar = false,
@@ -209,17 +209,20 @@ class PakFasalScaffold extends StatelessWidget {
                 top: !(hideAppBar ||
                     transparentChrome ||
                     extendBodyBehindAppBar),
-                bottom: false,
-                // Page paints edge-to-edge under the floating bar — no reserved
-                // silver/grey band. Scroll screens add contentClearance themselves.
+                // With bottom nav, content extends under the floating bar;
+                // the bar's own SafeArea clears the system nav. Without it,
+                // keep bottom inset so content sits above the white nav bar.
+                bottom: !showBottomNavigation,
                 child: ResponsiveContent(child: child),
               ),
             ),
             if (showBottomNavigation)
+              // Keep the bar pinned to the physical screen bottom when the IME
+              // opens (Scaffold shrinks the body by viewInsets otherwise).
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 0,
+                bottom: -MediaQuery.viewInsetsOf(context).bottom,
                 child: PakFasalFloatingBottomBar(
                   selectedIndex: _selectedNavIndex(context),
                   onTap: (index) => _onNavTap(context, index),
@@ -240,16 +243,27 @@ class PakFasalFloatingBottomBar extends StatelessWidget {
     required this.onTap,
   });
 
+  /// Distance from the physical screen bottom to the bar bottom.
+  ///
+  /// Uses system view padding so gesture / button nav stay clear, but caps
+  /// oversized insets so the bar does not float too high on some Androids.
+  static double bottomOffset(BuildContext context) {
+    final systemBottom = MediaQuery.viewPaddingOf(context).bottom;
+    final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+    final gap = shortestSide < 600 ? 6.0 : 10.0;
+    final maxInset = shortestSide < 600 ? 16.0 : 20.0;
+    return gap + systemBottom.clamp(0.0, maxInset);
+  }
+
   /// Space content needs above the screen bottom so it clears the floating bar.
   static double contentClearance(BuildContext context) {
+    // While the keyboard is open the bar sits under the IME — don't reserve
+    // bar height above the keyboard (Scaffold already insets by viewInsets).
+    if (MediaQuery.viewInsetsOf(context).bottom > 0) return 0;
     final narrow = MediaQuery.sizeOf(context).width < 360;
     final barHeight = narrow ? 62.0 : 68.0;
-    const padBelowBar = 12.0;
     const gapAboveBar = 6.0;
-    return barHeight +
-        padBelowBar +
-        gapAboveBar +
-        MediaQuery.paddingOf(context).bottom;
+    return barHeight + gapAboveBar + bottomOffset(context);
   }
 
   /// Scroll / list padding that clears the floating bar (View All style).
@@ -275,72 +289,73 @@ class PakFasalFloatingBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final narrow = context.screenWidth < 360;
-    final sidePad = context.isExpanded ? 24.0 : (narrow ? 10.0 : 16.0);
+    final width = context.screenWidth;
+    final narrow = width < 360;
+    final sidePad = context.isExpanded
+        ? 24.0
+        : (narrow ? 10.0 : (width < 400 ? 12.0 : 16.0));
+    final bottomPad = bottomOffset(context);
 
     return Material(
       type: MaterialType.transparency,
-      child: SafeArea(
-        top: false,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: AppBreakpoints.maxContentWidth,
-            ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(sidePad, 0, sidePad, 12),
-              child: Container(
-                height: narrow ? 62 : 68,
-                padding: EdgeInsets.symmetric(
-                  horizontal: narrow ? 4 : 8,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.primaryGreen : AppColors.white,
-                  borderRadius: BorderRadius.circular(40),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          Colors.black.withValues(alpha: isDark ? 0.18 : 0.10),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _BottomTabItem(
-                      icon: Icons.home,
-                      label: localizations.t('home'),
-                      isActive: selectedIndex == 0,
-                      onTap: () => onTap(0),
-                      compact: narrow,
-                    ),
-                    _BottomTabItem(
-                      icon: Icons.smart_toy_outlined,
-                      label: localizations.t('askAi'),
-                      isActive: selectedIndex == 1,
-                      onTap: () => onTap(1),
-                      compact: narrow,
-                    ),
-                    _BottomTabItem(
-                      icon: Icons.sensors_outlined,
-                      label: localizations.t('sensorData'),
-                      isActive: selectedIndex == 2,
-                      onTap: () => onTap(2),
-                      compact: narrow,
-                    ),
-                    _BottomTabItem(
-                      icon: Icons.person_outline,
-                      label: localizations.t('profile'),
-                      isActive: selectedIndex == 3,
-                      onTap: () => onTap(3),
-                      compact: narrow,
-                    ),
-                  ],
-                ),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: AppBreakpoints.maxContentWidth,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(sidePad, 0, sidePad, bottomPad),
+            child: Container(
+              height: narrow ? 62 : 68,
+              padding: EdgeInsets.symmetric(
+                horizontal: narrow ? 4 : 8,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.primaryGreen : AppColors.white,
+                borderRadius: BorderRadius.circular(40),
+                boxShadow: [
+                  BoxShadow(
+                    color:
+                        Colors.black.withValues(alpha: isDark ? 0.18 : 0.10),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _BottomTabItem(
+                    icon: Icons.home,
+                    label: localizations.t('home'),
+                    isActive: selectedIndex == 0,
+                    onTap: () => onTap(0),
+                    compact: narrow,
+                  ),
+                  _BottomTabItem(
+                    icon: Icons.smart_toy_outlined,
+                    label: localizations.t('askAi'),
+                    isActive: selectedIndex == 1,
+                    onTap: () => onTap(1),
+                    compact: narrow,
+                  ),
+                  _BottomTabItem(
+                    icon: Icons.sensors_outlined,
+                    label: localizations.t('sensorData'),
+                    isActive: selectedIndex == 2,
+                    onTap: () => onTap(2),
+                    compact: narrow,
+                  ),
+                  _BottomTabItem(
+                    icon: Icons.person_outline,
+                    label: localizations.t('profile'),
+                    isActive: selectedIndex == 3,
+                    onTap: () => onTap(3),
+                    compact: narrow,
+                  ),
+                ],
               ),
             ),
           ),

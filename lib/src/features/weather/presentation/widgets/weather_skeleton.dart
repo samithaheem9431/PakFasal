@@ -3,7 +3,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../../../core/performance/device_performance.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/pakfasal_scaffold.dart';
 
 /// Full-screen skeleton for first load — light / dark aware.
 class WeatherSkeleton extends StatelessWidget {
@@ -12,11 +11,10 @@ class WeatherSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final bottom = PakFasalFloatingBottomBar.contentClearance(context);
     final reduceMotion = DevicePerformance.reduceMotion;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(16, 16, 16, bottom + 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
         _HeroSkeleton(isDark: dark, animate: !reduceMotion),
         const SizedBox(height: 14),

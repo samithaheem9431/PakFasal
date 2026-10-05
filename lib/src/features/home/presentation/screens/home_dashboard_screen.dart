@@ -887,7 +887,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           Positioned(
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: -MediaQuery.viewInsetsOf(context).bottom,
             child: PakFasalFloatingBottomBar(
               selectedIndex: _selectedBottomIndex,
               onTap: _onBottomNavTap,

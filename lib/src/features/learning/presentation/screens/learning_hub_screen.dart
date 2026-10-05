@@ -22,13 +22,10 @@ class LearningHubScreen extends StatelessWidget {
     
     return PakFasalScaffold(
       title: l10n.t('learning'),
-      showBottomNavigation: true,
       child: Container(
         color: isDark ? scheme.surface : const Color(0xFFF5F5F5),
         child: SingleChildScrollView(
-          padding: EdgeInsets.only(
-            bottom: PakFasalFloatingBottomBar.contentClearance(context),
-          ),
+          padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
