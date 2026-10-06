@@ -40,9 +40,11 @@ class SensorBleService {
   StreamSubscription<List<ScanResult>>? _scanSub;
   StreamSubscription<BluetoothConnectionState>? _connSub;
   StreamSubscription<List<int>>? _notifySub;
+  Timer? _scanTimeout;
   BluetoothDevice? _device;
   BluetoothCharacteristic? _rxCharacteristic;
   final Map<String, SensorBleScanHit> _hits = {};
+  var _isScanning = false;
 
   Stream<SensorBleConnectionState> get connectionStates =>
       _connectionController.stream;
@@ -95,9 +97,10 @@ class SensorBleService {
     final ready = await ensureReady();
     if (!ready) return;
 
-    await stopScan();
+    await stopScan(emitIdle: false);
     _hits.clear();
     _scanController.add(const []);
+    _isScanning = true;
     _emit(SensorBleConnectionState.scanning);
 
     _scanSub = FlutterBluePlus.scanResults.listen((results) {
@@ -117,32 +120,45 @@ class SensorBleService {
       _scanController.add(sorted);
     });
 
-    await FlutterBluePlus.startScan(
-      timeout: timeout,
-      androidUsesFineLocation: true,
-    );
-
-    // If still scanning state after timeout and not connected, go idle.
-    await Future<void>.delayed(timeout);
-    if (_device == null) {
+    try {
+      await FlutterBluePlus.startScan(
+        timeout: timeout,
+        androidUsesFineLocation: true,
+      );
+    } catch (e) {
+      debugPrint('sensor_ble: startScan failed: $e');
       await stopScan();
-      _emit(SensorBleConnectionState.idle);
+      return;
     }
+
+    // Auto-stop UI when the plugin timeout ends (or sooner via stopScan).
+    _scanTimeout?.cancel();
+    _scanTimeout = Timer(timeout, () {
+      if (_isScanning && _device == null) {
+        unawaited(stopScan());
+      }
+    });
   }
 
-  Future<void> stopScan() async {
+  Future<void> stopScan({bool emitIdle = true}) async {
+    _scanTimeout?.cancel();
+    _scanTimeout = null;
+    _isScanning = false;
     await _scanSub?.cancel();
     _scanSub = null;
     try {
       await FlutterBluePlus.stopScan();
     } catch (_) {}
+    if (emitIdle && _device == null) {
+      _emit(SensorBleConnectionState.idle);
+    }
   }
 
   Future<void> connect(BluetoothDevice device) async {
     final ready = await ensureReady();
     if (!ready) return;
 
-    await stopScan();
+    await stopScan(emitIdle: false);
     await disconnect();
     _emit(SensorBleConnectionState.connecting);
 

@@ -388,7 +388,9 @@ class _SensorScreenState extends State<SensorScreen>
             isWifiProvisioning: _isWifiProvisioning,
             onCropChanged: (value) => setState(() => _selectedCrop = value),
             onScan: _startBleScan,
-            onStopScan: () => _bleService.stopScan(),
+            onStopScan: () {
+              unawaited(_bleService.stopScan());
+            },
             onConnect: _connectBleDevice,
             onDisconnect: () => _bleService.disconnect(),
             onProvisionWifi: _promptWifiProvision,
