@@ -407,6 +407,11 @@ class AuthSessionController extends ChangeNotifier {
         debugPrint('Sensor readings delete failed: $e\n$st');
       }
       try {
+        await _sensorRepository.clearDeviceBinding();
+      } catch (e, st) {
+        debugPrint('Sensor device binding delete failed: $e\n$st');
+      }
+      try {
         await _cropPlantingRepository.clearAllPlantingsForCurrentUser();
       } catch (e, st) {
         debugPrint('Crop plantings delete failed: $e\n$st');

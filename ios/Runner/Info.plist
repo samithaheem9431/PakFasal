@@ -59,6 +59,10 @@
 	<string>PakFasal needs camera access so you can set your profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>PakFasal needs photo library access so you can choose a profile photo.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>PakFasal uses Bluetooth to connect to your farm soil moisture and pH sensor.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>PakFasal uses Bluetooth to connect to your farm soil moisture and pH sensor.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

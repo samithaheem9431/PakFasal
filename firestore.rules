@@ -11,16 +11,42 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Shared live sensor feed. Any signed-in user (registered; guests do
-    // not have a real Firebase session) can read the stream, add new
-    // readings from the manual input form, and clear history (matches
-    // SensorRepository.clearAllReadings). Readings are never edited in
-    // place, only created/deleted.
+    // Per-user DSS history (BLE/WiFi advice sessions). Guests have no Firebase
+    // Auth session. Readings are never edited in place, only created/deleted.
     match /sensor_readings/{readingId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid;
       allow update: if false;
-      allow delete: if request.auth != null;
+      allow delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    // BLE pairing record: ownerId doc id → claimed ESP32 deviceId.
+    match /sensor_bindings/{ownerId} {
+      allow read, delete: if request.auth != null
+        && request.auth.uid == ownerId;
+      allow create, update: if request.auth != null
+        && request.auth.uid == ownerId
+        && request.resource.data.ownerId == ownerId
+        && request.resource.data.deviceId is string
+        && request.resource.data.deviceId.size() > 0
+        && request.resource.data.deviceId.size() < 128;
+    }
+
+    // ESP32 WiFi live uploads keyed by hardware deviceId. Writes are open to
+    // devices that know the id (printed on BLE JSON); reads require auth.
+    match /sensor_live/{deviceId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.resource.data.deviceId == deviceId
+        && request.resource.data.soilMoisture is number
+        && request.resource.data.phLevel is number
+        && request.resource.data.soilMoisture >= 0
+        && request.resource.data.soilMoisture <= 100
+        && request.resource.data.phLevel >= 0
+        && request.resource.data.phLevel <= 14;
+      allow delete: if false;
     }
 
     // DSS rule thresholds. Read-only from the app; edit via the Firebase

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,8 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/pakfasal_scaffold.dart';
 import '../../data/repositories/sensor_repository.dart';
+import '../../data/services/sensor_ble_service.dart';
+import '../../domain/entities/live_sensor_sample.dart';
 import '../../domain/entities/sensor_reading.dart';
 import '../../domain/services/ml_dss_engine.dart';
 import '../../domain/services/moisture_forecast.dart';
@@ -24,16 +27,22 @@ class SensorScreen extends StatefulWidget {
 
 class _SensorScreenState extends State<SensorScreen>
     with WidgetsBindingObserver {
-  final TextEditingController _moistureController = TextEditingController();
-  final TextEditingController _phController = TextEditingController();
-  final GlobalKey<FormState> _manualFormKey = GlobalKey<FormState>();
   final SensorRepository _sensorRepository = SensorRepository();
   final WeatherRepository _weatherRepository = WeatherRepository();
   final FlutterTts _flutterTts = FlutterTts();
+  final SensorBleService _bleService = SensorBleService();
   StreamSubscription<List<SensorReading>>? _sensorSubscription;
+  StreamSubscription<SensorBleConnectionState>? _bleConnectionSub;
+  StreamSubscription<LiveSensorSample>? _bleSampleSub;
+  StreamSubscription<List<SensorBleScanHit>>? _bleScanSub;
+  StreamSubscription<LiveSensorSample?>? _wifiLiveSub;
 
   final List<SensorReading> _history = [];
   SensorReading? _sessionLatestReading;
+  LiveSensorSample? _liveSample;
+  List<SensorBleScanHit> _scanHits = const [];
+  SensorBleConnectionState _bleState = SensorBleConnectionState.idle;
+  SensorDeviceBinding? _deviceBinding;
 
   String _selectedCrop = 'Wheat';
   int? _rainChancePercent;
@@ -41,8 +50,8 @@ class _SensorScreenState extends State<SensorScreen>
   bool _isResettingGraphs = false;
   bool _isWeatherLoading = true;
   bool _isSpeakingRecommendation = false;
-  bool _isInputValid = false;
   bool _ttsConfigured = false;
+  bool _isWifiProvisioning = false;
   String? _speakingRecommendationSection;
   String? _expandedRecommendationSection;
   DateTime? _lastWeatherSyncAt;
@@ -57,8 +66,7 @@ class _SensorScreenState extends State<SensorScreen>
     _loadRuleConfig();
     _loadMlEngine();
     _loadCurrentRainChance();
-    _moistureController.addListener(_recomputeInputValidity);
-    _phController.addListener(_recomputeInputValidity);
+    _loadDeviceBinding();
     _weatherAutoRefreshTimer = Timer.periodic(const Duration(minutes: 10), (_) {
       if (!mounted) return;
       _loadCurrentRainChance();
@@ -78,39 +86,71 @@ class _SensorScreenState extends State<SensorScreen>
         debugPrint('sensor_screen: watchRecentReadings failed: $error');
       },
     );
+    _bleConnectionSub = _bleService.connectionStates.listen((state) {
+      if (!mounted) return;
+      setState(() => _bleState = state);
+    });
+    _bleSampleSub = _bleService.samples.listen((sample) {
+      if (!mounted) return;
+      setState(() => _liveSample = sample);
+      _persistDeviceBinding(sample);
+    });
+    _bleScanSub = _bleService.scanHits.listen((hits) {
+      if (!mounted) return;
+      setState(() => _scanHits = hits);
+    });
   }
 
-  void _recomputeInputValidity() {
-    final moisture = double.tryParse(_moistureController.text.trim());
-    final ph = double.tryParse(_phController.text.trim());
-    final isValid =
-        moisture != null &&
-        moisture >= 0 &&
-        moisture <= 100 &&
-        ph != null &&
-        ph >= 0 &&
-        ph <= 14;
-    if (isValid != _isInputValid) {
-      setState(() => _isInputValid = isValid);
+  Future<void> _loadDeviceBinding() async {
+    try {
+      final binding = await _sensorRepository.fetchDeviceBinding();
+      if (!mounted) return;
+      setState(() => _deviceBinding = binding);
+      if (binding != null) {
+        await _subscribeWifiLive(binding.deviceId);
+      }
+    } catch (e) {
+      debugPrint('sensor_screen: bind load failed: $e');
     }
   }
 
-  String? _validateMoisture(String? value, AppLocalizations l10n) {
-    final raw = (value ?? '').trim();
-    if (raw.isEmpty) return l10n.t('sensorMoistureRequired');
-    final parsed = double.tryParse(raw);
-    if (parsed == null) return l10n.t('sensorInvalidNumber');
-    if (parsed < 0 || parsed > 100) return l10n.t('sensorMoistureRange');
-    return null;
+  Future<void> _persistDeviceBinding(LiveSensorSample sample) async {
+    try {
+      await _sensorRepository.bindDevice(
+        deviceId: sample.deviceId,
+        deviceName: sample.deviceName ?? 'PakFasal Sensor',
+      );
+      if (!mounted) return;
+      final binding = SensorDeviceBinding(
+        deviceId: sample.deviceId,
+        deviceName: sample.deviceName ?? 'PakFasal Sensor',
+        pairedAt: DateTime.now(),
+      );
+      setState(() => _deviceBinding = binding);
+      await _subscribeWifiLive(sample.deviceId);
+    } catch (e) {
+      debugPrint('sensor_screen: bind save failed: $e');
+    }
   }
 
-  String? _validatePh(String? value, AppLocalizations l10n) {
-    final raw = (value ?? '').trim();
-    if (raw.isEmpty) return l10n.t('sensorPhRequired');
-    final parsed = double.tryParse(raw);
-    if (parsed == null) return l10n.t('sensorInvalidNumber');
-    if (parsed < 0 || parsed > 14) return l10n.t('sensorPhRange');
-    return null;
+  Future<void> _subscribeWifiLive(String deviceId) async {
+    await _wifiLiveSub?.cancel();
+    _wifiLiveSub = _sensorRepository.watchDeviceLive(deviceId).listen(
+      (sample) {
+        if (!mounted || sample == null) return;
+        setState(() {
+          // Prefer fresher sample; keep BLE if it is newer.
+          final current = _liveSample;
+          if (current == null ||
+              !sample.updatedAt.isBefore(current.updatedAt)) {
+            _liveSample = sample;
+          }
+        });
+      },
+      onError: (Object error) {
+        debugPrint('sensor_screen: wifi live failed: $error');
+      },
+    );
   }
 
   Future<void> _loadRuleConfig() async {
@@ -178,11 +218,12 @@ class _SensorScreenState extends State<SensorScreen>
     WidgetsBinding.instance.removeObserver(this);
     _weatherAutoRefreshTimer?.cancel();
     _sensorSubscription?.cancel();
+    _bleConnectionSub?.cancel();
+    _bleSampleSub?.cancel();
+    _bleScanSub?.cancel();
+    _wifiLiveSub?.cancel();
+    _bleService.dispose();
     _flutterTts.stop();
-    _moistureController.removeListener(_recomputeInputValidity);
-    _phController.removeListener(_recomputeInputValidity);
-    _moistureController.dispose();
-    _phController.dispose();
     super.dispose();
   }
 
@@ -332,36 +373,49 @@ class _SensorScreenState extends State<SensorScreen>
           bottom: 16,
         ),
         children: [
-          _ManualInputCard(
-            formKey: _manualFormKey,
+          _SensorConnectCard(
             cropValue: _selectedCrop,
             rainChancePercent: _rainChancePercent,
             isWeatherLoading: _isWeatherLoading,
             lastWeatherSyncLabel: _lastWeatherSyncAt == null
                 ? null
                 : '${l10n.t('lastUpdated')}: ${TimeOfDay.fromDateTime(_lastWeatherSyncAt!).format(context)}',
-            moistureController: _moistureController,
-            phController: _phController,
-            moistureValidator: (value) => _validateMoisture(value, l10n),
-            phValidator: (value) => _validatePh(value, l10n),
+            bleState: _bleState,
+            scanHits: _scanHits,
+            liveSample: _liveSample,
+            deviceBinding: _deviceBinding,
+            isSubmitting: _isSubmitting,
+            isWifiProvisioning: _isWifiProvisioning,
             onCropChanged: (value) => setState(() => _selectedCrop = value),
-            onSubmit: (_isSubmitting || !_isInputValid)
+            onScan: _startBleScan,
+            onStopScan: () => _bleService.stopScan(),
+            onConnect: _connectBleDevice,
+            onDisconnect: () => _bleService.disconnect(),
+            onProvisionWifi: _promptWifiProvision,
+            onSubmit: (_isSubmitting || !(_liveSample?.isValid ?? false))
                 ? null
-                : _handleManualSubmit,
+                : () => _handleGetAdvice(),
             onRefreshWeather: _isWeatherLoading ? null : _loadCurrentRainChance,
           ),
           const SizedBox(height: 12),
           _SensorCard(
             title: l10n.t('soilMoisture'),
-            value: '${(latest?.soilMoisture ?? 0).toStringAsFixed(0)}%',
-            status: _statusForMoisture(l10n, latest?.soilMoisture ?? 0),
+            value: '${(_liveSample?.soilMoisture ?? latest?.soilMoisture ?? 0).toStringAsFixed(0)}%',
+            status: _statusForMoisture(
+              l10n,
+              _liveSample?.soilMoisture ?? latest?.soilMoisture ?? 0,
+            ),
             color: AppColors.success,
           ),
           const SizedBox(height: 12),
           _SensorCard(
             title: l10n.t('phLevel'),
-            value: (latest?.phLevel ?? 0).toStringAsFixed(1),
-            status: _statusForPh(l10n, latest?.phLevel ?? 0),
+            value: (_liveSample?.phLevel ?? latest?.phLevel ?? 0)
+                .toStringAsFixed(1),
+            status: _statusForPh(
+              l10n,
+              _liveSample?.phLevel ?? latest?.phLevel ?? 0,
+            ),
             color: AppColors.warning,
           ),
           const SizedBox(height: 12),
@@ -446,9 +500,7 @@ class _SensorScreenState extends State<SensorScreen>
                       title: l10n.locale.languageCode == 'ur'
                           ? 'ابھی مشورہ موجود نہیں'
                           : 'No advice yet',
-                      subtitle: l10n.locale.languageCode == 'ur'
-                          ? 'نمی اور پی ایچ درج کریں، پھر "مشورہ حاصل کریں" دبائیں۔'
-                          : 'Enter moisture and pH, then tap "Get advice".',
+                      subtitle: l10n.t('sensorAdvicePlaceholder'),
                     )
                   else ...[
                     _RecommendationPlanCard(
@@ -655,67 +707,182 @@ class _SensorScreenState extends State<SensorScreen>
     );
   }
 
-  Future<void> _handleManualSubmit() async {
+  Future<void> _startBleScan() async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      await _bleService.startScan();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('sensorBleScanFailed'))),
+      );
+    }
+  }
+
+  Future<void> _connectBleDevice(SensorBleScanHit hit) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      await _bleService.connect(hit.device);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('sensorBleConnectFailed'))),
+      );
+    }
+  }
+
+  Future<void> _promptWifiProvision() async {
+    final l10n = AppLocalizations.of(context);
+    if (_bleState != SensorBleConnectionState.connected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('sensorBleConnectFirst'))),
+      );
+      return;
+    }
+    final ownerId = FirebaseAuth.instance.currentUser?.uid;
+    if (ownerId == null || ownerId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('registrationRequiredMessage'))),
+      );
+      return;
+    }
+
+    final ssidController = TextEditingController();
+    final passController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.t('sensorWifiProvisionTitle')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(l10n.t('sensorWifiProvisionHint')),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ssidController,
+                decoration: InputDecoration(labelText: l10n.t('sensorWifiSsid')),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: passController,
+                obscureText: true,
+                decoration:
+                    InputDecoration(labelText: l10n.t('sensorWifiPassword')),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.t('cancel')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.t('sensorWifiSave')),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !mounted) {
+      ssidController.dispose();
+      passController.dispose();
+      return;
+    }
+    final ssid = ssidController.text.trim();
+    final pass = passController.text;
+    ssidController.dispose();
+    passController.dispose();
+    if (ssid.isEmpty) return;
+
+    setState(() => _isWifiProvisioning = true);
+    try {
+      await _bleService.provisionWifi(
+        ssid: ssid,
+        password: pass,
+        ownerId: ownerId,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('sensorWifiProvisioned'))),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('sensorWifiProvisionFailed'))),
+      );
+    } finally {
+      if (mounted) setState(() => _isWifiProvisioning = false);
+    }
+  }
+
+  Future<void> _handleGetAdvice() async {
+    final sample = _liveSample;
+    if (sample == null || !sample.isValid) return;
+    await _submitAdviceFromSample(sample, showAdGate: true);
+  }
+
+  Future<void> _submitAdviceFromSample(
+    LiveSensorSample sample, {
+    required bool showAdGate,
+  }) async {
     if (_isSubmitting) return;
     final l10n = AppLocalizations.of(context);
-    final formState = _manualFormKey.currentState;
-    if (formState == null || !formState.validate()) return;
-    final moisture = double.tryParse(_moistureController.text.trim());
-    final ph = double.tryParse(_phController.text.trim());
-    if (moisture == null || ph == null) return;
+    final moisture = sample.soilMoisture;
+    final ph = sample.phLevel;
 
     setState(() => _isSubmitting = true);
     try {
-      await InterstitialAdService.instance.runAfterAdGate(
-        AdPlacement.getAdvice,
-        () async {
-          if (!mounted) return;
-          final rainChance = _rainChancePercent ?? 0;
-          final result = _buildRuleBasedRecommendation(
-            moisture: moisture,
-            ph: ph,
-            crop: _selectedCrop,
-            rainChancePercent: rainChance,
-            config: _ruleSet.forCrop(_selectedCrop),
-          );
+      Future<void> run() async {
+        if (!mounted) return;
+        final rainChance = _rainChancePercent ?? 0;
+        final result = _buildRuleBasedRecommendation(
+          moisture: moisture,
+          ph: ph,
+          crop: _selectedCrop,
+          rainChancePercent: rainChance,
+          config: _ruleSet.forCrop(_selectedCrop),
+        );
 
-          await _sensorRepository.addReading(
+        await _sensorRepository.addReading(
+          soilMoisture: moisture,
+          phLevel: ph,
+          crop: _selectedCrop,
+          rainChancePercent: rainChance,
+          recommendationSummary: result.summary,
+          recommendationDetails: result.details,
+          recommendationPriority: result.priority,
+        );
+        if (!mounted) return;
+        setState(() {
+          final newReading = SensorReading(
             soilMoisture: moisture,
             phLevel: ph,
+            timestamp: DateTime.now(),
             crop: _selectedCrop,
             rainChancePercent: rainChance,
             recommendationSummary: result.summary,
             recommendationDetails: result.details,
             recommendationPriority: result.priority,
           );
-          if (!mounted) return;
-          setState(() {
-            final newReading = SensorReading(
-              soilMoisture: moisture,
-              phLevel: ph,
-              timestamp: DateTime.now(),
-              crop: _selectedCrop,
-              rainChancePercent: rainChance,
-              recommendationSummary: result.summary,
-              recommendationDetails: result.details,
-              recommendationPriority: result.priority,
-            );
-            _sessionLatestReading = newReading;
-            // Update the chart optimistically instead of waiting for the
-            // Firestore snapshot round-trip (which can lag behind when the
-            // new document's serverTimestamp hasn't resolved yet). The
-            // live listener will reconcile `_history` with the authoritative
-            // list as soon as its next snapshot arrives.
-            _history.add(newReading);
-            _moistureController.clear();
-            _phController.clear();
-          });
-        },
-      );
+          _sessionLatestReading = newReading;
+          _history.add(newReading);
+        });
+      }
+
+      if (showAdGate) {
+        await InterstitialAdService.instance.runAfterAdGate(
+          AdPlacement.getAdvice,
+          run,
+        );
+      } else {
+        await run();
+      }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.t('sensorRecommendationText'))),
+        SnackBar(content: Text(l10n.t('sensorAdviceFailed'))),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -1215,134 +1382,214 @@ class _SensorScreenState extends State<SensorScreen>
   }
 }
 
-class _ManualInputCard extends StatelessWidget {
-  const _ManualInputCard({
-    required this.formKey,
+class _SensorConnectCard extends StatelessWidget {
+  const _SensorConnectCard({
     required this.cropValue,
     required this.rainChancePercent,
     required this.isWeatherLoading,
     required this.lastWeatherSyncLabel,
-    required this.moistureController,
-    required this.phController,
-    required this.moistureValidator,
-    required this.phValidator,
+    required this.bleState,
+    required this.scanHits,
+    required this.liveSample,
+    required this.deviceBinding,
+    required this.isSubmitting,
+    required this.isWifiProvisioning,
     required this.onCropChanged,
+    required this.onScan,
+    required this.onStopScan,
+    required this.onConnect,
+    required this.onDisconnect,
+    required this.onProvisionWifi,
     required this.onSubmit,
     required this.onRefreshWeather,
   });
 
-  final GlobalKey<FormState> formKey;
   final String cropValue;
   final int? rainChancePercent;
   final bool isWeatherLoading;
   final String? lastWeatherSyncLabel;
-  final TextEditingController moistureController;
-  final TextEditingController phController;
-  final FormFieldValidator<String> moistureValidator;
-  final FormFieldValidator<String> phValidator;
+  final SensorBleConnectionState bleState;
+  final List<SensorBleScanHit> scanHits;
+  final LiveSensorSample? liveSample;
+  final SensorDeviceBinding? deviceBinding;
+  final bool isSubmitting;
+  final bool isWifiProvisioning;
   final ValueChanged<String> onCropChanged;
+  final VoidCallback onScan;
+  final VoidCallback onStopScan;
+  final ValueChanged<SensorBleScanHit> onConnect;
+  final VoidCallback onDisconnect;
+  final VoidCallback onProvisionWifi;
   final VoidCallback? onSubmit;
   final VoidCallback? onRefreshWeather;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final isScanning = bleState == SensorBleConnectionState.scanning;
+    final isConnected = bleState == SensorBleConnectionState.connected;
+    final sourceLabel = liveSample == null
+        ? l10n.t('sensorSourceNone')
+        : (liveSample!.source == 'wifi'
+            ? l10n.t('sensorSourceWifi')
+            : l10n.t('sensorSourceBle'));
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Form(
-          key: formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.t('sensorManualInputTitle'),
-                style: const TextStyle(fontWeight: FontWeight.w700),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.t('sensorHybridTitle'),
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.t('sensorHybridHint'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              value: cropValue,
+              decoration: InputDecoration(
+                labelText: l10n.t('sensorCropLabel'),
               ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: cropValue,
-                decoration: InputDecoration(
-                  labelText: l10n.t('sensorCropLabel'),
-                ),
-                items: const ['Wheat', 'Rice', 'Cotton']
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(
-                          switch (e) {
-                            'Wheat' => l10n.t('cropWheat'),
-                            'Rice' => l10n.t('cropRice'),
-                            'Cotton' => l10n.t('cropCotton'),
-                            _ => e,
-                          },
-                        ),
+              items: const ['Wheat', 'Rice', 'Cotton']
+                  .map(
+                    (e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(
+                        switch (e) {
+                          'Wheat' => l10n.t('cropWheat'),
+                          'Rice' => l10n.t('cropRice'),
+                          'Cotton' => l10n.t('cropCotton'),
+                          _ => e,
+                        },
                       ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) onCropChanged(value);
+              },
+            ),
+            const SizedBox(height: 10),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                isConnected ? Icons.bluetooth_connected : Icons.bluetooth,
+                color: isConnected ? AppColors.success : null,
+              ),
+              title: Text(_bleStatusLabel(l10n)),
+              subtitle: Text(
+                [
+                  if (deviceBinding != null)
+                    '${l10n.t('sensorPairedDevice')}: ${deviceBinding!.deviceName}',
+                  '${l10n.t('sensorLiveSource')}: $sourceLabel',
+                  if (liveSample != null)
+                    '${l10n.t('soilMoisture')} ${liveSample!.soilMoisture.toStringAsFixed(0)}% · '
+                        '${l10n.t('phLevel')} ${liveSample!.phLevel.toStringAsFixed(1)}',
+                ].where((e) => e.trim().isNotEmpty).join('\n'),
+              ),
+              trailing: isConnected
+                  ? TextButton(
+                      onPressed: onDisconnect,
+                      child: Text(l10n.t('sensorBleDisconnect')),
                     )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) onCropChanged(value);
-                },
+                  : null,
+            ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: isScanning ? onStopScan : onScan,
+                  icon: Icon(isScanning ? Icons.stop : Icons.search),
+                  label: Text(
+                    isScanning
+                        ? l10n.t('sensorBleStopScan')
+                        : l10n.t('sensorBleScan'),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: isWifiProvisioning ? null : onProvisionWifi,
+                  icon: isWifiProvisioning
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.wifi),
+                  label: Text(l10n.t('sensorWifiSetup')),
+                ),
+              ],
+            ),
+            if (scanHits.isNotEmpty && !isConnected) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.t('sensorBleNearby'),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: moistureController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+              ...scanHits.map(
+                (hit) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(hit.name),
+                  subtitle: Text('RSSI ${hit.rssi}'),
+                  trailing: TextButton(
+                    onPressed: () => onConnect(hit),
+                    child: Text(l10n.t('sensorBleConnect')),
+                  ),
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                ],
-                decoration: InputDecoration(
-                  labelText: l10n.t('sensorMoistureInput'),
-                  suffixText: '%',
-                  helperText: '0 - 100',
-                ),
-                validator: moistureValidator,
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: phController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                ],
-                decoration: InputDecoration(
-                  labelText: l10n.t('sensorPhInput'),
-                  helperText: '0 - 14',
-                ),
-                validator: phValidator,
-              ),
-              const SizedBox(height: 6),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.t('sensorRainExpected')),
-                subtitle: Text(
-                  isWeatherLoading
-                      ? 'Fetching current weather...'
-                      : rainChancePercent == null
-                      ? 'Unavailable'
-                      : '$rainChancePercent% chance of rain${lastWeatherSyncLabel == null ? '' : '\n$lastWeatherSyncLabel'}',
-                ),
-                trailing: IconButton(
-                  onPressed: onRefreshWeather,
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Refresh weather',
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: onSubmit,
-                icon: const Icon(Icons.analytics_outlined),
-                label: Text(l10n.t('sensorGenerateDss')),
               ),
             ],
-          ),
+            const SizedBox(height: 6),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.t('sensorRainExpected')),
+              subtitle: Text(
+                isWeatherLoading
+                    ? 'Fetching current weather...'
+                    : rainChancePercent == null
+                    ? 'Unavailable'
+                    : '$rainChancePercent% chance of rain${lastWeatherSyncLabel == null ? '' : '\n$lastWeatherSyncLabel'}',
+              ),
+              trailing: IconButton(
+                onPressed: onRefreshWeather,
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Refresh weather',
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onSubmit,
+                icon: isSubmitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.analytics_outlined),
+                label: Text(l10n.t('sensorGenerateDss')),
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  String _bleStatusLabel(AppLocalizations l10n) {
+    return switch (bleState) {
+      SensorBleConnectionState.unsupported => l10n.t('sensorBleUnsupported'),
+      SensorBleConnectionState.poweredOff => l10n.t('sensorBleOff'),
+      SensorBleConnectionState.scanning => l10n.t('sensorBleScanning'),
+      SensorBleConnectionState.connecting => l10n.t('sensorBleConnecting'),
+      SensorBleConnectionState.connected => l10n.t('sensorBleConnected'),
+      SensorBleConnectionState.disconnected => l10n.t('sensorBleDisconnected'),
+      SensorBleConnectionState.idle => l10n.t('sensorBleIdle'),
+    };
   }
 }
 

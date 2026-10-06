@@ -3,7 +3,20 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../domain/entities/live_sensor_sample.dart';
 import '../../domain/entities/sensor_reading.dart';
+
+class SensorDeviceBinding {
+  const SensorDeviceBinding({
+    required this.deviceId,
+    required this.deviceName,
+    required this.pairedAt,
+  });
+
+  final String deviceId;
+  final String deviceName;
+  final DateTime pairedAt;
+}
 
 class SensorRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -112,6 +125,72 @@ class SensorRepository {
       'recommendationDetails': recommendationDetails,
       'recommendationPriority': recommendationPriority,
       'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Saves the BLE-paired ESP32 id so WiFi uploads can be scoped to this user.
+  Future<void> bindDevice({
+    required String deviceId,
+    required String deviceName,
+  }) async {
+    final ownerId = _requireOwnerId();
+    final id = deviceId.trim();
+    if (id.isEmpty) {
+      throw ArgumentError('deviceId is required');
+    }
+    await _firestore.collection('sensor_bindings').doc(ownerId).set({
+      'ownerId': ownerId,
+      'deviceId': id,
+      'deviceName': deviceName.trim().isEmpty ? 'PakFasal Sensor' : deviceName.trim(),
+      'pairedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Future<SensorDeviceBinding?> fetchDeviceBinding() async {
+    final ownerId = _requireOwnerId();
+    final doc =
+        await _firestore.collection('sensor_bindings').doc(ownerId).get();
+    final data = doc.data();
+    if (data == null) return null;
+    final deviceId = (data['deviceId'] as String?)?.trim() ?? '';
+    if (deviceId.isEmpty) return null;
+    final pairedAt = data['pairedAt'] as Timestamp?;
+    return SensorDeviceBinding(
+      deviceId: deviceId,
+      deviceName: (data['deviceName'] as String?)?.trim() ?? 'PakFasal Sensor',
+      pairedAt: pairedAt?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  Future<void> clearDeviceBinding() async {
+    final ownerId = _requireOwnerId();
+    await _firestore.collection('sensor_bindings').doc(ownerId).delete();
+  }
+
+  /// Live WiFi uploads from the ESP32 firmware (`sensor_live/{deviceId}`).
+  Stream<LiveSensorSample?> watchDeviceLive(String deviceId) {
+    final id = deviceId.trim();
+    if (id.isEmpty) {
+      return Stream<LiveSensorSample?>.value(null);
+    }
+    return _firestore.collection('sensor_live').doc(id).snapshots().map((snap) {
+      final data = snap.data();
+      if (data == null) return null;
+      final moisture = (data['soilMoisture'] as num?)?.toDouble();
+      final ph = (data['phLevel'] as num?)?.toDouble();
+      final updatedAt = data['updatedAt'] as Timestamp?;
+      if (moisture == null || ph == null) return null;
+      final sample = LiveSensorSample(
+        soilMoisture: moisture,
+        phLevel: ph,
+        deviceId: (data['deviceId'] as String?)?.trim() ?? id,
+        source: (data['source'] as String?)?.trim().isNotEmpty == true
+            ? (data['source'] as String).trim()
+            : 'wifi',
+        updatedAt: updatedAt?.toDate() ?? DateTime.now(),
+        deviceName: data['deviceName'] as String?,
+      );
+      return sample.isValid ? sample : null;
     });
   }
 

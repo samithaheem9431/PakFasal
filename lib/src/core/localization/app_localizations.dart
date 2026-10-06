@@ -728,7 +728,7 @@ class AppLocalizations {
       'lastUpdated': 'Last updated',
       'sensorCloudLive': 'Live cloud sensor stream connected.',
       'sensorCloudError': 'Cloud unavailable. Showing cached/demo sensor data.',
-      'sensorManualInputTitle': 'Enter soil reading',
+      'sensorManualInputTitle': 'Farm sensor',
       'sensorCropLabel': 'Crop',
       'sensorMoistureInput': 'Soil Moisture (%)',
       'sensorPhInput': 'Soil pH',
@@ -752,6 +752,41 @@ class AppLocalizations {
       'sensorPhRequired': 'pH value is required',
       'sensorPhRange': 'pH must be between 0 and 14',
       'sensorInvalidNumber': 'Please enter a valid number',
+      'sensorHybridTitle': 'Connect farm sensor',
+      'sensorHybridHint':
+          'Use Bluetooth near the field, or Wi‑Fi uploads when the sensor is online. Manual typing is disabled.',
+      'sensorBleScan': 'Scan Bluetooth',
+      'sensorBleStopScan': 'Stop scan',
+      'sensorBleNearby': 'Nearby PakFasal sensors',
+      'sensorBleConnect': 'Connect',
+      'sensorBleDisconnect': 'Disconnect',
+      'sensorBleIdle': 'Bluetooth ready',
+      'sensorBleScanning': 'Scanning for sensors…',
+      'sensorBleConnecting': 'Connecting…',
+      'sensorBleConnected': 'Sensor connected',
+      'sensorBleDisconnected': 'Sensor disconnected',
+      'sensorBleOff': 'Turn on Bluetooth',
+      'sensorBleUnsupported': 'Bluetooth not supported on this device',
+      'sensorBleScanFailed': 'Could not scan for sensors. Check Bluetooth permission.',
+      'sensorBleConnectFailed': 'Could not connect to the sensor.',
+      'sensorBleConnectFirst': 'Connect the sensor on Bluetooth first.',
+      'sensorWifiSetup': 'Wi‑Fi setup',
+      'sensorWifiProvisionTitle': 'Send Wi‑Fi to sensor',
+      'sensorWifiProvisionHint':
+          'Sensor must be connected on Bluetooth. It will join this Wi‑Fi and upload live moisture/pH.',
+      'sensorWifiSsid': 'Wi‑Fi name (SSID)',
+      'sensorWifiPassword': 'Wi‑Fi password',
+      'sensorWifiSave': 'Send to sensor',
+      'sensorWifiProvisioned': 'Wi‑Fi settings sent to sensor.',
+      'sensorWifiProvisionFailed': 'Could not send Wi‑Fi settings.',
+      'sensorPairedDevice': 'Paired',
+      'sensorLiveSource': 'Live source',
+      'sensorSourceNone': 'Waiting for sensor',
+      'sensorSourceBle': 'Bluetooth',
+      'sensorSourceWifi': 'Wi‑Fi cloud',
+      'sensorAdvicePlaceholder':
+          'Connect your sensor, wait for a live reading, then tap Get advice.',
+      'sensorAdviceFailed': 'Could not save advice. Please try again.',
       'splashTagline': 'Smart farming for Pakistan',
       'authSubtitle': 'Sign in to continue',
       'continueAsGuest': 'Continue as Guest',
@@ -977,7 +1012,7 @@ class AppLocalizations {
       'aboutFeatureWeatherDetail':
           'Weather shows temperature, rain chance, humidity, and a 7-day forecast for your area. You also get simple farmer tips for irrigation, spraying, and harvest timing so you can plan field work with confidence.',
       'aboutFeatureSensorDetail':
-          'Sensor Data lets you enter soil moisture, pH, crop type, and rain chance. PakFasal then gives irrigation and soil-care advice using an on-device decision model — useful even when the internet is weak.',
+          'Sensor Data connects to your PakFasal soil node over Bluetooth or Wi‑Fi, reads moisture and pH, and gives irrigation and soil-care advice with an on-device decision model.',
       'aboutFeatureAiDetail':
           'Ask AI is your farming chat helper. Type or speak questions about crops, pests, fertilizer, or weather in English or Urdu, and get easy guidance to support everyday farm decisions.',
       'aboutFeatureLearningDetail':
@@ -993,7 +1028,7 @@ class AppLocalizations {
           'Open Weather from Home or Quick Access. Allow location for local forecasts, or search a city. Pull to refresh. Advisories suggest irrigation, spray, and harvest timing.',
       'aboutFaqSensorQ': 'How does Sensor Data / DSS work?',
       'aboutFaqSensorA':
-          'Enter moisture, pH, crop, and rain chance. PakFasal runs an on-device model to suggest irrigation and soil care priorities. History is saved when you are signed in.',
+          'Scan and connect your PakFasal sensor on Bluetooth (or use Wi‑Fi uploads after setup). Choose crop, wait for live moisture/pH, then tap Get advice. History is saved when you are signed in.',
       'aboutFaqLanguageQ': 'How do I switch language?',
       'aboutFaqLanguageA':
           'Use the language toggle in the app bar or drawer (EN / اردو). Your choice applies across the app.',
@@ -1721,7 +1756,7 @@ class AppLocalizations {
       'sensorCloudLive': 'لائیو کلاؤڈ سینسر ڈیٹا منسلک ہے۔',
       'sensorCloudError':
           'کلاؤڈ دستیاب نہیں۔ محفوظ/ڈیمو سینسر ڈیٹا دکھایا جا رہا ہے۔',
-      'sensorManualInputTitle': 'مٹی کی ریڈنگ درج کریں',
+      'sensorManualInputTitle': 'فارم سینسر',
       'sensorCropLabel': 'فصل',
       'sensorMoistureInput': 'مٹی کی نمی (%)',
       'sensorPhInput': 'مٹی کا پی ایچ',
@@ -1745,6 +1780,42 @@ class AppLocalizations {
       'sensorPhRequired': 'پی ایچ ویلیو درج کرنا ضروری ہے',
       'sensorPhRange': 'پی ایچ 0 سے 14 کے درمیان ہونا چاہیے',
       'sensorInvalidNumber': 'براہ کرم درست عدد درج کریں',
+      'sensorHybridTitle': 'فارم سینسر جوڑیں',
+      'sensorHybridHint':
+          'کھیت کے قریب بلوٹوتھ استعمال کریں، یا سینسر آن لائن ہو تو وائی فائی اپلوڈ۔ دستی اندراج بند ہے۔',
+      'sensorBleScan': 'بلوٹوتھ اسکین',
+      'sensorBleStopScan': 'اسکین روکیں',
+      'sensorBleNearby': 'قریبی پاک فصل سینسر',
+      'sensorBleConnect': 'جوڑیں',
+      'sensorBleDisconnect': 'منقطع کریں',
+      'sensorBleIdle': 'بلوٹوتھ تیار ہے',
+      'sensorBleScanning': 'سینسر تلاش ہو رہے ہیں…',
+      'sensorBleConnecting': 'جڑ رہا ہے…',
+      'sensorBleConnected': 'سینسر جڑ گیا',
+      'sensorBleDisconnected': 'سینسر منقطع ہو گیا',
+      'sensorBleOff': 'بلوٹوتھ آن کریں',
+      'sensorBleUnsupported': 'اس ڈیوائس پر بلوٹوتھ دستیاب نہیں',
+      'sensorBleScanFailed':
+          'سینسر اسکین نہیں ہو سکا۔ بلوٹوتھ اجازت چیک کریں۔',
+      'sensorBleConnectFailed': 'سینسر سے کنکشن نہیں ہو سکا۔',
+      'sensorBleConnectFirst': 'پہلے بلوٹوتھ پر سینسر جوڑیں۔',
+      'sensorWifiSetup': 'وائی فائی سیٹ اپ',
+      'sensorWifiProvisionTitle': 'سینسر کو وائی فائی بھیجیں',
+      'sensorWifiProvisionHint':
+          'سینسر بلوٹوتھ پر جڑا ہونا چاہیے۔ یہ وائی فائی جوائن کر کے لائیو نمی/پی ایچ بھیجے گا۔',
+      'sensorWifiSsid': 'وائی فائی نام (SSID)',
+      'sensorWifiPassword': 'وائی فائی پاس ورڈ',
+      'sensorWifiSave': 'سینسر کو بھیجیں',
+      'sensorWifiProvisioned': 'وائی فائی سیٹنگز سینسر کو بھیج دی گئیں۔',
+      'sensorWifiProvisionFailed': 'وائی فائی سیٹنگز نہیں بھیجی جا سکیں۔',
+      'sensorPairedDevice': 'جوڑا ہوا',
+      'sensorLiveSource': 'لائیو ذریعہ',
+      'sensorSourceNone': 'سینسر کا انتظار',
+      'sensorSourceBle': 'بلوٹوتھ',
+      'sensorSourceWifi': 'وائی فائی کلاؤڈ',
+      'sensorAdvicePlaceholder':
+          'سینسر جوڑیں، لائیو ریڈنگ کا انتظار کریں، پھر مشورہ حاصل کریں دبائیں۔',
+      'sensorAdviceFailed': 'مشورہ محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔',
       'splashTagline': 'پاکستان کے لیے ذہین کھیت باڑی',
       'authSubtitle': 'جاری رکھنے کے لیے لاگ اِن کریں',
       'continueAsGuest': 'مہمان کے طور پر جاری رکھیں',
@@ -1971,7 +2042,7 @@ class AppLocalizations {
       'aboutFeatureWeatherDetail':
           'موسم آپ کے علاقے کا درجہ حرارت، بارش کا امکان، نمی اور 7 دن کی پیشن گوئی دکھاتا ہے۔ ساتھ میں آبپاشی، اسپرے اور کٹائی کے آسان مشورے ملتے ہیں تاکہ آپ کھیت کا کام بہتر منصوبہ بنا سکیں۔',
       'aboutFeatureSensorDetail':
-          'سینسر ڈیٹا میں مٹی کی نمی، پی ایچ، فصل اور بارش کا امکان درج کریں۔ پاک فصل آن ڈیوائس ماڈل سے آبپاشی اور مٹی کی دیکھ بھال کا مشورہ دیتی ہے — کمزور انٹرنیٹ پر بھی فائدہ مند۔',
+          'سینسر ڈیٹا آپ کے پاک فصل مٹی نوڈ سے بلوٹوتھ یا وائی فائی پر جڑتا ہے، نمی اور پی ایچ پڑھتا ہے، اور آن ڈیوائس ماڈل سے آبپاشی و مٹی کی دیکھ بھال کا مشورہ دیتا ہے۔',
       'aboutFeatureAiDetail':
           'اے آئی سے پوچھیں آپ کا زرعی چیٹ مددگار ہے۔ فصل، کیڑے، کھاد یا موسم کے بارے میں انگریزی یا اردو میں سوال لکھیں یا بولیں، اور روزمرہ فیصلوں کے لیے آسان رہنمائی حاصل کریں۔',
       'aboutFeatureLearningDetail':
@@ -1987,7 +2058,7 @@ class AppLocalizations {
           'ہوم یا فوری رسائی سے موسم کھولیں۔ مقامی پیشن گوئی کے لیے لوکیشن دیں، یا شہر تلاش کریں۔ تازہ کرنے کے لیے نیچے کھینچیں۔ مشورے آبپاشی، اسپرے اور کٹائی کے وقت بتاتے ہیں۔',
       'aboutFaqSensorQ': 'سینسر ڈیٹا / ڈی ایس ایس کیسے کام کرتا ہے؟',
       'aboutFaqSensorA':
-          'نمی، پی ایچ، فصل اور بارش کا امکان درج کریں۔ پاک فصل آن ڈیوائس ماڈل سے آبپاشی اور مٹی کی دیکھ بھال کی ترجیحات تجویز کرتی ہے۔ لاگ اِن ہونے پر ہسٹری محفوظ ہوتی ہے۔',
+          'بلوٹوتھ پر پاک فصل سینسر اسکین کر کے جوڑیں (یا وائی فائی سیٹ اپ کے بعد کلاؤڈ ریڈنگ استعمال کریں)۔ فصل چنیں، لائیو نمی/پی ایچ کا انتظار کریں، پھر مشورہ حاصل کریں دبائیں۔ لاگ اِن پر ہسٹری محفوظ ہوتی ہے۔',
       'aboutFaqLanguageQ': 'زبان کیسے تبدیل کریں؟',
       'aboutFaqLanguageA':
           'ایپ بار یا ڈراور میں زبان ٹوگل استعمال کریں (EN / اردو)۔ آپ کا انتخاب پوری ایپ پر لاگو ہوتا ہے۔',
